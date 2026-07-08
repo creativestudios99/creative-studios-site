@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invitation Creator — Creative Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,400;1,9..144,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --paper:#efe9e1; --paper-dim:#e6ded2; --ink:#241f26; --ink-soft:#4a4249;
+    --rose:#b9776b; --gold:#a98552; --wine:#4a1c29; --line: rgba(36,31,38,0.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{ font-family:'Work Sans', sans-serif; color:var(--ink); background:var(--paper); }
+  h1,h2,h3,.serif{ font-family:'Fraunces', serif; font-weight:450; letter-spacing:-0.01em; }
+  .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.06em; text-transform:uppercase; }
+  a{ color:inherit; text-decoration:none; }
+  .wrap{ max-width:1280px; margin:0 auto; padding:0 40px; }
+  ::selection{ background:var(--rose); color:var(--paper); }
+
+  header{ background:var(--ink); color:var(--paper); padding:22px 0; }
+  .head-row{ display:flex; justify-content:space-between; align-items:center; }
+  .brand{ font-style:italic; font-size:1.15rem; }
+  .head-actions{ display:flex; gap:24px; font-family:'JetBrains Mono', monospace; font-size:0.75rem; letter-spacing:0.06em; }
+  .head-actions a{ opacity:0.75; transition:opacity 0.2s ease; }
+  .head-actions a:hover{ opacity:1; color:var(--rose); }
+
+  .intro{ padding:60px 0 40px; }
+  .intro .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; color:var(--rose); display:block; margin-bottom:14px; }
+  .intro h1{ font-size:clamp(1.9rem, 3.6vw, 2.6rem); margin-bottom:12px; }
+  .intro p{ color:var(--ink-soft); max-width:60ch; }
+
+  .studio{ display:grid; grid-template-columns:0.85fr 1.15fr; gap:56px; padding-bottom:100px; align-items:start; }
+
+  /* Form */
+  .form-panel{ background:var(--paper-dim); border:1px solid var(--line); border-radius:3px; padding:36px; position:sticky; top:24px; }
+  .form-panel h3{ font-size:1.1rem; margin-bottom:24px; }
+  .field{ margin-bottom:20px; }
+  .field label{ display:block; font-family:'JetBrains Mono', monospace; font-size:0.66rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:7px; }
+  .field input, .field textarea, .field select{
+    width:100%; background:var(--paper); border:1px solid var(--line); padding:10px 12px; border-radius:2px;
+    font-family:'Work Sans', sans-serif; font-size:0.92rem; color:var(--ink); outline:none; transition:border-color 0.3s ease;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{ border-color:var(--rose); }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .field textarea{ resize:vertical; min-height:60px; }
+
+  .style-options{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:24px; }
+  .style-opt{
+    border:2px solid var(--line); border-radius:2px; padding:10px 6px; text-align:center; cursor:pointer;
+    font-family:'JetBrains Mono', monospace; font-size:0.62rem; letter-spacing:0.03em; text-transform:uppercase;
+    color:var(--ink-soft); transition:all 0.25s ease;
+  }
+  .style-opt .swatch{ width:100%; height:24px; border-radius:2px; margin-bottom:8px; }
+  .style-opt.active{ border-color:var(--rose); color:var(--ink); background:var(--paper); }
+  .sw-classic{ background:linear-gradient(135deg,#efe9e1,#a98552); }
+  .sw-wine{ background:linear-gradient(135deg,#4a1c29,#b9776b); }
+  .sw-botanical{ background:linear-gradient(135deg,#e6ded2,#5b2333); }
+
+  .action-row{ display:flex; gap:10px; margin-top:28px; flex-wrap:wrap; }
+  .abtn{
+    flex:1; min-width:120px; padding:13px 16px; border-radius:2px; border:1px solid var(--ink);
+    font-family:'JetBrains Mono', monospace; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase;
+    cursor:pointer; text-align:center; transition:background 0.3s ease, color 0.3s ease;
+    background:var(--ink); color:var(--paper);
+  }
+  .abtn:hover{ background:var(--rose); border-color:var(--rose); color:var(--ink); }
+  .abtn.ghost{ background:transparent; color:var(--ink); }
+  .abtn.ghost:hover{ background:var(--ink); color:var(--paper); }
+
+  /* Preview */
+  .preview-wrap{ display:flex; flex-direction:column; align-items:center; }
+  .preview-stage{
+    width:100%; max-width:480px; aspect-ratio:5/7; position:relative;
+    display:flex; align-items:center; justify-content:center; padding:48px 40px;
+    border:1px solid var(--line); box-shadow:0 30px 60px rgba(36,31,38,0.15);
+    transition:background 0.4s ease, color 0.4s ease;
+    text-align:center;
+  }
+  .preview-stage.theme-classic{ background:var(--paper); color:var(--ink); }
+  .preview-stage.theme-wine{ background:linear-gradient(160deg,#4a1c29,#3a1420); color:var(--paper); }
+  .preview-stage.theme-botanical{ background:var(--paper-dim); color:var(--ink); }
+
+  .card-orn{ width:50px; height:auto; margin:0 auto 18px; opacity:0.7; }
+  .card-orn svg{ width:100%; stroke:currentColor; fill:none; stroke-width:1; }
+  .card-eyebrow{ font-family:'JetBrains Mono', monospace; font-size:0.62rem; letter-spacing:0.22em; opacity:0.75; margin-bottom:18px; }
+  .card-names{ font-family:'Fraunces', serif; font-style:italic; font-weight:400; font-size:clamp(1.9rem,5vw,2.6rem); line-height:1.15; }
+  .card-and{ display:block; font-family:'Cormorant Garamond', serif; font-size:1.1rem; opacity:0.7; margin:6px 0; }
+  .card-divider{ width:60px; height:1px; background:currentColor; opacity:0.35; margin:22px auto; }
+  .card-line{ font-family:'Cormorant Garamond', serif; font-size:1.15rem; line-height:1.6; }
+  .card-date{ font-family:'Fraunces', serif; font-size:1.3rem; margin:14px 0 4px; }
+  .card-venue{ font-family:'Work Sans', sans-serif; font-size:0.85rem; opacity:0.85; margin-top:2px; }
+  .card-note{ margin-top:24px; font-family:'JetBrains Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; opacity:0.6; }
+
+  .preview-hint{ margin-top:22px; font-size:0.8rem; color:var(--ink-soft); text-align:center; max-width:400px; }
+
+  footer{ background:var(--ink); color:rgba(239,233,225,0.6); padding:36px 0; text-align:center; font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; }
+
+  @media (max-width:900px){
+    .studio{ grid-template-columns:1fr; }
+    .form-panel{ position:static; }
+  }
+
+  @media print{
+    body *{ visibility:hidden; }
+    .preview-stage, .preview-stage *{ visibility:visible; }
+    .preview-stage{ position:fixed; inset:0; margin:auto; box-shadow:none; border:none; max-width:100%; width:100%; height:100%; aspect-ratio:auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-row">
+    <div class="brand">Creative Studios</div>
+    <div class="head-actions">
+      <a href="index.html">Homepage</a>
+      <a href="login.html">Client Login</a>
+    </div>
+  </div>
+</header>
+
+<section class="intro">
+  <div class="wrap">
+    <span class="eyebrow">Invitation Studio</span>
+    <h1>Design your own wedding invitation.</h1>
+    <p>Fill in your details on the left and watch your invitation build itself in real time. Choose a style, then print or save it as an image when you're happy with it.</p>
+  </div>
+</section>
+
+<div class="wrap studio">
+  <div class="form-panel">
+    <h3>Your Details</h3>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="name1">Partner One</label>
+        <input id="name1" type="text" value="Maya" placeholder="First name">
+      </div>
+      <div class="field">
+        <label for="name2">Partner Two</label>
+        <input id="name2" type="text" value="Jonah" placeholder="First name">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="invMessage">Invitation Line</label>
+      <textarea id="invMessage">Together with their families, request the pleasure of your company as they exchange vows</textarea>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="invDate">Date</label>
+        <input id="invDate" type="text" value="September 12, 2026" placeholder="e.g. September 12, 2026">
+      </div>
+      <div class="field">
+        <label for="invTime">Time</label>
+        <input id="invTime" type="text" value="4:00 in the afternoon" placeholder="e.g. 4:00 PM">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="invVenue">Venue</label>
+      <input id="invVenue" type="text" value="The Old Willow Barn" placeholder="Venue name">
+    </div>
+    <div class="field">
+      <label for="invAddress">Venue Address / City</label>
+      <input id="invAddress" type="text" value="Hudson Valley, New York" placeholder="City, State">
+    </div>
+    <div class="field">
+      <label for="invRsvp">RSVP Note</label>
+      <input id="invRsvp" type="text" value="Kindly respond by August 1st" placeholder="RSVP details">
+    </div>
+
+    <h3 style="margin-top:8px;">Style</h3>
+    <div class="style-options">
+      <div class="style-opt active hoverable" data-theme="classic"><div class="swatch sw-classic"></div>Classic Ivory</div>
+      <div class="style-opt hoverable" data-theme="wine"><div class="swatch sw-wine"></div>Wine &amp; Gold</div>
+      <div class="style-opt hoverable" data-theme="botanical"><div class="swatch sw-botanical"></div>Botanical Line</div>
+    </div>
+
+    <div class="action-row">
+      <button class="abtn hoverable" id="printBtn">Print / Save PDF</button>
+      <button class="abtn ghost hoverable" id="downloadBtn">Download PNG</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="preview-stage theme-classic" id="previewStage">
+      <div>
+        <div class="card-orn"><svg viewBox="0 0 100 40"><path d="M5 20 Q30 5 50 20 Q70 35 95 20" stroke-linecap="round"/><circle cx="50" cy="20" r="3"/></svg></div>
+        <div class="card-eyebrow">TOGETHER FOREVER</div>
+        <div class="card-names" id="cardName1">Maya</div>
+        <span class="card-and">&amp;</span>
+        <div class="card-names" id="cardName2">Jonah</div>
+        <div class="card-divider"></div>
+        <p class="card-line" id="cardMessage">Together with their families, request the pleasure of your company as they exchange vows</p>
+        <div class="card-date" id="cardDate">September 12, 2026</div>
+        <div class="card-venue" id="cardTime">4:00 in the afternoon</div>
+        <div class="card-venue" id="cardVenue">The Old Willow Barn</div>
+        <div class="card-venue" id="cardAddress">Hudson Valley, New York</div>
+        <div class="card-note" id="cardRsvp">Kindly respond by August 1st</div>
+      </div>
+    </div>
+    <p class="preview-hint">This preview updates live as you type. Use "Print / Save PDF" for a crisp print-ready version, or "Download PNG" to save an image for sharing digitally.</p>
+  </div>
+</div>
+
+<footer>&copy; 2026 Creative Studios &middot; Invitation Studio</footer>
+
+<script>
+  const ids = ['name1','name2','invMessage','invDate','invTime','invVenue','invAddress','invRsvp'];
+  const cardMap = {
+    name1:'cardName1', name2:'cardName2', invMessage:'cardMessage', invDate:'cardDate',
+    invTime:'cardTime', invVenue:'cardVenue', invAddress:'cardAddress', invRsvp:'cardRsvp'
+  };
+
+  function sync(){
+    ids.forEach(id => {
+      const val = document.getElementById(id).value;
+      document.getElementById(cardMap[id]).textContent = val;
+    });
+  }
+  ids.forEach(id => document.getElementById(id).addEventListener('input', sync));
+  sync();
+
+  // Style switching
+  const stage = document.getElementById('previewStage');
+  document.querySelectorAll('.style-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.style-opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      stage.className = 'preview-stage theme-' + opt.dataset.theme;
+    });
+  });
+
+  // Print
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+  // Download as PNG via html2canvas
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    const btn = document.getElementById('downloadBtn');
+    if(typeof html2canvas === 'undefined'){
+      alert('Could not load the image export library — check your internet connection and try again, or use Print / Save PDF instead.');
+      return;
+    }
+    btn.textContent = 'Preparing...';
+    html2canvas(stage, { scale: 3, backgroundColor: null }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'wedding-invitation.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      btn.textContent = 'Download PNG';
+    }).catch(() => {
+      alert('Something went wrong generating the image. Try Print / Save PDF instead.');
+      btn.textContent = 'Download PNG';
+    });
+  });
+</script>
+
+</body>
+</html>

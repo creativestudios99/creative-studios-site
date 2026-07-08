@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Gallery — Creative Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#efe9e1; --paper-dim:#e6ded2; --ink:#241f26; --ink-soft:#4a4249;
+    --rose:#b9776b; --gold:#a98552; --wine:#4a1c29; --line: rgba(36,31,38,0.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{ font-family:'Work Sans', sans-serif; color:var(--ink); background:var(--paper); }
+  h1,h2,h3,.serif{ font-family:'Fraunces', serif; font-weight:450; letter-spacing:-0.01em; }
+  .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.06em; text-transform:uppercase; }
+  a{ color:inherit; text-decoration:none; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 40px; }
+  ::selection{ background:var(--rose); color:var(--paper); }
+
+  /* Header */
+  header{
+    background:var(--ink); color:var(--paper); padding:22px 0;
+  }
+  .head-row{ display:flex; justify-content:space-between; align-items:center; }
+  .brand{ font-style:italic; font-size:1.15rem; }
+  .head-actions{ display:flex; align-items:center; gap:24px; font-family:'JetBrains Mono', monospace; font-size:0.75rem; letter-spacing:0.06em; }
+  .head-actions a{ opacity:0.75; transition:opacity 0.2s ease; }
+  .head-actions a:hover{ opacity:1; color:var(--rose); }
+
+  /* Intro banner */
+  .banner{ padding:70px 0 50px; }
+  .banner .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; color:var(--rose); display:block; margin-bottom:16px; }
+  .banner h1{ font-size:clamp(1.9rem, 3.6vw, 2.8rem); margin-bottom:14px; }
+  .banner p{ color:var(--ink-soft); max-width:56ch; }
+  .banner-meta{ display:flex; gap:40px; margin-top:32px; flex-wrap:wrap; }
+  .banner-meta div{ font-family:'JetBrains Mono', monospace; font-size:0.7rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.08em; }
+  .banner-meta strong{ display:block; font-family:'Fraunces', serif; font-size:1.15rem; color:var(--ink); text-transform:none; letter-spacing:0; margin-top:4px; font-weight:450; }
+
+  /* Toolbar */
+  .toolbar{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;
+    padding:20px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    margin-bottom:44px;
+  }
+  .filters{ display:flex; gap:10px; flex-wrap:wrap; }
+  .filter-btn{
+    font-family:'JetBrains Mono', monospace; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase;
+    padding:8px 16px; border:1px solid var(--line); border-radius:20px; background:transparent; color:var(--ink-soft);
+    cursor:pointer; transition:all 0.25s ease;
+  }
+  .filter-btn:hover{ border-color:var(--rose); color:var(--rose); }
+  .filter-btn.active{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .toolbar-actions{ display:flex; gap:12px; }
+  .tbtn{
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase;
+    padding:10px 20px; border-radius:2px; cursor:pointer; border:1px solid var(--ink);
+    background:var(--ink); color:var(--paper); transition:background 0.3s ease, color 0.3s ease;
+  }
+  .tbtn:hover{ background:var(--rose); border-color:var(--rose); color:var(--ink); }
+  .tbtn.ghost{ background:transparent; color:var(--ink); }
+  .tbtn.ghost:hover{ background:var(--ink); color:var(--paper); }
+
+  /* Grid */
+  .grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; padding-bottom:100px; }
+  .photo{
+    position:relative; border-radius:2px; overflow:hidden; cursor:pointer;
+    opacity:0; transform:translateY(20px); transition:opacity 0.6s ease, transform 0.6s ease;
+  }
+  .photo.show{ opacity:1; transform:translateY(0); }
+  .photo.hide{ display:none; }
+  .photo-art{
+    height:280px; display:flex; align-items:center; justify-content:center;
+    position:relative; transition:transform 0.5s ease;
+  }
+  .photo:hover .photo-art{ transform:scale(1.03); }
+  .p1{ background:linear-gradient(155deg,#5b2333,#b9776b 60%,#a98552); }
+  .p2{ background:linear-gradient(155deg,#241f26,#4a1c29 55%,#b9776b); }
+  .p3{ background:linear-gradient(155deg,#a98552,#5b2333 60%,#241f26); }
+  .p4{ background:linear-gradient(155deg,#b9776b,#241f26 55%,#4a1c29); }
+  .p5{ background:linear-gradient(155deg,#4a1c29,#a98552 60%,#b9776b); }
+  .p6{ background:linear-gradient(155deg,#241f26,#b9776b 55%,#a98552); }
+  .p7{ background:linear-gradient(155deg,#5b2333,#241f26 55%,#a98552); }
+  .p8{ background:linear-gradient(155deg,#a98552,#b9776b 60%,#4a1c29); }
+  .p9{ background:linear-gradient(155deg,#b9776b,#5b2333 55%,#241f26); }
+
+  .photo-overlay{
+    position:absolute; inset:0; background:linear-gradient(to top, rgba(36,31,38,0.55), transparent 45%);
+    opacity:0; transition:opacity 0.3s ease;
+    display:flex; align-items:flex-end; justify-content:space-between; padding:14px;
+  }
+  .photo:hover .photo-overlay{ opacity:1; }
+  .photo-cap{ font-family:'JetBrains Mono', monospace; font-size:0.68rem; color:var(--paper); letter-spacing:0.04em; }
+  .photo-icons{ display:flex; gap:10px; }
+  .icon-btn{
+    width:32px; height:32px; border-radius:50%; background:rgba(239,233,225,0.9);
+    display:flex; align-items:center; justify-content:center; border:none; cursor:pointer;
+    transition:background 0.25s ease, transform 0.2s ease;
+  }
+  .icon-btn:hover{ transform:scale(1.08); }
+  .icon-btn svg{ width:15px; height:15px; stroke:var(--ink); fill:none; stroke-width:1.6; }
+  .icon-btn.fav.active svg{ fill:var(--rose); stroke:var(--rose); }
+
+  /* Empty state */
+  .empty-state{ display:none; text-align:center; padding:60px 0; color:var(--ink-soft); }
+  .empty-state.show{ display:block; }
+
+  /* Live Drive embed */
+  .drive-embed{
+    width:100%; height:78vh; min-height:520px; border:1px solid var(--line); border-radius:2px;
+    background:var(--paper-dim); margin-bottom:100px;
+  }
+  .no-folder{
+    text-align:center; padding:80px 20px; color:var(--ink-soft); border:1px dashed var(--line);
+    border-radius:2px; margin-bottom:100px;
+  }
+  .no-folder h3{ color:var(--ink); margin-bottom:10px; }
+  .mode-banner{
+    background:rgba(185,119,107,0.14); border:1px solid var(--rose); color:var(--wine);
+    font-size:0.85rem; padding:14px 18px; border-radius:2px; margin-bottom:36px;
+  }
+
+  footer{ background:var(--ink); color:rgba(239,233,225,0.6); padding:36px 0; text-align:center; font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; }
+
+  @media (max-width:900px){ .grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:600px){ .grid{ grid-template-columns:1fr; } .wrap{ padding:0 22px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-row">
+    <div class="brand">Creative Studios</div>
+    <div class="head-actions">
+      <span id="clientGreeting">Welcome</span>
+      <a href="index.html">Homepage</a>
+      <a href="#" id="logoutLink">Log Out</a>
+    </div>
+  </div>
+</header>
+
+<section class="banner">
+  <div class="wrap">
+    <span class="eyebrow">Your Private Gallery</span>
+    <h1 id="coupleHeading">Maya &amp; Jonah's Wedding</h1>
+    <p>Welcome back. Your gallery is below &mdash; tap the heart to save favorites, and the download icon to save individual images.</p>
+    <div class="banner-meta">
+      <div>Wedding Date<strong>September 12, 2026</strong></div>
+      <div>Photos Delivered<strong>128 of 128</strong></div>
+      <div>Film Status<strong>Ready to View</strong></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="mode-banner" id="modeBanner" style="display:none;"></div>
+
+  <div id="liveGallery" style="display:none;">
+    <iframe class="drive-embed" id="driveFrame" title="Your photo gallery" frameborder="0"></iframe>
+  </div>
+
+  <div id="demoGallery">
+  <div class="toolbar">
+    <div class="filters">
+      <button class="filter-btn active hoverable" data-filter="all">All Photos</button>
+      <button class="filter-btn hoverable" data-filter="ceremony">Ceremony</button>
+      <button class="filter-btn hoverable" data-filter="reception">Reception</button>
+      <button class="filter-btn hoverable" data-filter="portraits">Portraits</button>
+      <button class="filter-btn hoverable" data-filter="details">Details</button>
+      <button class="filter-btn hoverable" data-filter="favorites">Favorites</button>
+    </div>
+    <div class="toolbar-actions">
+      <button class="tbtn ghost" id="downloadAllBtn">Download All (ZIP)</button>
+    </div>
+  </div>
+
+  <div class="grid" id="photoGrid">
+    <div class="photo show" data-cat="ceremony">
+      <div class="photo-art p1"></div>
+      <div class="photo-overlay">
+        <span class="photo-cap">IMG_0142 &middot; Ceremony</span>
+        <div class="photo-icons">
+          <button class="icon-btn fav" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6.5 4c2 0 3.5 1.2 4.5 2.5C12 5.2 13.5 4 15.5 4c4 0 6 4 4 8-2.5 4.5-9.5 9-9.5 9z"/></svg></button>
+          <button class="icon-btn dl" aria-label="Download"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="photo show" data-cat="portraits">
+      <div class="photo-art p2"></div>
+      <div class="photo-overlay">
+        <span class="photo-cap">IMG_0187 &middot; Portraits</span>
+        <div class="photo-icons">
+          <button class="icon-btn fav" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6.5 4c2 0 3.5 1.2 4.5 2.5C12 5.2 13.5 4 15.5 4c4 0 6 4 4 8-2.5 4.5-9.5 9-9.5 9z"/></svg></button>
+          <button class="icon-btn dl" aria-label="Download"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="photo show" data-cat="details">
+      <div class="photo-art p3"></div>
+      <div class="photo-overlay">
+        <span class="photo-cap">IMG_0053 &middot; Details</span>
+        <div class="photo-icons">
+          <button class="icon-btn fav" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6.5 4c2 0 3.5 1.2 4.5 2.5C12 5.2 13.5 4 15.5 4c4 0 6 4 4 8-2.5 4.5-9.5 9-9.5 9z"/></svg></button>
+          <button class="icon-btn dl" aria-label="Download"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="photo show" data-cat="reception">
+      <div class="photo-art p4"></div>
+      <div class="photo-overlay">
+        <span class="photo-cap">IMG_0301 &middot; Reception</span>
+        <div class="photo-icons">
+          <button class="icon-btn fav" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6.5 4c2 0 3.5 1.2 4.5 2.5C12 5.2 13.5 4 15.5 4c4 0 6 4 4 8-2.5 4.5-9.5 9-9.5 9z"/></svg></button>
+          <button class="icon-btn dl" aria-label="Download"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="photo show" data-cat="ceremony">
+      <div class="photo-art p5"></div>
+      <div class="photo-overlay">
+        <span class="photo-cap">IMG_0168 &middot; Ceremony</span>
+        <div class="photo-icons">
+          <button class="icon-btn fav" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6.5 4c2 0 3.5 1.2 4.5 2.5C12 5.2 13.5 4 15.5 4c4 0 6 4 4 8-2.5 4.5-9.5 9-9.5 9z"/></svg></button>
+          <button class="icon-btn dl" aria-label="Download"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="photo show" data-cat="portraits">
+      <div class="photo-art p6"></div>
+      <div class="photo-overlay">
+        <span class="photo-cap">IMG_0212 &middot; Portraits</span>
+        <div class="photo-icons">
+          <button class="icon-btn fav" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6.5 4c2 0 3.5 1.2 4.5 2.5C12 5.2 13.5 4 15.5 4c4 0 6 4 4 8-2.5 4.5-9.5 9-9.5 9z"/></svg></button>
+          <button class="icon-btn dl" aria-label="Download"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="photo show" data-cat="reception">
+      <div class="photo-art p7"></div>
+      <div class="photo-overlay">
+        <span class="photo-cap">IMG_0334 &middot; Reception</span>
+        <div class="photo-icons">
+          <button class="icon-btn fav" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6.5 4c2 0 3.5 1.2 4.5 2.5C12 5.2 13.5 4 15.5 4c4 0 6 4 4 8-2.5 4.5-9.5 9-9.5 9z"/></svg></button>
+          <button class="icon-btn dl" aria-label="Download"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="photo show" data-cat="details">
+      <div class="photo-art p8"></div>
+      <div class="photo-overlay">
+        <span class="photo-cap">IMG_0071 &middot; Details</span>
+        <div class="photo-icons">
+          <button class="icon-btn fav" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6.5 4c2 0 3.5 1.2 4.5 2.5C12 5.2 13.5 4 15.5 4c4 0 6 4 4 8-2.5 4.5-9.5 9-9.5 9z"/></svg></button>
+          <button class="icon-btn dl" aria-label="Download"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="photo show" data-cat="ceremony">
+      <div class="photo-art p9"></div>
+      <div class="photo-overlay">
+        <span class="photo-cap">IMG_0199 &middot; Ceremony</span>
+        <div class="photo-icons">
+          <button class="icon-btn fav" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6.5 4c2 0 3.5 1.2 4.5 2.5C12 5.2 13.5 4 15.5 4c4 0 6 4 4 8-2.5 4.5-9.5 9-9.5 9z"/></svg></button>
+          <button class="icon-btn dl" aria-label="Download"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" id="emptyState">No favorites yet &mdash; tap the heart on any photo to save it here.</div>
+  </div>
+</div>
+
+<footer>&copy; 2026 Creative Studios &middot; Private Client Gallery</footer>
+
+<script>
+  // ─────────────────────────────────────────────────────────
+  // Client → Drive folder lookup, read live from a Google Sheet.
+  // Adding a new client = adding a row to that sheet. No code
+  // edits, no redeploying this site, ever.
+  //
+  // Setup (one-time):
+  // 1. Make a Google Sheet with columns: Name | Email | FolderId
+  // 2. File → Share → Publish to web → select the sheet →
+  //    format "Comma-separated values (.csv)" → Publish
+  // 3. Paste that published URL below.
+  //
+  // Sharing a folder ID in this sheet is safe even if someone
+  // finds the sheet URL — Google Drive's own "Restricted"
+  // sharing on each folder is what actually blocks access.
+  // ─────────────────────────────────────────────────────────
+  const SHEET_CSV_URL = 'PASTE_YOUR_PUBLISHED_SHEET_CSV_URL_HERE';
+
+  async function loadClientFolders(){
+    if(SHEET_CSV_URL.startsWith('PASTE_YOUR')) return {};
+    try{
+      const res = await fetch(SHEET_CSV_URL, { cache: 'no-store' });
+      if(!res.ok) throw new Error('Sheet fetch failed');
+      const text = await res.text();
+      const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+      const header = rows.shift().map(h => h.toLowerCase());
+      const emailIdx = header.indexOf('email');
+      const folderIdx = header.indexOf('folderid');
+      const map = {};
+      rows.forEach(r => {
+        const email = (r[emailIdx] || '').toLowerCase();
+        const folder = r[folderIdx] || '';
+        if(email && folder) map[email] = folder;
+      });
+      return map;
+    } catch(err){
+      console.error('Could not load client folder sheet:', err);
+      return {};
+    }
+  }
+
+  // Simple client-side auth guard — demo only
+  if(sessionStorage.getItem('cs_authed') !== 'true'){
+    window.location.href = 'login.html';
+  }
+  const clientName = sessionStorage.getItem('cs_client_name');
+  const clientEmail = (sessionStorage.getItem('cs_client_email') || '').toLowerCase();
+  if(clientName){
+    document.getElementById('clientGreeting').textContent = 'Welcome, ' + clientName.split(' ')[0];
+  }
+
+  const modeBanner = document.getElementById('modeBanner');
+  const liveGallery = document.getElementById('liveGallery');
+  const demoGallery = document.getElementById('demoGallery');
+
+  modeBanner.style.display = 'block';
+  modeBanner.innerHTML = '<strong>Loading your gallery...</strong>';
+
+  loadClientFolders().then(clientFolders => {
+    const folderId = clientFolders[clientEmail];
+
+    if(folderId){
+      modeBanner.style.display = 'none';
+      liveGallery.style.display = 'block';
+      demoGallery.style.display = 'none';
+      document.getElementById('driveFrame').src = 'https://drive.google.com/embeddedfolderview?id=' + folderId + '#grid';
+    } else {
+      modeBanner.style.display = 'block';
+      modeBanner.innerHTML = clientEmail
+        ? '<strong>Demo mode:</strong> no Drive folder is linked to <em>' + clientEmail + '</em> yet. Add a row for them to your client sheet. Showing sample layout below.'
+        : '<strong>Demo mode:</strong> showing a sample gallery layout with placeholder frames.';
+    }
+  });
+
+  document.getElementById('logoutLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    sessionStorage.removeItem('cs_authed');
+    sessionStorage.removeItem('cs_client_name');
+    sessionStorage.removeItem('cs_client_email');
+    window.location.href = 'login.html';
+  });
+
+  // Favorites
+  const favKey = 'cs_favorites';
+  function getFavs(){ return JSON.parse(localStorage.getItem(favKey) || '[]'); }
+  function setFavs(list){ localStorage.setItem(favKey, JSON.stringify(list)); }
+
+  document.querySelectorAll('.photo').forEach((photo, i) => {
+    photo.dataset.id = 'photo-' + i;
+    const favBtn = photo.querySelector('.icon-btn.fav');
+    const dlBtn = photo.querySelector('.icon-btn.dl');
+    if(getFavs().includes(photo.dataset.id)) favBtn.classList.add('active');
+
+    favBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      let favs = getFavs();
+      if(favs.includes(photo.dataset.id)){
+        favs = favs.filter(id => id !== photo.dataset.id);
+        favBtn.classList.remove('active');
+      } else {
+        favs.push(photo.dataset.id);
+        favBtn.classList.add('active');
+      }
+      setFavs(favs);
+      if(document.querySelector('.filter-btn.active').dataset.filter === 'favorites') applyFilter('favorites');
+    });
+
+    dlBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      alert('In the full version, this downloads the full-resolution image to your device.');
+    });
+  });
+
+  // Filters
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const photos = document.querySelectorAll('.photo');
+  const emptyState = document.getElementById('emptyState');
+
+  function applyFilter(filter){
+    let visibleCount = 0;
+    photos.forEach(p => {
+      const matches = filter === 'all'
+        || p.dataset.cat === filter
+        || (filter === 'favorites' && getFavs().includes(p.dataset.id));
+      p.classList.toggle('hide', !matches);
+      p.classList.toggle('show', matches);
+      if(matches) visibleCount++;
+    });
+    emptyState.classList.toggle('show', filter === 'favorites' && visibleCount === 0);
+  }
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilter(btn.dataset.filter);
+    });
+  });
+
+  document.getElementById('downloadAllBtn').addEventListener('click', () => {
+    alert('In the full version, this packages your full gallery into a ZIP file for download.');
+  });
+</script>
+
+</body>
+</html>

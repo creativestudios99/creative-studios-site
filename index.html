@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creative Studios — Wedding Photography &amp; Videography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#efe9e1;
+    --paper-dim:#e6ded2;
+    --ink:#241f26;
+    --ink-soft:#4a4249;
+    --rose:#b9776b;
+    --gold:#a98552;
+    --wine:#4a1c29;
+    --wine-light:#5b2333;
+    --line: rgba(36,31,38,0.14);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-weight:400;
+    line-height:1.6;
+    overflow-x:hidden;
+    cursor:none;
+  }
+  @media (hover:none), (max-width:860px){ body{ cursor:auto; } }
+  ::selection{background:var(--rose);color:var(--paper);}
+
+  ::-webkit-scrollbar{ width:10px; }
+  ::-webkit-scrollbar-track{ background:var(--paper); }
+  ::-webkit-scrollbar-thumb{ background:var(--rose); border-radius:6px; border:2px solid var(--paper); }
+  ::-webkit-scrollbar-thumb:hover{ background:var(--wine); }
+  html{ scrollbar-width:thin; scrollbar-color:var(--rose) var(--paper); }
+
+  h1,h2,h3,.serif{
+    font-family:'Fraunces', serif;
+    font-weight:450;
+    letter-spacing:-0.01em;
+  }
+  .italic{font-style:italic;font-weight:400;}
+  .mono{
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+  }
+
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+  section{position:relative;}
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 40px; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+
+  /* ---------- Custom cursor ---------- */
+  .cursor-dot, .cursor-ring{
+    position:fixed;
+    top:0; left:0;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:9999;
+    transform:translate(-50%,-50%);
+    mix-blend-mode:difference;
+  }
+  .cursor-dot{ width:6px; height:6px; background:var(--paper); transition:opacity 0.3s ease; }
+  .cursor-ring{
+    width:34px; height:34px;
+    border:1px solid var(--paper);
+    transition:width 0.25s ease, height 0.25s ease, opacity 0.3s ease, background 0.25s ease;
+  }
+  .cursor-ring.big{ width:64px; height:64px; background:rgba(239,233,225,0.15); }
+  @media (hover:none), (max-width:860px){ .cursor-dot,.cursor-ring{ display:none; } }
+
+  /* ---------- Preloader ---------- */
+  .preloader{
+    position:fixed; inset:0; z-index:10000;
+    background:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+    transition:opacity 0.8s ease, visibility 0.8s ease;
+  }
+  .preloader.hide{ opacity:0; visibility:hidden; }
+  .preloader-mark{
+    width:64px; height:64px;
+    border-radius:50%;
+    border:1px solid rgba(239,233,225,0.35);
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+    margin-bottom:22px;
+  }
+  .preloader-mark::before{
+    content:'';
+    position:absolute; inset:-1px;
+    border-radius:50%;
+    border:1px solid var(--rose);
+    border-right-color:transparent;
+    border-bottom-color:transparent;
+    animation:spin 1.1s linear infinite;
+  }
+  .preloader-mark span{
+    width:8px;height:8px;border-radius:50%;background:var(--rose);
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .preloader-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.7rem;
+    letter-spacing:0.2em;
+    color:rgba(239,233,225,0.55);
+  }
+
+  /* ---------- Sprocket divider ---------- */
+  .sprockets{ display:flex; justify-content:center; gap:14px; padding:34px 0; }
+  .sprockets span{ width:7px;height:7px;border-radius:50%; background:var(--ink); opacity:0.22; }
+
+  /* ---------- Nav ---------- */
+  .nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    padding:26px 40px;
+    display:flex; align-items:center; justify-content:space-between;
+    transition:background 0.4s ease, padding 0.4s ease, box-shadow 0.4s ease;
+    color:var(--paper);
+  }
+  .nav.scrolled{
+    background:rgba(36,31,38,0.92);
+    padding:16px 40px;
+    backdrop-filter:blur(6px);
+    box-shadow:0 6px 24px rgba(0,0,0,0.15);
+  }
+  .nav-logo{ font-family:'Fraunces', serif; font-style:italic; font-weight:500; font-size:1.3rem; }
+  .nav-links{ display:flex; gap:38px; font-size:0.82rem; letter-spacing:0.08em; text-transform:uppercase; font-family:'JetBrains Mono', monospace; }
+  .nav-links a{ opacity:0.85; position:relative; padding-bottom:4px; }
+  .nav-links a::after{ content:''; position:absolute; left:0; bottom:0; width:0%; height:1px; background:var(--rose); transition:width 0.3s ease; }
+  .nav-links a:hover::after{ width:100%; }
+  .nav-links a:hover{ opacity:1; }
+  .nav-links a.active{ opacity:1; }
+  .nav-links a.active::after{ width:100%; }
+  @media (max-width:720px){ .nav-links{ display:none; } }
+
+  .nav-utility{ display:flex; align-items:center; gap:16px; font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; }
+  .nav-utility a{ opacity:0.8; transition:opacity 0.25s ease; }
+  .nav-utility a:hover{ opacity:1; }
+  .nav-login-btn{
+    padding:9px 18px; border:1px solid rgba(239,233,225,0.4); border-radius:20px;
+    transition:background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+  .nav-login-btn:hover{ background:var(--rose); border-color:var(--rose); color:var(--ink); opacity:1; }
+  .nav.scrolled .nav-login-btn{ border-color:rgba(239,233,225,0.3); }
+  @media (max-width:920px){ .nav-utility a:not(.nav-login-btn){ display:none; } }
+  @media (max-width:480px){ .nav-utility{ display:none; } }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    height:100vh; min-height:640px; position:relative;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(185,119,107,0.35), transparent 55%),
+      radial-gradient(ellipse at 75% 80%, rgba(169,133,82,0.28), transparent 55%),
+      linear-gradient(160deg, #2c2530 0%, #241f26 45%, #34222a 100%);
+    overflow:hidden;
+  }
+  .hero-grain{
+    position:absolute;inset:0; opacity:0.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events:none;
+  }
+  .bokeh{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+  .bokeh span{ position:absolute; border-radius:50%; filter:blur(2px); opacity:0; animation:bokehFloat linear infinite; }
+  .hero-spotlight{
+    position:absolute; inset:0; z-index:2; pointer-events:none;
+    background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%), rgba(185,119,107,0.14), transparent 60%);
+    opacity:0; transition:opacity 0.4s ease;
+  }
+  .hero:hover .hero-spotlight{ opacity:1; }
+  @keyframes bokehFloat{
+    0%{ transform:translateY(0) translateX(0) scale(0.8); opacity:0; }
+    10%{ opacity:var(--o,0.5); }
+    90%{ opacity:var(--o,0.5); }
+    100%{ transform:translateY(-70vh) translateX(var(--dx,20px)) scale(1.1); opacity:0; }
+  }
+
+  .hero-content{ position:relative; z-index:5; text-align:center; color:var(--paper); padding:0 24px; will-change:transform; }
+
+  /* Frame counter */
+  .frame-counter{
+    position:fixed; left:24px; bottom:24px; z-index:70;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.68rem; letter-spacing:0.08em;
+    color:rgba(239,233,225,0.7);
+    background:rgba(36,31,38,0.55);
+    border:1px solid rgba(239,233,225,0.18);
+    padding:8px 12px;
+    border-radius:2px;
+    backdrop-filter:blur(4px);
+    display:flex; align-items:center; gap:8px;
+    opacity:0; transition:opacity 0.5s ease;
+  }
+  .frame-counter.show{ opacity:1; }
+  .frame-counter .dot{ width:5px; height:5px; border-radius:50%; background:var(--rose); animation:pulseDot 1.6s ease-in-out infinite; }
+  @keyframes pulseDot{ 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
+  @media (max-width:720px){ .frame-counter{ left:14px; bottom:14px; font-size:0.62rem; padding:6px 10px; } }
+  @keyframes heroIn{ to{opacity:1; transform:translateY(0);} }
+  @keyframes heroWord{ to{opacity:1; transform:translateY(0) rotate(0);} }
+
+  .hero-eyebrow{
+    font-size:0.78rem; letter-spacing:0.22em; color:var(--rose); margin-bottom:22px;
+    opacity:0; transform:translateY(14px); animation:heroIn 0.9s ease forwards; animation-delay:1.45s;
+  }
+  .hero h1{ font-size:clamp(2.8rem, 7vw, 6.2rem); line-height:0.98; font-weight:450; overflow:hidden; }
+  .hero h1 .word{ display:inline-block; opacity:0; transform:translateY(60%) rotate(4deg); animation:heroWord 1s cubic-bezier(0.2,0.8,0.2,1) forwards; }
+  .hero h1 .word:nth-child(1){ animation-delay:1.55s; }
+  .hero h1 .word:nth-child(2){ animation-delay:1.68s; }
+  .hero h1 em{ font-style:italic; font-weight:400; color:var(--rose); }
+  .hero-tag{
+    margin-top:26px; font-size:clamp(1rem, 1.6vw, 1.25rem); color:rgba(239,233,225,0.78); font-weight:300;
+    max-width:480px; margin-left:auto; margin-right:auto;
+    opacity:0; transform:translateY(14px); animation:heroIn 0.9s ease forwards; animation-delay:1.95s;
+  }
+  .hero-cta{
+    margin-top:44px; display:inline-flex; gap:18px; align-items:center;
+    opacity:0; transform:translateY(14px); animation:heroIn 0.9s ease forwards; animation-delay:2.15s;
+  }
+  .btn{
+    display:inline-block; padding:15px 34px; border-radius:2px;
+    font-family:'JetBrains Mono', monospace; font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase;
+    border:1px solid currentColor;
+    transition:transform 0.25s cubic-bezier(0.2,0.8,0.2,1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    will-change:transform;
+  }
+  .btn-solid{ background:var(--rose); border-color:var(--rose); color:var(--ink); }
+  .btn-solid:hover{ background:var(--paper); border-color:var(--paper); box-shadow:0 10px 30px rgba(185,119,107,0.35); }
+  .btn-ghost{ color:var(--paper); }
+  .btn-ghost:hover{ background:rgba(239,233,225,0.1); box-shadow:0 10px 30px rgba(0,0,0,0.2); }
+
+  .scroll-cue{
+    position:absolute; bottom:38px; left:50%; transform:translateX(-50%); z-index:5;
+    color:var(--paper); opacity:0.5; font-family:'JetBrains Mono',monospace; font-size:0.68rem; letter-spacing:0.15em;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    animation:heroIn 1s ease forwards; animation-delay:1.7s; opacity:0;
+  }
+  .scroll-cue .line{ width:1px; height:34px; background:currentColor; animation:cueMove 2s ease-in-out infinite; }
+  @keyframes cueMove{ 0%,100%{transform:scaleY(1); opacity:0.6;} 50%{transform:scaleY(0.4); opacity:1;} }
+
+  .iris{ position:absolute; inset:0; z-index:20; pointer-events:none; }
+  .iris-blade{ position:absolute; top:50%; left:50%; width:150vmax; height:150vmax; background:var(--paper); transform-origin:0% 0%; }
+  @keyframes bladeOpen{ 0%{opacity:1;} 60%{opacity:1;} 100%{opacity:0; visibility:hidden;} }
+
+  /* ---------- Marquee ---------- */
+  .marquee{
+    background:var(--ink);
+    color:var(--paper);
+    overflow:hidden;
+    padding:22px 0;
+    border-top:1px solid rgba(239,233,225,0.1);
+    border-bottom:1px solid rgba(239,233,225,0.1);
+  }
+  .marquee-track{
+    display:flex; width:max-content;
+    animation:marqueeMove 32s linear infinite;
+  }
+  .marquee-track span{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:1.4rem;
+    padding:0 28px;
+    white-space:nowrap;
+    color:rgba(239,233,225,0.85);
+  }
+  .marquee-track span.dot{ color:var(--rose); font-style:normal; }
+  @keyframes marqueeMove{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+
+  /* ---------- reveal ---------- */
+  .reveal{ opacity:0; transform:translateY(28px); transition:opacity 0.9s cubic-bezier(0.2,0.7,0.2,1), transform 0.9s cubic-bezier(0.2,0.7,0.2,1); }
+  .reveal.is-visible{ opacity:1; transform:translateY(0); }
+  .service-card.reveal, .frame.reveal, .test-card.reveal, .step.reveal, .stat.reveal, .price-card.reveal{ transition-delay:var(--stagger, 0s); }
+
+  /* split heading words */
+  .split h2, .split .hero-tag{ overflow:hidden; }
+  .split .sw{
+    display:inline-block;
+    opacity:0; transform:translateY(70%);
+    transition:opacity 0.7s cubic-bezier(0.2,0.7,0.2,1), transform 0.7s cubic-bezier(0.2,0.7,0.2,1);
+    transition-delay:var(--wd, 0s);
+  }
+  .split.is-visible .sw{ opacity:1; transform:translateY(0); }
+
+  /* ---------- About ---------- */
+  .about{ padding:110px 0 90px; }
+  .about-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:80px; align-items:start; }
+  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:0.74rem; letter-spacing:0.18em; color:var(--rose); margin-bottom:20px; display:block; }
+  .about h2{ font-size:clamp(1.9rem, 3.4vw, 2.6rem); line-height:1.15; }
+  .about p{ color:var(--ink-soft); font-size:1.02rem; max-width:46ch; margin-top:10px; }
+  .about p.drop-cap::first-letter{
+    font-family:'Fraunces', serif; font-weight:450; font-size:3.6em; line-height:0.75;
+    float:left; padding-right:10px; padding-top:6px; color:var(--rose);
+  }
+  .about-quote{
+    font-family:'Fraunces', serif; font-style:italic; font-size:clamp(1.5rem, 2.6vw, 2.1rem); line-height:1.4; color:var(--ink);
+    border-left:2px solid var(--rose); padding-left:32px;
+  }
+  @media (max-width:860px){ .about-grid{ grid-template-columns:1fr; gap:44px; } }
+
+  /* ---------- Stats ---------- */
+  .stats{ background:var(--ink); color:var(--paper); padding:80px 0; }
+  .stats-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:40px; text-align:center; }
+  .stat-num{
+    font-family:'Fraunces', serif; font-weight:450;
+    font-size:clamp(2.6rem, 5vw, 4rem);
+    color:var(--rose);
+    font-variant-numeric:tabular-nums;
+  }
+  .stat-label{ margin-top:10px; font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:rgba(239,233,225,0.65); text-transform:uppercase; }
+  @media (max-width:720px){ .stats-grid{ grid-template-columns:1fr; gap:44px; } }
+
+  /* ---------- Services ---------- */
+  .services{ padding:100px 0 110px; background:var(--paper-dim); }
+  .services-head{ max-width:640px; margin-bottom:64px; }
+  .services-head h2{ font-size:clamp(2rem, 3.6vw, 2.8rem); }
+  .service-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
+  .service-card{
+    background:var(--paper-dim); padding:44px 34px; position:relative;
+    transition:background 0.35s ease, transform 0.4s cubic-bezier(0.2,0.7,0.2,1), box-shadow 0.4s ease;
+  }
+  .service-card:hover{ background:var(--paper); transform:translateY(-6px); box-shadow:0 24px 46px rgba(36,31,38,0.12); z-index:2; }
+  .service-icon{ width:38px;height:38px; margin-bottom:26px; stroke:var(--wine); fill:none; stroke-width:1.3; transition:transform 0.5s cubic-bezier(0.2,0.7,0.2,1); }
+  .service-card:hover .service-icon{ transform:scale(1.12) rotate(-4deg); }
+  .service-card h3{ font-size:1.28rem; font-weight:450; margin-bottom:10px; }
+  .service-card p{ color:var(--ink-soft); font-size:0.93rem; margin-bottom:20px; }
+  .service-tag{ font-family:'JetBrains Mono', monospace; font-size:0.68rem; letter-spacing:0.1em; color:var(--gold); }
+  @media (max-width:860px){ .service-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- Pricing ---------- */
+  .pricing{ padding:110px 0 100px; }
+  .pricing-head{ max-width:640px; margin-bottom:64px; }
+  .pricing-head h2{ font-size:clamp(2rem, 3.6vw, 2.8rem); }
+  .pricing-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:28px; align-items:stretch; }
+  .price-card{
+    background:var(--paper-dim); border:1px solid var(--line); border-radius:3px; padding:42px 32px;
+    display:flex; flex-direction:column; position:relative;
+    transition:transform 0.4s cubic-bezier(0.2,0.7,0.2,1), box-shadow 0.4s ease, border-color 0.3s ease;
+  }
+  .price-card:hover{ transform:translateY(-8px); box-shadow:0 26px 50px rgba(36,31,38,0.12); }
+  .price-card.featured{ border:2px solid var(--rose); background:var(--paper); }
+  .price-badge{
+    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+    background:var(--rose); color:var(--paper);
+    font-family:'JetBrains Mono', monospace; font-size:0.65rem; letter-spacing:0.1em;
+    padding:6px 16px; border-radius:20px; text-transform:uppercase;
+  }
+  .price-name{ font-size:1.4rem; margin-bottom:6px; }
+  .price-desc{ color:var(--ink-soft); font-size:0.9rem; margin-bottom:26px; min-height:42px; }
+  .price-amount{ font-family:'Fraunces', serif; font-weight:450; font-size:2.5rem; display:flex; align-items:baseline; gap:8px; }
+  .price-amount .from{ font-family:'JetBrains Mono', monospace; font-size:0.68rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.08em; }
+  .price-features{ list-style:none; margin:26px 0 32px; flex:1; }
+  .price-features li{ padding:10px 0; border-top:1px solid var(--line); font-size:0.9rem; color:var(--ink-soft); display:flex; gap:10px; align-items:flex-start; }
+  .price-features li:first-child{ border-top:none; }
+  .price-features li::before{ content:'—'; color:var(--rose); flex-shrink:0; }
+  .pricing-note{ margin-top:36px; font-size:0.85rem; color:var(--ink-soft); text-align:center; }
+  @media (max-width:960px){ .pricing-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- Process timeline ---------- */
+  .process{ padding:120px 0; }
+  .process-head{ max-width:640px; margin-bottom:80px; }
+  .process-head h2{ font-size:clamp(2rem, 3.6vw, 2.8rem); }
+  .timeline{ position:relative; }
+  .timeline-line{
+    position:absolute; left:29px; top:8px; bottom:8px; width:2px;
+    background:var(--line);
+  }
+  .timeline-fill{
+    position:absolute; left:29px; top:8px; width:2px; height:0%;
+    background:linear-gradient(var(--rose), var(--gold));
+    transition:height 1.6s cubic-bezier(0.2,0.7,0.2,1);
+  }
+  .step{ display:flex; gap:32px; padding-bottom:64px; position:relative; }
+  .step:last-child{ padding-bottom:0; }
+  .step-num{
+    flex:0 0 60px; height:60px; border-radius:50%;
+    background:var(--paper); border:2px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace; font-size:0.85rem; color:var(--ink-soft);
+    position:relative; z-index:2;
+    transition:border-color 0.5s ease, color 0.5s ease, background 0.5s ease;
+  }
+  .step.is-visible .step-num{ border-color:var(--rose); color:var(--rose); background:var(--paper); }
+  .step-body{ padding-top:10px; }
+  .step-body h3{ font-size:1.3rem; margin-bottom:8px; }
+  .step-body p{ color:var(--ink-soft); font-size:0.95rem; max-width:50ch; }
+
+  /* ---------- Gallery (line-art, no photos) ---------- */
+  .gallery{ padding:120px 0 110px; background:var(--paper-dim); }
+  .gallery-head{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:50px; flex-wrap:wrap; gap:20px; }
+  .gallery-head h2{ font-size:clamp(2rem, 3.6vw, 2.8rem); }
+  .gallery-note{ color:var(--ink-soft); max-width:340px; font-size:0.92rem; }
+  .filmstrip{ display:flex; gap:22px; overflow-x:auto; padding-bottom:26px; scroll-snap-type:x proximity; }
+  .filmstrip::-webkit-scrollbar{ height:6px; }
+  .filmstrip::-webkit-scrollbar-thumb{ background:var(--line); border-radius:6px; }
+  .frame{ flex:0 0 280px; scroll-snap-align:start; overflow:hidden; }
+  .frame-art{
+    height:340px; border-radius:2px; position:relative; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--line);
+    background:var(--paper);
+    transition:transform 0.6s cubic-bezier(0.2,0.7,0.2,1), box-shadow 0.6s ease, border-color 0.4s ease;
+  }
+  .frame:hover .frame-art{ transform:translateY(-8px); box-shadow:0 26px 50px rgba(36,31,38,0.14); border-color:var(--rose); }
+  .frame-art svg{ width:62%; height:62%; stroke:var(--wine); fill:none; stroke-width:1; transition:transform 0.6s ease; }
+  .frame:hover .frame-art svg{ transform:scale(1.06); }
+  .frame-cap{ margin-top:12px; display:flex; justify-content:space-between; font-family:'JetBrains Mono', monospace; font-size:0.7rem; color:var(--ink-soft); letter-spacing:0.03em; transition:color 0.3s ease; }
+  .frame:hover .frame-cap span:first-child{ color:var(--rose); }
+
+  /* ---------- Booked couples teaser ---------- */
+  .tools{ padding:110px 0; }
+  .tools-head{ max-width:640px; margin-bottom:56px; }
+  .tools-head h2{ font-size:clamp(2rem, 3.6vw, 2.8rem); }
+  .tools-grid{ display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+  .tool-card{
+    padding:44px 38px; border-radius:3px; position:relative; overflow:hidden;
+    transition:transform 0.4s cubic-bezier(0.2,0.7,0.2,1), box-shadow 0.4s ease;
+    display:flex; flex-direction:column;
+  }
+  .tool-card:hover{ transform:translateY(-6px); box-shadow:0 26px 50px rgba(36,31,38,0.14); }
+  .tool-card.dark{ background:var(--ink); color:var(--paper); }
+  .tool-card.light{ background:var(--paper-dim); border:1px solid var(--line); color:var(--ink); }
+  .tool-icon{ width:36px; height:36px; margin-bottom:24px; stroke:var(--rose); fill:none; stroke-width:1.3; }
+  .tool-card h3{ font-size:1.4rem; margin-bottom:12px; }
+  .tool-card p{ font-size:0.95rem; opacity:0.8; margin-bottom:28px; max-width:44ch; flex:1; }
+  .tool-card .btn{ align-self:flex-start; }
+  @media (max-width:860px){ .tools-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- FAQ ---------- */
+  .faq{ padding:110px 0; background:var(--paper-dim); }
+  .faq-head{ max-width:640px; margin-bottom:56px; }
+  .faq-head h2{ font-size:clamp(2rem, 3.6vw, 2.8rem); }
+  .faq-list{ max-width:780px; }
+  .faq-item{ border-bottom:1px solid var(--line); }
+  .faq-q{
+    width:100%; background:none; border:none; padding:24px 0;
+    display:flex; justify-content:space-between; align-items:center; gap:24px;
+    font-family:'Fraunces', serif; font-size:1.12rem; font-weight:450; text-align:left; color:var(--ink);
+  }
+  .faq-chevron{ width:18px; height:18px; stroke:var(--rose); fill:none; stroke-width:1.6; flex-shrink:0; transition:transform 0.35s cubic-bezier(0.2,0.7,0.2,1); }
+  .faq-item.open .faq-chevron{ transform:rotate(180deg); }
+  .faq-a{ max-height:0; overflow:hidden; transition:max-height 0.4s cubic-bezier(0.2,0.7,0.2,1); }
+  .faq-a p{ padding:0 0 26px; color:var(--ink-soft); font-size:0.95rem; max-width:60ch; }
+
+  /* ---------- Testimonials ---------- */
+  .testimonials{ padding:110px 0; background:var(--wine); color:var(--paper); position:relative; overflow:hidden; }
+  .test-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:50px; position:relative; z-index:2; }
+  .test-card{ position:relative; }
+  .test-card::before{
+    content:'“'; position:absolute; top:-38px; left:-6px;
+    font-family:'Fraunces', serif; font-size:5rem; color:rgba(239,233,225,0.12);
+  }
+  .test-card blockquote{ font-family:'Fraunces', serif; font-style:italic; font-weight:400; font-size:1.18rem; line-height:1.55; position:relative; z-index:1; }
+  .test-card cite{ display:block; margin-top:22px; font-family:'JetBrains Mono', monospace; font-style:normal; font-size:0.72rem; letter-spacing:0.08em; color:var(--rose); }
+  @media (max-width:860px){ .test-grid{ grid-template-columns:1fr; gap:44px; } }
+
+  /* ---------- Contact ---------- */
+  .contact{ padding:120px 0; }
+  .contact-grid{ display:grid; grid-template-columns:1fr 1fr; gap:80px; }
+  .contact h2{ font-size:clamp(2rem, 3.6vw, 2.8rem); margin-bottom:18px; }
+  .contact p.lead{ color:var(--ink-soft); max-width:40ch; margin-bottom:40px; }
+  .info-row{ display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid var(--line); font-size:0.95rem; transition:padding-left 0.3s ease; }
+  .info-row:hover{ padding-left:8px; }
+  .info-row span:first-child{ font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:var(--gold); text-transform:uppercase; }
+  .field{ position:relative; margin-bottom:30px; }
+  .field label{
+    position:absolute; left:2px; top:12px;
+    font-family:'Work Sans', sans-serif; font-size:1rem; color:var(--ink-soft);
+    pointer-events:none; transform-origin:left top;
+    transition:transform 0.25s cubic-bezier(0.2,0.7,0.2,1), color 0.25s ease;
+  }
+  .field input, .field textarea{
+    width:100%; background:transparent; border:none; border-bottom:1px solid var(--line); padding:10px 2px;
+    font-family:'Work Sans', sans-serif; font-size:1rem; color:var(--ink); outline:none; transition:border-color 0.3s ease;
+  }
+  .field input:focus, .field textarea:focus{ border-color:var(--rose); }
+  .field input:focus + label,
+  .field input:not(:placeholder-shown) + label,
+  .field textarea:focus + label,
+  .field textarea:not(:placeholder-shown) + label{
+    transform:translateY(-20px) scale(0.72);
+    color:var(--rose);
+  }
+  .field textarea{ resize:vertical; min-height:90px; }
+  .form-note{ margin-top:6px; font-size:0.78rem; color:var(--ink-soft); opacity:0.7; }
+  @media (max-width:860px){ .contact-grid{ grid-template-columns:1fr; gap:50px; } }
+
+  /* ---------- Back to top ---------- */
+  .to-top{
+    position:fixed; right:28px; bottom:28px; z-index:60;
+    width:52px; height:52px; border-radius:50%;
+    background:var(--ink); color:var(--paper);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; visibility:hidden; transform:translateY(10px);
+    transition:opacity 0.4s ease, transform 0.4s ease, visibility 0.4s ease;
+  }
+  .to-top.show{ opacity:1; visibility:visible; transform:translateY(0); }
+  .to-top svg{ width:18px; height:18px; stroke:var(--paper); fill:none; stroke-width:1.6; transition:transform 0.4s ease; }
+  .to-top:hover svg{ transform:rotate(180deg); }
+
+  /* ---------- Footer ---------- */
+  footer{ background:var(--ink); color:rgba(239,233,225,0.65); padding:50px 0 34px; }
+  .foot-row{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; }
+  .foot-logo{ font-family:'Fraunces', serif; font-style:italic; color:var(--paper); font-size:1.1rem; }
+  .foot-links{ display:flex; gap:26px; font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; }
+  .foot-links a:hover{ color:var(--rose); }
+  footer .fine{ margin-top:30px; font-size:0.72rem; opacity:0.5; font-family:'JetBrains Mono', monospace; }
+
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--rose); outline-offset:3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="preloader" id="preloader">
+  <div class="preloader-mark"><span></span></div>
+  <div class="preloader-label mono">Creative Studios</div>
+</div>
+
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav class="nav" id="nav">
+  <div class="nav-logo">Creative Studios</div>
+  <div class="nav-links">
+    <a href="#work" class="hoverable" data-nav="work">Work</a>
+    <a href="#services" class="hoverable" data-nav="services">Services</a>
+    <a href="#pricing" class="hoverable" data-nav="pricing">Pricing</a>
+    <a href="#process" class="hoverable" data-nav="process">Process</a>
+    <a href="#contact" class="hoverable" data-nav="contact">Contact</a>
+  </div>
+  <div class="nav-utility">
+    <a href="invitations.html" class="hoverable">Invitation Studio</a>
+    <a href="login.html" class="hoverable nav-login-btn">Client Login</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-grain"></div>
+  <div class="bokeh" id="bokeh"></div>
+  <div class="hero-spotlight" id="spotlight"></div>
+
+  <div class="hero-content" id="heroContent">
+    <span class="hero-eyebrow mono">Wedding Photography &amp; Videography</span>
+    <h1><span class="word">Creative</span> <span class="word"><em>Studios</em></span></h1>
+    <p class="hero-tag">Your love story, captured in light and motion.</p>
+    <div class="hero-cta">
+      <a href="#work" class="btn btn-solid hoverable">View Our Work</a>
+      <a href="#contact" class="btn btn-ghost hoverable">Enquire</a>
+    </div>
+  </div>
+
+  <div class="scroll-cue"><span>Scroll</span><span class="line"></span></div>
+  <div class="iris" id="iris"></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span>Photography</span><span class="dot">·</span>
+    <span>Videography</span><span class="dot">·</span>
+    <span>Feature Films</span><span class="dot">·</span>
+    <span>Fine-Art Albums</span><span class="dot">·</span>
+    <span>Elopements</span><span class="dot">·</span>
+    <span>Destination Weddings</span><span class="dot">·</span>
+    <span>Photography</span><span class="dot">·</span>
+    <span>Videography</span><span class="dot">·</span>
+    <span>Feature Films</span><span class="dot">·</span>
+    <span>Fine-Art Albums</span><span class="dot">·</span>
+    <span>Elopements</span><span class="dot">·</span>
+    <span>Destination Weddings</span><span class="dot">·</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="wrap about-grid">
+    <div class="reveal">
+      <span class="eyebrow">The Studio</span>
+      <h2 class="split">Two artists. One shared eye for the unrepeatable moment.</h2>
+      <p class="drop-cap">Creative Studios is a husband-and-wife photography and videography team, working across the country to document weddings with a documentary eye and a painter's patience for light. We shoot every wedding as though it's the only one we'll ever get to tell.</p>
+      <p>No forced poses, no rushed timelines &mdash; just the day, as it actually happened, kept for the rest of your life.</p>
+    </div>
+    <div class="reveal about-quote">
+      &ldquo;We don't direct your wedding. We disappear into it, and hand back the parts worth keeping.&rdquo;
+    </div>
+  </div>
+</section>
+
+<div class="sprockets"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<!-- STATS -->
+<section class="stats">
+  <div class="wrap stats-grid">
+    <div class="stat reveal">
+      <div class="stat-num" data-count="12" data-suffix="+">0</div>
+      <div class="stat-label">Years Behind The Lens</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num" data-count="340" data-suffix="+">0</div>
+      <div class="stat-label">Weddings Told</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num" data-count="18" data-suffix="">0</div>
+      <div class="stat-label">Countries Traveled To</div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+  <div class="wrap">
+    <div class="services-head reveal">
+      <span class="eyebrow">What We Offer</span>
+      <h2 class="split">Full-day coverage, honest editing, and films you'll actually rewatch.</h2>
+    </div>
+
+    <div class="service-grid">
+      <div class="service-card reveal">
+        <svg class="service-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="10"/><circle cx="20" cy="20" r="4"/><path d="M20 4V8M20 32V36M4 20H8M32 20H36"/></svg>
+        <h3>Wedding Photography</h3>
+        <p>Full-day coverage from first look to last dance, delivered as a curated, story-led gallery.</p>
+        <span class="service-tag">FULL DAY · 2 PHOTOGRAPHERS</span>
+      </div>
+      <div class="service-card reveal">
+        <svg class="service-icon" viewBox="0 0 40 40"><rect x="4" y="10" width="22" height="20" rx="2"/><path d="M26 16l10-6v20l-10-6z"/></svg>
+        <h3>Wedding Videography</h3>
+        <p>Cinematic highlight films and full ceremony &amp; speech edits, scored and color graded.</p>
+        <span class="service-tag">HIGHLIGHT + FEATURE FILM</span>
+      </div>
+      <div class="service-card reveal">
+        <svg class="service-icon" viewBox="0 0 40 40"><path d="M6 30l9-14 7 9 5-6 7 11z"/><circle cx="14" cy="12" r="3"/></svg>
+        <h3>Engagement Sessions</h3>
+        <p>An hour together before the big day, to get comfortable in front of the lens &mdash; and each other.</p>
+        <span class="service-tag">60&ndash;90 MIN SESSION</span>
+      </div>
+      <div class="service-card reveal">
+        <svg class="service-icon" viewBox="0 0 40 40"><rect x="6" y="6" width="28" height="28" rx="2"/><path d="M6 26l8-8 6 6 8-10 6 8"/></svg>
+        <h3>Elopements &amp; Micro-Weddings</h3>
+        <p>Intimate, low-key days deserve the same craft as the largest celebration. We travel light.</p>
+        <span class="service-tag">ON-LOCATION · ANY SCALE</span>
+      </div>
+      <div class="service-card reveal">
+        <svg class="service-icon" viewBox="0 0 40 40"><rect x="8" y="4" width="24" height="32" rx="2"/><path d="M14 12h12M14 18h12M14 24h8"/></svg>
+        <h3>Fine-Art Albums</h3>
+        <p>Hand-sequenced, lay-flat printed albums &mdash; designed by us, layout approved by you.</p>
+        <span class="service-tag">ARCHIVAL PRINT</span>
+      </div>
+      <div class="service-card reveal">
+        <svg class="service-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="15"/><path d="M20 12v8l6 4"/></svg>
+        <h3>Same-Day Edits</h3>
+        <p>A short film cut and screened at your reception, so the day gets one more moment together.</p>
+        <span class="service-tag">DELIVERED WITHIN HOURS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="pricing-head reveal">
+      <span class="eyebrow">Investment</span>
+      <h2 class="split">Packages built around how you actually want your day told.</h2>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="price-card reveal">
+        <div class="price-name">Essential</div>
+        <div class="price-desc">Intimate, honest coverage for smaller celebrations.</div>
+        <div class="price-amount"><span class="from">From</span>$2,400</div>
+        <ul class="price-features">
+          <li>6 hours of photography</li>
+          <li>1 photographer</li>
+          <li>Online gallery, 200+ edited images</li>
+          <li>Print release included</li>
+        </ul>
+        <a href="#contact" class="btn btn-ghost hoverable" style="color:var(--ink); text-align:center;">Enquire</a>
+      </div>
+
+      <div class="price-card featured reveal">
+        <span class="price-badge">Most Popular</span>
+        <div class="price-name">Signature</div>
+        <div class="price-desc">Our most-booked package &mdash; photo and film, fully covered.</div>
+        <div class="price-amount"><span class="from">From</span>$4,800</div>
+        <ul class="price-features">
+          <li>Full-day photography &amp; videography</li>
+          <li>2 photographers, 1 videographer</li>
+          <li>Cinematic highlight film</li>
+          <li>Engagement session included</li>
+          <li>Fine-art album credit</li>
+        </ul>
+        <a href="#contact" class="btn btn-solid hoverable" style="text-align:center;">Enquire</a>
+      </div>
+
+      <div class="price-card reveal">
+        <div class="price-name">Luxe</div>
+        <div class="price-desc">Multi-day, full-production coverage for the biggest celebrations.</div>
+        <div class="price-amount"><span class="from">From</span>$7,600</div>
+        <ul class="price-features">
+          <li>Multi-day coverage</li>
+          <li>2 photographers, 2 videographers</li>
+          <li>Full feature film + drone footage</li>
+          <li>Same-day edit for your reception</li>
+          <li>Premium lay-flat album</li>
+        </ul>
+        <a href="#contact" class="btn btn-ghost hoverable" style="color:var(--ink); text-align:center;">Enquire</a>
+      </div>
+    </div>
+
+    <p class="pricing-note">All packages can be customized &mdash; final pricing depends on date, travel, and add-ons.</p>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="process" id="process">
+  <div class="wrap">
+    <div class="process-head reveal">
+      <span class="eyebrow">How It Works</span>
+      <h2 class="split">From first hello to the film you'll show your kids.</h2>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <div class="timeline-line"></div>
+      <div class="timeline-fill" id="timelineFill"></div>
+
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>Enquire</h3>
+          <p>Send us your date and venue. We'll confirm availability and send our full pricing guide within two business days.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>Consult</h3>
+          <p>A call to walk through your timeline, must-have shots, and the feeling you want your gallery to hold.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3>Shoot</h3>
+          <p>We arrive early, stay late, and stay out of the way &mdash; documenting the day as it actually unfolds.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h3>Edit</h3>
+          <p>Hand color-graded photos and a scored film, cut frame by frame over the following weeks.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <h3>Deliver</h3>
+          <p>Your full gallery, film, and album proof land in your inbox &mdash; ready to keep, print, and share.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY — line-art, no customer photos -->
+<section class="gallery" id="work">
+  <div class="wrap">
+    <div class="gallery-head reveal">
+      <div>
+        <span class="eyebrow">The Craft</span>
+        <h2 class="split">What we're drawn to, in six marks.</h2>
+      </div>
+      <p class="gallery-note">A hand-drawn preview of the studio's world. Swap these for real wedding photography whenever you're ready.</p>
+    </div>
+
+    <div class="filmstrip">
+      <div class="frame reveal">
+        <div class="frame-art">
+          <svg viewBox="0 0 100 100"><circle cx="38" cy="55" r="20"/><circle cx="62" cy="55" r="20"/><path d="M38 35 L45 15 L55 15 L62 35" stroke-linecap="round"/></svg>
+        </div>
+        <div class="frame-cap"><span>The Rings</span><span>LINE · 01</span></div>
+      </div>
+      <div class="frame reveal">
+        <div class="frame-art">
+          <svg viewBox="0 0 100 100"><ellipse cx="50" cy="55" rx="28" ry="18"/><path d="M50 37 L50 20 M40 45 Q50 25 60 45 M32 55 Q50 35 68 55 M35 68 Q50 50 65 68" stroke-linecap="round"/></svg>
+        </div>
+        <div class="frame-cap"><span>The Bouquet</span><span>LINE · 02</span></div>
+      </div>
+      <div class="frame reveal">
+        <div class="frame-art">
+          <svg viewBox="0 0 100 100"><rect x="22" y="35" width="56" height="40" rx="4"/><circle cx="50" cy="55" r="13"/><rect x="60" y="42" width="10" height="7" rx="1"/></svg>
+        </div>
+        <div class="frame-cap"><span>The Camera</span><span>LINE · 03</span></div>
+      </div>
+      <div class="frame reveal">
+        <div class="frame-art">
+          <svg viewBox="0 0 100 100"><rect x="15" y="30" width="70" height="40" rx="2"/><circle cx="27" cy="36" r="2"/><circle cx="27" cy="64" r="2"/><circle cx="42" cy="36" r="2"/><circle cx="42" cy="64" r="2"/><circle cx="57" cy="36" r="2"/><circle cx="57" cy="64" r="2"/><circle cx="72" cy="36" r="2"/><circle cx="72" cy="64" r="2"/><path d="M32 42 L55 50 L32 58 Z"/></svg>
+        </div>
+        <div class="frame-cap"><span>The Film</span><span>LINE · 04</span></div>
+      </div>
+      <div class="frame reveal">
+        <div class="frame-art">
+          <svg viewBox="0 0 100 100"><path d="M30 75 L30 45 Q30 25 50 25 Q70 25 70 45 L70 75" /><path d="M20 75 H80" stroke-linecap="round"/><path d="M50 25 V15"/></svg>
+        </div>
+        <div class="frame-cap"><span>The Arch</span><span>LINE · 05</span></div>
+      </div>
+      <div class="frame reveal">
+        <div class="frame-art">
+          <svg viewBox="0 0 100 100"><path d="M40 30 L40 55 Q40 65 50 65 Q60 65 60 55 L60 30 Z"/><path d="M35 30 H65"/><path d="M50 65 V80"/><path d="M40 80 H60"/><circle cx="46" cy="45" r="1.4" fill="currentColor" stroke="none"/><circle cx="54" cy="50" r="1.4" fill="currentColor" stroke="none"/></svg>
+        </div>
+        <div class="frame-cap"><span>The Toast</span><span>LINE · 06</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="wrap">
+    <div class="test-grid">
+      <div class="test-card reveal">
+        <blockquote>&ldquo;They vanished into the background and somehow caught every single moment we would've wanted to remember &mdash; including the ones we didn't know were happening.&rdquo;</blockquote>
+        <cite>MAYA &amp; JONAH, MARRIED SEPTEMBER</cite>
+      </div>
+      <div class="test-card reveal">
+        <blockquote>&ldquo;Our highlight film made half the guest list cry again at the viewing party. Worth every cent.&rdquo;</blockquote>
+        <cite>PRIYA &amp; SAM, MARRIED JUNE</cite>
+      </div>
+      <div class="test-card reveal">
+        <blockquote>&ldquo;Calm, unobtrusive, and completely trustworthy on the day. The gallery still feels like the wedding, not a performance of it.&rdquo;</blockquote>
+        <cite>ELENA &amp; MARCUS, MARRIED OCTOBER</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOR BOOKED COUPLES -->
+<section class="tools">
+  <div class="wrap">
+    <div class="tools-head reveal">
+      <span class="eyebrow">Already Booked?</span>
+      <h2 class="split">Two tools built just for our couples.</h2>
+    </div>
+
+    <div class="tools-grid">
+      <div class="tool-card dark reveal">
+        <svg class="tool-icon" viewBox="0 0 40 40"><rect x="6" y="6" width="28" height="28" rx="3"/><circle cx="20" cy="17" r="5"/><path d="M10 32c1-6 5-9 10-9s9 3 10 9"/></svg>
+        <h3>Your Private Gallery</h3>
+        <p>Log in any time to browse your full wedding gallery, save favorites, and download images the moment they're ready.</p>
+        <a href="login.html" class="btn btn-solid hoverable">Client Login</a>
+      </div>
+      <div class="tool-card light reveal">
+        <svg class="tool-icon" viewBox="0 0 40 40"><path d="M8 34V10a2 2 0 0 1 2-2h10l10 10v16a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z"/><path d="M20 8v8h10"/><path d="M14 22h12M14 27h8"/></svg>
+        <h3>Invitation Studio</h3>
+        <p>Design a beautiful custom wedding invitation right in your browser &mdash; preview it live, then print or download it as an image.</p>
+        <a href="invitations.html" class="btn btn-ghost hoverable" style="color:var(--ink); border-color:var(--ink);">Design Yours</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="wrap">
+    <div class="faq-head reveal">
+      <span class="eyebrow">Good Questions</span>
+      <h2 class="split">Things couples ask us before booking.</h2>
+    </div>
+
+    <div class="faq-list reveal">
+      <div class="faq-item">
+        <button class="faq-q hoverable" aria-expanded="false">
+          <span>How far in advance should we book?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-a"><p>Most couples book 9&ndash;12 months ahead for peak-season dates, especially at popular venues. That said, we occasionally have last-minute openings &mdash; it never hurts to ask.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q hoverable" aria-expanded="false">
+          <span>Do you travel for destination weddings?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-a"><p>Yes &mdash; we shoot worldwide. Travel and accommodation are quoted separately based on your location and added to your proposal.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q hoverable" aria-expanded="false">
+          <span>How long until we receive our photos and film?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-a"><p>Full photo galleries are delivered within 6&ndash;8 weeks. Your highlight film typically follows a few weeks after that, with a same-day edit shown at your reception if it's part of your package.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q hoverable" aria-expanded="false">
+          <span>What happens if a photographer is sick on the day?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-a"><p>We maintain a trusted network of backup photographers and videographers, so your day is never left uncovered &mdash; this is written into every contract.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q hoverable" aria-expanded="false">
+          <span>Can we customize a package?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-a"><p>Always. Extra hours, a second shooter, drone footage, or additional albums can all be added to any package &mdash; just let us know what matters most to you.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="wrap contact-grid">
+    <div class="reveal">
+      <span class="eyebrow">Get In Touch</span>
+      <h2 class="split">Let's talk about your day.</h2>
+      <p class="lead">Tell us your date and venue and we'll follow up within two business days with availability and pricing.</p>
+
+      <div class="info-row"><span>Email</span><span>hello@creativestudios.com</span></div>
+      <div class="info-row"><span>Phone</span><span>(555) 042&ndash;1198</span></div>
+      <div class="info-row"><span>Studio</span><span>By appointment, worldwide travel</span></div>
+      <div class="info-row"><span>Instagram</span><span>@creativestudios</span></div>
+    </div>
+
+    <form class="reveal" onsubmit="return false;">
+      <div class="field">
+        <input id="name" type="text" placeholder=" ">
+        <label for="name">Your Names</label>
+      </div>
+      <div class="field">
+        <input id="date" type="text" placeholder=" ">
+        <label for="date">Wedding Date</label>
+      </div>
+      <div class="field">
+        <input id="email" type="email" placeholder=" ">
+        <label for="email">Email</label>
+      </div>
+      <div class="field">
+        <textarea id="message" placeholder=" "></textarea>
+        <label for="message">Tell Us About Your Day</label>
+      </div>
+      <button type="submit" class="btn btn-solid hoverable" style="border:1px solid var(--rose); cursor:none;">Send Enquiry</button>
+      <p class="form-note">This form is a design placeholder &mdash; connect it to email or a booking tool when you're ready to go live.</p>
+    </form>
+  </div>
+</section>
+
+<div class="frame-counter mono" id="frameCounter"><span class="dot"></span><span id="frameNum">0001</span>&nbsp;/&nbsp;<span id="frameTotal">0007</span></div>
+
+<button class="to-top hoverable" id="toTop" aria-label="Back to top">
+  <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="foot-logo">Creative Studios</div>
+      <div class="foot-links">
+        <a href="#work" class="hoverable">Work</a>
+        <a href="#services" class="hoverable">Services</a>
+        <a href="#pricing" class="hoverable">Pricing</a>
+        <a href="#process" class="hoverable">Process</a>
+        <a href="#faq" class="hoverable">FAQ</a>
+        <a href="#contact" class="hoverable">Contact</a>
+        <a href="invitations.html" class="hoverable">Invitation Studio</a>
+        <a href="login.html" class="hoverable">Client Login</a>
+      </div>
+    </div>
+    <div class="fine">&copy; 2026 Creative Studios. Wedding Photography &amp; Videography.</div>
+  </div>
+</footer>
+
+<script>
+  function reducedMotion(){ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+  // Preloader
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('preloader').classList.add('hide');
+    }, 700);
+  });
+
+  // Custom cursor
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  if(dot && ring && !('ontouchstart' in window)){
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    window.addEventListener('mousemove', (e) => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    function loop(){
+      rx += (mx - rx) * 0.18;
+      ry += (my - ry) * 0.18;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(loop);
+    }
+    loop();
+    document.querySelectorAll('.hoverable, a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('big'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('big'));
+    });
+  }
+
+  // Nav scroll state
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+    const toTop = document.getElementById('toTop');
+    toTop.classList.toggle('show', window.scrollY > 900);
+  }, { passive:true });
+
+  // Split headings into words for reveal
+  document.querySelectorAll('.split h2, h2.split').forEach(h => {
+    const text = h.textContent;
+    const words = text.split(' ');
+    h.innerHTML = words.map((w,i) => `<span class="sw" style="--wd:${(i*0.045).toFixed(3)}s">${w}</span>`).join(' ');
+  });
+
+  // Stagger grid children
+  document.querySelectorAll('.service-grid, .filmstrip, .test-grid, .stats-grid, .pricing-grid, .tools-grid').forEach(group => {
+    Array.from(group.children).forEach((el, i) => el.style.setProperty('--stagger', (i * 0.09) + 's'));
+  });
+
+  // Reveal on scroll (also handles split headings + stat counters)
+  const revealEls = document.querySelectorAll('.reveal, .split');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        if(entry.target.classList.contains('stat')) animateCount(entry.target.querySelector('.stat-num'));
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  revealEls.forEach(el => io.observe(el));
+
+  // Stat counters
+  function animateCount(el){
+    if(!el) return;
+    const target = parseInt(el.dataset.count, 10);
+    const suffix = el.dataset.suffix || '';
+    const dur = 1400;
+    const start = performance.now();
+    function tick(now){
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(eased * target) + suffix;
+      if(p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Timeline fill progress
+  const timeline = document.getElementById('timeline');
+  const timelineFill = document.getElementById('timelineFill');
+  if(timeline && timelineFill){
+    window.addEventListener('scroll', () => {
+      const rect = timeline.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = rect.height;
+      let progress = (vh * 0.75 - rect.top) / total;
+      progress = Math.max(0, Math.min(1, progress));
+      timelineFill.style.height = (progress * 100) + '%';
+    }, { passive:true });
+  }
+
+  // Bokeh particles
+  const bokehEl = document.getElementById('bokeh');
+  if(bokehEl && !reducedMotion()){
+    const colors = ['rgba(185,119,107,0.55)','rgba(169,133,82,0.5)','rgba(239,233,225,0.35)'];
+    for(let i = 0; i < 16; i++){
+      const d = document.createElement('span');
+      const size = 4 + Math.random() * 16;
+      d.style.width = size + 'px'; d.style.height = size + 'px';
+      d.style.left = Math.random() * 100 + '%';
+      d.style.bottom = (Math.random() * -20) + '%';
+      d.style.background = colors[Math.floor(Math.random() * colors.length)];
+      d.style.setProperty('--o', (0.3 + Math.random() * 0.4).toString());
+      d.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+      d.style.animationDuration = (10 + Math.random() * 14) + 's';
+      d.style.animationDelay = (Math.random() * 12) + 's';
+      bokehEl.appendChild(d);
+    }
+  }
+
+  // Cursor spotlight in hero
+  const heroSection = document.querySelector('.hero');
+  const spotlight = document.getElementById('spotlight');
+  if(heroSection && spotlight){
+    heroSection.addEventListener('mousemove', (e) => {
+      const rect = heroSection.getBoundingClientRect();
+      spotlight.style.setProperty('--mx', (((e.clientX - rect.left) / rect.width) * 100) + '%');
+      spotlight.style.setProperty('--my', (((e.clientY - rect.top) / rect.height) * 100) + '%');
+    });
+  }
+
+  // Hero parallax
+  const heroContent = document.getElementById('heroContent');
+  if(heroContent && !reducedMotion()){
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      if(y < window.innerHeight){
+        heroContent.style.transform = `translateY(${y * 0.35}px)`;
+        heroContent.style.opacity = Math.max(1 - y / 500, 0);
+      }
+    }, { passive:true });
+  }
+
+  // Magnetic buttons
+  if(!reducedMotion()){
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = 'translate(0,0)'; });
+    });
+  }
+
+  // Back to top
+  document.getElementById('toTop').addEventListener('click', () => {
+    window.scrollTo({ top:0, behavior:'smooth' });
+  });
+
+  // Active nav link tracking
+  const navLinks = document.querySelectorAll('.nav-links a[data-nav]');
+  const navSections = { work:'#work', services:'#services', pricing:'#pricing', process:'#process', contact:'#contact' };
+  function updateActiveNav(){
+    let current = null;
+    Object.entries(navSections).forEach(([key, sel]) => {
+      const el = document.querySelector(sel);
+      if(!el) return;
+      const rect = el.getBoundingClientRect();
+      if(rect.top <= 140 && rect.bottom > 140) current = key;
+    });
+    navLinks.forEach(link => link.classList.toggle('active', link.dataset.nav === current));
+  }
+  window.addEventListener('scroll', updateActiveNav, { passive:true });
+  updateActiveNav();
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const btn = item.querySelector('.faq-q');
+    const panel = item.querySelector('.faq-a');
+    btn.addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(openItem => {
+        if(openItem !== item){
+          openItem.classList.remove('open');
+          openItem.querySelector('.faq-q').setAttribute('aria-expanded','false');
+          openItem.querySelector('.faq-a').style.maxHeight = null;
+        }
+      });
+      if(isOpen){
+        item.classList.remove('open');
+        btn.setAttribute('aria-expanded','false');
+        panel.style.maxHeight = null;
+      } else {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded','true');
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+      }
+    });
+  });
+
+  // Frame counter — ticks through sections like an advancing film frame
+  const counterSections = ['#top','#about','#services','#pricing','#process','#work','.testimonials','#faq','#contact'];
+  const counterEls = counterSections.map(sel => document.querySelector(sel)).filter(Boolean);
+  const frameCounter = document.getElementById('frameCounter');
+  const frameNum = document.getElementById('frameNum');
+  const frameTotal = document.getElementById('frameTotal');
+  if(frameTotal) frameTotal.textContent = String(counterEls.length).padStart(4,'0');
+  function updateFrameCounter(){
+    if(window.scrollY < 80){ frameCounter.classList.remove('show'); return; }
+    frameCounter.classList.add('show');
+    let current = 1;
+    counterEls.forEach((el, i) => {
+      const rect = el.getBoundingClientRect();
+      if(rect.top <= window.innerHeight * 0.5) current = i + 1;
+    });
+    frameNum.textContent = String(current).padStart(4,'0');
+  }
+  window.addEventListener('scroll', updateFrameCounter, { passive:true });
+  updateFrameCounter();
+
+  // Aperture iris
+  const iris = document.getElementById('iris');
+  const bladeCount = 8;
+  if(reducedMotion()){
+    iris.style.display = 'none';
+  } else {
+    for(let i = 0; i < bladeCount; i++){
+      const blade = document.createElement('div');
+      blade.className = 'iris-blade';
+      blade.style.transform = `rotate(${(360/bladeCount)*i}deg) skewY(-45deg)`;
+      blade.style.animation = 'bladeOpen 1.1s cubic-bezier(0.76,0,0.24,1) forwards';
+      blade.style.animationDelay = (i * 0.02) + 's';
+      iris.appendChild(blade);
+    }
+    setTimeout(() => { iris.style.display = 'none'; }, 1400);
+  }
+</script>
+
+</body>
+</html>
