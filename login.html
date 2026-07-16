@@ -12,9 +12,11 @@
     --rose:#b9776b; --gold:#a98552; --wine:#4a1c29; --line: rgba(36,31,38,0.14);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
+  html{ overflow-x:hidden; width:100%; }
   body{
     font-family:'Work Sans', sans-serif; color:var(--ink); background:var(--paper);
     min-height:100vh; display:grid; grid-template-columns:1fr 1fr;
+    overflow-x:hidden; max-width:100%;
   }
   h1,h2,.serif{ font-family:'Fraunces', serif; font-weight:450; letter-spacing:-0.01em; }
   .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.06em; text-transform:uppercase; }
@@ -166,9 +168,10 @@
       client_id: GOOGLE_CLIENT_ID,
       callback: handleCredentialResponse
     });
+    const gsiBtnWidth = Math.min(336, document.getElementById('gsiBtn').clientWidth || 336);
     google.accounts.id.renderButton(
       document.getElementById('gsiBtn'),
-      { theme: 'filled_black', size: 'large', shape: 'rectangular', width: 336 }
+      { theme: 'filled_black', size: 'large', shape: 'rectangular', width: gsiBtnWidth }
     );
   });
 
