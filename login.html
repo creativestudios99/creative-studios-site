@@ -245,10 +245,10 @@
   // use a random one (the admin tool can generate one for you),
   // and set an expiry date so it doesn't stay open forever.
   // ─────────────────────────────────────────────────────────
-  const SHEET_CSV_URL_LOGIN = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQeyK0TXc_Q3ZlNkojuIetUQQTZboqexqXvxgk_0FWOolgXwZHYzCHJ99FVtZ32Gw7gnuZ04_WCrRFX/pubhtml';
+  const SHEET_CSV_URL_LOGIN = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQeyK0TXc_Q3ZlNkojuIetUQQTZboqexqXvxgk_0FWOolgXwZHYzCHJ99FVtZ32Gw7gnuZ04_WCrRFX/pub?output=csv';
 
   async function lookupPasscode(code){
-    if(SHEET_CSV_URL_LOGIN.startsWith('PASTE_YOUR')) return null;
+    if(SHEET_CSV_URL_LOGIN.startsWith('https://docs.google.com/spreadsheets/d/e/2PACX-1vQeyK0TXc_Q3ZlNkojuIetUQQTZboqexqXvxgk_0FWOolgXwZHYzCHJ99FVtZ32Gw7gnuZ04_WCrRFX/pub?output=csv')) return null;
     try{
       const res = await fetch(SHEET_CSV_URL_LOGIN, { cache: 'no-store' });
       if(!res.ok) throw new Error('Sheet fetch failed');
