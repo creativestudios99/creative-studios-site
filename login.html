@@ -154,28 +154,28 @@
   <div class="login-box">
     <span class="eyebrow mono">Welcome Back</span>
     <h1>Access Your Gallery</h1>
-    <p class="sub">Sign in with Google, or enter a gallery code if the couple shared one with you.</p>
+    <p class="sub">Enter the gallery code shared with you to view your photos.</p>
 
     <div class="error-msg" id="errorMsg">We couldn't sign you in. Please try again.</div>
+
+    <div class="passcode-box">
+      <span class="eyebrow mono">Gallery Code</span>
+      <div class="passcode-row">
+        <input type="text" id="passcodeInput" placeholder="e.g. MAYA2026" maxlength="20" autocomplete="off">
+        <button type="button" id="passcodeBtn" class="hoverable">Enter</button>
+      </div>
+      <p class="passcode-hint">Ask the couple for their gallery code if you don't have it &mdash; the same code works for everyone they share it with.</p>
+    </div>
+
+    <div class="or-divider">Or, sign in with Google</div>
 
     <div id="gsiBtn" style="margin-bottom:8px;"></div>
     <div id="gsiFallback" style="display:none;">
       <p style="font-size:0.85rem; color:var(--ink-soft); margin-bottom:16px;">Google Sign-In isn't configured yet on this preview.</p>
     </div>
 
-    <div class="or-divider">Or, family &amp; guest access</div>
-
-    <div class="passcode-box">
-      <span class="eyebrow mono">Have a gallery code?</span>
-      <div class="passcode-row">
-        <input type="text" id="passcodeInput" placeholder="e.g. MAYA2026" maxlength="20" autocomplete="off">
-        <button type="button" id="passcodeBtn" class="hoverable">Enter</button>
-      </div>
-      <p class="passcode-hint">If the couple shared a gallery code with you instead of an email invite, enter it here &mdash; no Google account needed.</p>
-    </div>
-
     <div class="demo-note">
-      <strong>Setup needed:</strong> this uses real Google Sign-In. Replace <code>YOUR_GOOGLE_CLIENT_ID</code> in the page source with your own free Google OAuth Client ID, then share each couple's Drive folder with the exact Google account they'll log in with. Google Drive's own sharing permissions are what actually keep galleries private &mdash; this login just gets clients to the right one. The gallery code option above works differently &mdash; see the note in <code>admin.html</code> about what that means for privacy.
+      <strong>Setup needed:</strong> the gallery code above is the main way in for most people &mdash; see <code>admin.html</code> for how to set one up per couple. Google Sign-In is available as a second option for couples who specifically want their own account tied to their gallery; it needs a free OAuth Client ID (also in <code>admin.html</code>).
     </div>
 
     <a href="index.html" class="back-home">&larr; Back to homepage</a>
@@ -231,8 +231,10 @@
   // one shared code to as many relatives as they want, with no
   // individual Google accounts required.
   //
-  // Add a 4th column called "Passcode" to your sheet (see
-  // admin.html) with a short code per couple, e.g. MAYA2026.
+  // Add columns called "Passcode" and "ExpiresOn" to your sheet
+  // (see admin.html) — a short code per couple, e.g. B7K2XQPM,
+  // and an optional date (YYYY-MM-DD) after which that code
+  // stops working on its own.
   //
   // Trade-off to know: this only works if that couple's Drive
   // folder is shared as "Anyone with the link" rather than
@@ -240,8 +242,8 @@
   // account to check against. That means the real gatekeeper
   // becomes the passcode itself, not Drive's own permissions —
   // treat the code the same way you'd treat a shared house key,
-  // and change it if it ever gets passed around further than
-  // you'd like.
+  // use a random one (the admin tool can generate one for you),
+  // and set an expiry date so it doesn't stay open forever.
   // ─────────────────────────────────────────────────────────
   const SHEET_CSV_URL_LOGIN = 'PASTE_YOUR_PUBLISHED_SHEET_CSV_URL_HERE';
 
@@ -256,9 +258,19 @@
       const nameIdx = header.indexOf('name');
       const folderIdx = header.indexOf('folderid');
       const passIdx = header.indexOf('passcode');
+      const expiryIdx = header.indexOf('expireson');
       if(passIdx === -1) return null;
       const match = rows.find(r => (r[passIdx] || '').toLowerCase() === code.toLowerCase());
       if(!match) return null;
+
+      const expiresOn = expiryIdx !== -1 ? (match[expiryIdx] || '').trim() : '';
+      if(expiresOn){
+        const expiryDate = new Date(expiresOn + 'T23:59:59');
+        if(!isNaN(expiryDate.getTime()) && Date.now() > expiryDate.getTime()){
+          return { expired: true };
+        }
+      }
+
       return { name: match[nameIdx] || 'there', folderId: match[folderIdx] || '' };
     } catch(err){
       console.error('Passcode lookup failed:', err);
@@ -275,7 +287,10 @@
     passcodeBtn.textContent = 'Checking...';
     const result = await lookupPasscode(code);
     passcodeBtn.textContent = 'Enter';
-    if(result && result.folderId){
+    if(result && result.expired){
+      errorMsg.textContent = "This gallery code has expired. Please contact the studio for a new link.";
+      errorMsg.classList.add('show');
+    } else if(result && result.folderId){
       sessionStorage.setItem('cs_authed', 'true');
       sessionStorage.setItem('cs_client_name', result.name);
       sessionStorage.setItem('cs_client_email', '');

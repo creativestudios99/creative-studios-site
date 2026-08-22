@@ -141,7 +141,7 @@
     <h2><span class="step-num">3</span> One-time: connect a Google Sheet as your client list</h2>
     <p>This is what lets you add new clients later without ever touching code again.</p>
     <ol>
-      <li>Make a new Google Sheet with four column headers in row 1: <code>Name</code>, <code>Email</code>, <code>FolderId</code>, <code>Passcode</code></li>
+      <li>Make a new Google Sheet with five column headers in row 1: <code>Name</code>, <code>Email</code>, <code>FolderId</code>, <code>Passcode</code>, <code>ExpiresOn</code></li>
       <li>In the sheet, go to <strong>File &rarr; Share &rarr; Publish to web</strong></li>
       <li>Choose the correct sheet tab, set format to <strong>Comma-separated values (.csv)</strong>, click <strong>Publish</strong></li>
       <li>Copy the URL it gives you</li>
@@ -160,7 +160,7 @@
       <li>Add one new row to your Google Sheet with their name, email, and folder ID. Use the generator below if it's easier to build the row first.</li>
     </ol>
     <p><strong>No redeploying, no code editing</strong> &mdash; the website reads the sheet live every time someone logs in.</p>
-    <p><strong>Why this is still secure:</strong> Google Drive itself blocks anyone who isn't the shared email, even if they somehow saw the folder ID in the sheet. Your site's login and sheet just get the right couple to the right gallery &mdash; Drive does the actual guarding.</p>
+    <p><strong>Why this is still secure:</strong> the gallery link opens the couple's actual Drive folder in a new tab, not embedded in this site. That means Google Drive's own "Restricted" sharing genuinely applies &mdash; if someone's Google account wasn't shared on that folder, Drive itself will deny them, even if they somehow saw the folder ID. Your site's login and sheet just get the right couple to the right link; Drive does the actual guarding.</p>
   </div>
 
   <div class="step-card">
@@ -172,6 +172,20 @@
       <li>Share the passcode with the couple, and let them pass it on to whoever they want to have access.</li>
     </ol>
     <p><strong>Good for:</strong> letting a wedding party of 20 relatives in without 20 separate Google account invites. <strong>Worth knowing:</strong> anyone with the code can get in, and anyone with the code could technically pass it along further &mdash; treat it like a shared house key, not a bank password. If a couple wants tighter control, stick to individual email invites for them instead.</p>
+    <p><strong>Two easy ways to reduce the risk without losing the convenience:</strong> use the <strong>Generate</strong> button below instead of a guessable name+year code, so nobody could stumble onto another couple's gallery by luck &mdash; and set an <strong>expiry date</strong> (e.g. 60 days after delivery) so an old code stops working on its own instead of staying open forever.</p>
+  </div>
+
+  <div class="step-card">
+    <h2><span class="step-num">6</span> Optional: show real photos in a premium in-page gallery</h2>
+    <p>Without this step, clients see a button that opens their album in Google Drive itself &mdash; functional, but it looks and feels like Drive, not like your site. This step pulls the actual photos into <code>gallery.html</code>'s own styled grid and lightbox instead.</p>
+    <ol>
+      <li>In Google Cloud Console (the same project as your OAuth Client ID), go to <strong>APIs &amp; Services &rarr; Library</strong>, search for <strong>"Google Drive API"</strong>, and click <strong>Enable</strong>.</li>
+      <li>Go to <strong>APIs &amp; Services &rarr; Credentials &rarr; Create Credentials &rarr; API Key</strong>. Copy the key it generates.</li>
+      <li>Click <strong>Restrict Key</strong> on that new key: under "API restrictions," limit it to <strong>Google Drive API</strong> only. Under "Application restrictions," choose "Websites" and add your domain. This stops anyone else from using your key elsewhere.</li>
+      <li>Open <code>gallery.html</code>, find <code>DRIVE_API_KEY</code> near the top of the script, and paste your key in.</li>
+    </ol>
+    <p><strong>Important:</strong> this only works for folders shared as <strong>"Anyone with the link"</strong> (the same setting used for the family passcode option above) &mdash; the API key can't read a "Restricted" folder. If a couple's folder is still Restricted, their gallery will automatically fall back to the plain "Open in Drive" button instead, so nothing breaks either way.</p>
+    <p>If you skip this step entirely, everything still works &mdash; galleries just open in Drive directly rather than showing inline.</p>
   </div>
 
 </div>
@@ -179,7 +193,7 @@
 <div class="wrap">
   <div class="generator">
     <h2>Build a Client Row</h2>
-    <p>Fill in a couple's details to generate a row you can paste directly into your Google Sheet (as Name, Email, FolderId, Passcode).</p>
+    <p>Fill in a couple's details to generate a row you can paste directly into your Google Sheet (as Name, Email, FolderId, Passcode, ExpiresOn).</p>
 
     <div class="gen-grid">
       <div class="gfield">
@@ -196,7 +210,14 @@
       </div>
       <div class="gfield">
         <label for="cPasscode">Family &amp; Guest Passcode (Optional)</label>
-        <input id="cPasscode" type="text" placeholder="e.g. MAYA2026">
+        <div style="display:flex; gap:8px;">
+          <input id="cPasscode" type="text" placeholder="Click generate, or type your own" style="flex:1;">
+          <button type="button" id="genCodeBtn" class="copy-btn hoverable" style="flex:0 0 auto; padding:0 16px; font-size:0.66rem;">Generate</button>
+        </div>
+      </div>
+      <div class="gfield full">
+        <label for="cExpiry">Passcode Expires On (Optional, recommended)</label>
+        <input id="cExpiry" type="date">
       </div>
     </div>
 
@@ -219,23 +240,40 @@
   const emailInput = document.getElementById('cEmail');
   const folderInput = document.getElementById('cFolder');
   const passcodeInput = document.getElementById('cPasscode');
+  const expiryInput = document.getElementById('cExpiry');
   const output = document.getElementById('genOutput');
   const copyBtn = document.getElementById('copyBtn');
+  const genCodeBtn = document.getElementById('genCodeBtn');
+
+  function randomCode(length){
+    // Unambiguous character set — no 0/O/1/I, so codes are easy
+    // to read off a printed card or a text message without mixups.
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for(let i = 0; i < length; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+
+  genCodeBtn.addEventListener('click', () => {
+    passcodeInput.value = randomCode(10);
+    updateOutput();
+  });
 
   function currentLine(){
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
     const folder = folderInput.value.trim();
     const passcode = passcodeInput.value.trim();
+    const expiry = expiryInput.value.trim();
     if(!folder || (!email && !passcode)) return null;
-    return `${name}\t${email}\t${folder}\t${passcode}`;
+    return `${name}\t${email}\t${folder}\t${passcode}\t${expiry}`;
   }
 
   function updateOutput(){
     const line = currentLine();
     output.textContent = line || '// Fill in the fields above to generate a row (email and/or passcode, plus folder ID, are required)';
   }
-  [nameInput, emailInput, folderInput, passcodeInput].forEach(el => el.addEventListener('input', updateOutput));
+  [nameInput, emailInput, folderInput, passcodeInput, expiryInput].forEach(el => el.addEventListener('input', updateOutput));
 
   copyBtn.addEventListener('click', () => {
     const line = currentLine();
@@ -265,12 +303,13 @@
         <td>${entry.email || '—'}</td>
         <td>${entry.folder}</td>
         <td>${entry.passcode || '—'}</td>
+        <td>${entry.expiry || '—'}</td>
         <td><button class="del-btn" data-i="${i}">Remove</button></td>
       </tr>
     `).join('');
     wrap.innerHTML = `
       <table>
-        <thead><tr><th>Couple</th><th>Email</th><th>Folder ID</th><th>Passcode</th><th></th></tr></thead>
+        <thead><tr><th>Couple</th><th>Email</th><th>Folder ID</th><th>Passcode</th><th>Expires</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     `;
@@ -288,12 +327,13 @@
     const email = emailInput.value.trim();
     const folder = folderInput.value.trim();
     const passcode = passcodeInput.value.trim();
+    const expiry = expiryInput.value.trim();
     if(!folder || (!email && !passcode)){
       alert('Fill in the folder ID, plus at least an email or a passcode, first.');
       return;
     }
     const log = getLog();
-    log.push({ name: nameInput.value.trim(), email, folder, passcode });
+    log.push({ name: nameInput.value.trim(), email, folder, passcode, expiry });
     setLog(log);
     renderLog();
   });
