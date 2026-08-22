@@ -4,6 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Creative Studios — Wedding Photography &amp; Videography</title>
+
+<!-- Social share preview (WhatsApp, Instagram, Facebook, iMessage, etc.) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Creative Studios — Wedding Photography &amp; Videography">
+<meta property="og:description" content="Documentary wedding photography and videography based in Nellore. A documentary eye and a painter's patience for light.">
+<meta property="og:image" content="https://creativestudios.in/og-image.jpg">
+<meta property="og:url" content="https://creativestudios.in">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Creative Studios — Wedding Photography &amp; Videography">
+<meta name="twitter:description" content="Documentary wedding photography and videography based in Nellore.">
+<meta name="twitter:image" content="https://creativestudios.in/og-image.jpg">
+<meta name="description" content="Documentary wedding photography and videography based in Nellore. A documentary eye and a painter's patience for light.">
+
+<!-- Favicon — a simple aperture mark, matching the site's camera motif -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23241f26'/%3E%3Cg fill='%23b9776b' transform='translate(30,30)'%3E%3Cpath d='M0,-18 L6,-6 A18 18 0 0 1 -6,-6 Z'/%3E%3Cg transform='rotate(60)'%3E%3Cpath d='M0,-18 L6,-6 A18 18 0 0 1 -6,-6 Z'/%3E%3C/g%3E%3Cg transform='rotate(120)'%3E%3Cpath d='M0,-18 L6,-6 A18 18 0 0 1 -6,-6 Z'/%3E%3C/g%3E%3Cg transform='rotate(180)'%3E%3Cpath d='M0,-18 L6,-6 A18 18 0 0 1 -6,-6 Z'/%3E%3C/g%3E%3Cg transform='rotate(240)'%3E%3Cpath d='M0,-18 L6,-6 A18 18 0 0 1 -6,-6 Z'/%3E%3C/g%3E%3Cg transform='rotate(300)'%3E%3Cpath d='M0,-18 L6,-6 A18 18 0 0 1 -6,-6 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -32,6 +48,15 @@
   }
   @media (hover:none), (max-width:860px){ body{ cursor:auto; } }
   ::selection{background:var(--rose);color:var(--paper);}
+
+  /* Subtle film grain — ties the whole site to the camera/cinematic
+     motif already established (aperture icon, frame counter). Kept
+     faint and non-interactive so it reads as texture, not noise. */
+  .grain-overlay{
+    position:fixed; inset:0; z-index:9999; pointer-events:none;
+    opacity:0.035; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
 
   ::-webkit-scrollbar{ width:10px; }
   ::-webkit-scrollbar-track{ background:var(--paper); }
@@ -505,7 +530,7 @@
 
   /* ---------- Back to top ---------- */
   .to-top{
-    position:fixed; right:28px; bottom:28px; z-index:60;
+    position:fixed; right:26px; bottom:96px; z-index:60;
     width:52px; height:52px; border-radius:50%;
     background:var(--ink); color:var(--paper);
     display:flex; align-items:center; justify-content:center;
@@ -515,8 +540,33 @@
   .to-top.show{ opacity:1; visibility:visible; transform:translateY(0); }
   .to-top svg{ width:18px; height:18px; stroke:var(--paper); fill:none; stroke-width:1.6; transition:transform 0.4s ease; }
   .to-top:hover svg{ transform:rotate(180deg); }
+  @media (max-width:600px){
+    .to-top{ width:48px; height:48px; right:18px; bottom:80px; }
+  }
 
   /* ---------- Footer ---------- */
+  /* Floating WhatsApp button */
+  .wa-float{
+    position:fixed; bottom:26px; right:26px; z-index:850;
+    width:56px; height:56px; border-radius:50%; background:#25D366;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 10px 28px rgba(37,211,102,0.4); cursor:pointer; text-decoration:none;
+    transition:transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .wa-float:hover{ transform:scale(1.08); box-shadow:0 14px 34px rgba(37,211,102,0.55); }
+  .wa-float svg{ width:28px; height:28px; fill:#fff; }
+  .wa-tooltip{
+    position:absolute; right:66px; top:50%; transform:translateY(-50%);
+    background:var(--ink); color:var(--paper); font-family:'JetBrains Mono', monospace; font-size:0.7rem;
+    letter-spacing:0.04em; padding:8px 14px; border-radius:3px; white-space:nowrap;
+    opacity:0; pointer-events:none; transition:opacity 0.25s ease;
+  }
+  .wa-float:hover .wa-tooltip{ opacity:1; }
+  @media (max-width:600px){
+    .wa-float{ width:52px; height:52px; bottom:18px; right:18px; }
+    .wa-tooltip{ display:none; }
+  }
+
   footer{ background:var(--ink); color:rgba(239,233,225,0.65); padding:50px 0 34px; }
   .foot-row{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; }
   .foot-logo{ font-family:'Fraunces', serif; font-style:italic; color:var(--paper); font-size:1.1rem; }
@@ -530,6 +580,8 @@
 </style>
 </head>
 <body>
+
+<div class="grain-overlay"></div>
 
 <div class="preloader" id="preloader">
   <div class="preloader-mark"><span></span></div>
@@ -951,6 +1003,11 @@
     setTimeout(() => { iris.style.display = 'none'; }, 1400);
   }
 </script>
+
+<a href="https://wa.me/919949706000?text=Hi!%20I'd%20love%20to%20know%20more%20about%20your%20wedding%20photography%20packages." target="_blank" rel="noopener" class="wa-float" aria-label="Message us on WhatsApp">
+  <span class="wa-tooltip">Message us on WhatsApp</span>
+  <svg viewBox="0 0 24 24"><path d="M17.6 6.32A7.85 7.85 0 0012.05 4a7.94 7.94 0 00-6.9 11.9L4 20l4.2-1.1a7.9 7.9 0 003.83 1h.02a7.94 7.94 0 007.94-7.94 7.9 7.9 0 00-2.4-5.64zm-5.55 12.2h-.02a6.6 6.6 0 01-3.36-.92l-.24-.14-2.5.65.67-2.44-.16-.25a6.61 6.61 0 1112.3-3.5 6.55 6.55 0 01-6.7 6.6zm3.62-4.94c-.2-.1-1.17-.58-1.35-.64s-.32-.1-.45.1-.5.64-.62.77-.23.15-.43.05a5.4 5.4 0 01-1.6-.98 5.94 5.94 0 01-1.1-1.36c-.12-.2 0-.3.1-.4s.2-.23.3-.35.13-.2.2-.33a.36.36 0 000-.35c-.05-.1-.45-1.08-.62-1.48s-.33-.33-.45-.34h-.38a.74.74 0 00-.53.25 2.24 2.24 0 00-.7 1.67 3.9 3.9 0 00.82 2.06 8.9 8.9 0 003.4 3 10.2 10.2 0 001 .37 2.42 2.42 0 001.1.07 1.8 1.8 0 001.18-.83 1.46 1.46 0 00.1-.83c-.05-.08-.18-.13-.38-.22z"/></svg>
+</a>
 
 </body>
 </html>
