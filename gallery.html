@@ -214,6 +214,37 @@
   @media (max-width:900px){ .grid{ grid-template-columns:repeat(2,1fr); } .masonry{ column-count:2; } }
   @media (max-width:600px){ .grid{ grid-template-columns:1fr; } .wrap{ padding:0 22px; } .masonry{ column-count:1; } }
 
+  /* ── Welcome intro overlay (cover photo or video) ── */
+  .intro-overlay{
+    display:none; position:fixed; inset:0; z-index:900; background:var(--ink);
+    align-items:center; justify-content:center; overflow:hidden;
+    opacity:1; transition:opacity 0.6s ease;
+  }
+  .intro-overlay.show{ display:flex; }
+  .intro-overlay.closing{ opacity:0; pointer-events:none; }
+  .intro-media{ position:absolute; inset:0; }
+  .intro-media img, .intro-media video, .intro-media iframe{
+    width:100%; height:100%; object-fit:cover; border:none; display:block;
+  }
+  .intro-media::after{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(36,31,38,0.35) 0%, rgba(36,31,38,0.15) 40%, rgba(36,31,38,0.75) 100%);
+  }
+  .intro-content{
+    position:relative; z-index:2; text-align:center; color:var(--paper); padding:0 24px;
+  }
+  .intro-eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--rose); margin-bottom:18px;
+  }
+  .intro-content h2{ font-size:clamp(2.2rem,5vw,3.6rem); font-style:italic; font-weight:400; margin-bottom:36px; }
+  .intro-enter{
+    font-family:'JetBrains Mono', monospace; font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase;
+    padding:15px 30px; border:1px solid rgba(239,233,225,0.5); background:transparent; color:var(--paper);
+    border-radius:2px; cursor:pointer; transition:background 0.3s ease, color 0.3s ease;
+  }
+  .intro-enter:hover{ background:var(--paper); color:var(--ink); }
+
   footer{ background:var(--ink); color:rgba(239,233,225,0.6); padding:36px 0; text-align:center; font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; }
 </style>
 </head>
@@ -229,6 +260,15 @@
     </div>
   </div>
 </header>
+
+<div class="intro-overlay" id="introOverlay">
+  <div class="intro-media" id="introMedia"></div>
+  <div class="intro-content">
+    <div class="intro-eyebrow">Welcome</div>
+    <h2 id="introHeading">Your Gallery Is Ready</h2>
+    <button class="intro-enter hoverable" id="introEnterBtn">View Gallery &darr;</button>
+  </div>
+</div>
 
 <section class="banner">
   <div class="wrap">
@@ -246,7 +286,7 @@
 
   <div id="liveGallery" style="display:none;">
     <div class="toolbar">
-      <div class="filters">
+      <div class="filters" id="realFilters">
         <button class="filter-btn active hoverable" data-realfilter="all">All Photos</button>
         <button class="filter-btn hoverable" data-realfilter="favorites">Favorites</button>
       </div>
@@ -439,11 +479,19 @@
       const header = rows.shift().map(h => h.toLowerCase());
       const emailIdx = header.indexOf('email');
       const folderIdx = header.indexOf('folderid');
+      const coverIdx = header.indexOf('coverphotoid');
+      const videoIdx = header.indexOf('introvideourl');
       const map = {};
       rows.forEach(r => {
         const email = (r[emailIdx] || '').toLowerCase();
         const folder = extractFolderId(r[folderIdx] || '');
-        if(email && folder) map[email] = folder;
+        if(email && folder){
+          map[email] = {
+            folderId: folder,
+            coverPhotoId: coverIdx !== -1 ? extractFolderId(r[coverIdx] || '') : '',
+            introVideoUrl: videoIdx !== -1 ? (r[videoIdx] || '').trim() : '',
+          };
+        }
       });
       return map;
     } catch(err){
@@ -471,16 +519,58 @@
   // ─────────────────────────────────────────────────────────
   const DRIVE_API_KEY = 'AIzaSyCFP8SoNsjfHoliCtuVIeGnOHncMukJS58';
 
+  // Finds subfolders inside the couple's main folder — e.g. if you've
+  // organized edited photos into "Marriage", "Reception", "Nalugu"
+  // subfolders during editing, this discovers them automatically.
+  // No hardcoded occasion list — whatever subfolders exist, show up.
+  async function fetchDriveSubfolders(folderId){
+    const q = encodeURIComponent(`'${folderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`);
+    const fields = encodeURIComponent('files(id,name)');
+    const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&orderBy=name&pageSize=100&key=${DRIVE_API_KEY}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Drive folder list failed: ' + res.status);
+    const data = await res.json();
+    return data.files || [];
+  }
+
+  async function fetchImagesInFolder(folderId){
+    const q = encodeURIComponent(`'${folderId}' in parents and mimeType contains 'image/' and trashed = false`);
+    const fields = encodeURIComponent('files(id,name,thumbnailLink,createdTime)');
+    const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&orderBy=createdTime&pageSize=1000&key=${DRIVE_API_KEY}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Drive image list failed: ' + res.status);
+    const data = await res.json();
+    return data.files || [];
+  }
+
+  // Pulls photos from every occasion subfolder (tagging each photo
+  // with its subfolder name), plus any photos sitting loose directly
+  // in the main folder (tagged "General"). If there are no
+  // subfolders at all, everything just falls under "All Photos" as
+  // before — this degrades gracefully for couples who don't
+  // organize into subfolders.
   async function fetchDriveImages(folderId){
     if(DRIVE_API_KEY.startsWith('PASTE_YOUR')) return null; // not configured
     try{
-      const q = encodeURIComponent(`'${folderId}' in parents and mimeType contains 'image/' and trashed = false`);
-      const fields = encodeURIComponent('files(id,name,thumbnailLink,createdTime)');
-      const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&orderBy=createdTime&pageSize=1000&key=${DRIVE_API_KEY}`;
-      const res = await fetch(url);
-      if(!res.ok) throw new Error('Drive API request failed: ' + res.status);
-      const data = await res.json();
-      return data.files || [];
+      const [subfolders, looseFiles] = await Promise.all([
+        fetchDriveSubfolders(folderId),
+        fetchImagesInFolder(folderId),
+      ]);
+
+      const tagged = looseFiles.map(f => ({ ...f, occasion: 'General' }));
+
+      if(subfolders.length > 0){
+        const perFolder = await Promise.all(
+          subfolders.map(async sf => {
+            const files = await fetchImagesInFolder(sf.id);
+            return files.map(f => ({ ...f, occasion: sf.name }));
+          })
+        );
+        perFolder.forEach(arr => tagged.push(...arr));
+      }
+
+      tagged.sort((a, b) => new Date(a.createdTime) - new Date(b.createdTime));
+      return tagged;
     } catch(err){
       console.error('Could not fetch Drive images:', err);
       return null; // signals "couldn't load", not "empty folder"
@@ -491,6 +581,64 @@
   function driveDownloadUrl(fileId){ return `https://drive.google.com/uc?export=download&id=${fileId}`; }
 
   // ─────────────────────────────────────────────────────────
+  // PART 2b — Optional welcome intro: a cover photo or short
+  // video shown once per login, before the gallery grid.
+  //
+  // Set either (or both — video takes priority) via two
+  // optional Sheet columns: CoverPhotoId and IntroVideoUrl.
+  // Fully optional — if neither is set, no overlay shows and
+  // the gallery just loads normally.
+  //
+  // IntroVideoUrl accepts: a YouTube link, a Vimeo link, a
+  // Drive video file's share link, or a direct .mp4 URL.
+  // CoverPhotoId accepts: a Drive photo's file ID or share link.
+  // ─────────────────────────────────────────────────────────
+  const INTRO_SHOWN_KEY = 'cs_intro_shown_this_session';
+
+  function buildIntroMediaHTML(coverPhotoId, introVideoUrl){
+    if(introVideoUrl){
+      const yt = introVideoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+      if(yt) return `<iframe src="https://www.youtube.com/embed/${yt[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${yt[1]}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+
+      const vimeo = introVideoUrl.match(/vimeo\.com\/(\d+)/);
+      if(vimeo) return `<iframe src="https://player.vimeo.com/video/${vimeo[1]}?autoplay=1&muted=1&background=1" allow="autoplay"></iframe>`;
+
+      const driveFile = introVideoUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || introVideoUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if(driveFile) return `<iframe src="https://drive.google.com/file/d/${driveFile[1]}/preview" allow="autoplay"></iframe>`;
+
+      // Direct video file URL (e.g. an .mp4 hosted elsewhere)
+      return `<video src="${introVideoUrl}" autoplay muted loop playsinline></video>`;
+    }
+    if(coverPhotoId){
+      return `<img src="${driveThumb(coverPhotoId, 1600)}" alt="">`;
+    }
+    return '';
+  }
+
+  function maybeShowIntro(coverPhotoId, introVideoUrl){
+    if(sessionStorage.getItem(INTRO_SHOWN_KEY) === 'true') return; // only once per login session
+    if(!coverPhotoId && !introVideoUrl) return; // nothing configured — skip silently
+
+    const overlay = document.getElementById('introOverlay');
+    const mediaEl = document.getElementById('introMedia');
+    const headingEl = document.getElementById('introHeading');
+
+    mediaEl.innerHTML = buildIntroMediaHTML(coverPhotoId, introVideoUrl);
+    const heading = document.getElementById('coupleHeading').textContent;
+    headingEl.textContent = heading && heading !== 'Your Wedding Gallery' ? heading : 'Your Gallery Is Ready';
+
+    overlay.classList.add('show');
+    sessionStorage.setItem(INTRO_SHOWN_KEY, 'true');
+
+    function closeIntro(){
+      overlay.classList.add('closing');
+      setTimeout(() => overlay.classList.remove('show', 'closing'), 650);
+    }
+    document.getElementById('introEnterBtn').addEventListener('click', closeIntro);
+    overlay.addEventListener('click', (e) => { if(e.target === overlay) closeIntro(); });
+  }
+
+  // ─────────────────────────────────────────────────────────
   // PART 3 — Auth guard + routing
   // ─────────────────────────────────────────────────────────
   if(sessionStorage.getItem('cs_authed') !== 'true'){
@@ -499,6 +647,8 @@
   const clientName = sessionStorage.getItem('cs_client_name');
   const clientEmail = (sessionStorage.getItem('cs_client_email') || '').toLowerCase();
   const directFolderId = extractFolderId(sessionStorage.getItem('cs_folder_id') || '');
+  const directCoverPhotoId = sessionStorage.getItem('cs_cover_photo_id') || '';
+  const directIntroVideoUrl = sessionStorage.getItem('cs_intro_video_url') || '';
   if(clientName){
     document.getElementById('clientGreeting').textContent = 'Welcome, ' + clientName.split(' ')[0];
     // Only replace the generic heading if we have a real name from
@@ -513,25 +663,26 @@
   const liveGallery = document.getElementById('liveGallery');
   const demoGallery = document.getElementById('demoGallery');
 
-  function showRealGallery(folderId){
+  function showRealGallery(folderId, coverPhotoId, introVideoUrl){
     modeBanner.style.display = 'none';
     liveGallery.style.display = 'block';
     demoGallery.style.display = 'none';
     document.getElementById('driveOpenBtn').href = 'https://drive.google.com/drive/folders/' + folderId;
     document.getElementById('driveOpenBtnSmall').href = 'https://drive.google.com/drive/folders/' + folderId;
     loadRealPhotos(folderId);
+    maybeShowIntro(coverPhotoId, introVideoUrl);
   }
 
   if(directFolderId){
-    showRealGallery(directFolderId);
+    showRealGallery(directFolderId, directCoverPhotoId, directIntroVideoUrl);
   } else {
     modeBanner.style.display = 'block';
     modeBanner.innerHTML = '<strong>Loading your gallery...</strong>';
 
     loadClientFolders().then(clientFolders => {
-      const folderId = clientFolders[clientEmail];
-      if(folderId){
-        showRealGallery(folderId);
+      const entry = clientFolders[clientEmail];
+      if(entry && entry.folderId){
+        showRealGallery(entry.folderId, entry.coverPhotoId, entry.introVideoUrl);
       } else {
         modeBanner.style.display = 'block';
         modeBanner.innerHTML = clientEmail
@@ -547,6 +698,8 @@
     sessionStorage.removeItem('cs_client_name');
     sessionStorage.removeItem('cs_client_email');
     sessionStorage.removeItem('cs_folder_id');
+    sessionStorage.removeItem('cs_cover_photo_id');
+    sessionStorage.removeItem('cs_intro_video_url');
     window.location.href = 'login.html';
   });
 
@@ -604,18 +757,53 @@
 
     gridEl.style.display = 'block';
     fallbackCard.style.display = 'block'; // still offer full-album/zip access via Drive
+    renderOccasionFilters();
     renderRealGrid();
+  }
+
+  // Builds the filter bar from whatever occasion subfolders were
+  // actually found — e.g. "Marriage", "Reception", "Nalugu" — plus
+  // the fixed "All Photos" and "Favorites" options. If every photo
+  // is tagged "General" (no subfolders used), those get skipped so
+  // the bar doesn't show a pointless single-occasion button.
+  function renderOccasionFilters(){
+    const filtersEl = document.getElementById('realFilters');
+    const occasions = [...new Set(realFiles.map(f => f.occasion))].filter(o => o && o !== 'General');
+
+    let html = `<button class="filter-btn hoverable" data-realfilter="all">All Photos</button>`;
+    occasions.forEach(o => {
+      html += `<button class="filter-btn hoverable" data-realfilter="occ:${o.replace(/"/g,'')}">${o}</button>`;
+    });
+    html += `<button class="filter-btn hoverable" data-realfilter="favorites">Favorites</button>`;
+    filtersEl.innerHTML = html;
+
+    filtersEl.querySelectorAll('.filter-btn').forEach((btn, i) => {
+      if(i === 0) btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        filtersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        realFilterMode = btn.dataset.realfilter;
+        renderRealGrid();
+      });
+    });
+  }
+
+  function matchesFilter(f, favs){
+    if(realFilterMode === 'all') return true;
+    if(realFilterMode === 'favorites') return favs.includes(f.id);
+    if(realFilterMode.startsWith('occ:')) return f.occasion === realFilterMode.slice(4);
+    return true;
   }
 
   function renderRealGrid(){
     const gridEl = document.getElementById('realGalleryGrid');
     const emptyEl = document.getElementById('realGalleryEmpty');
     const favs = getFavs();
-    const visible = realFiles.filter(f => realFilterMode === 'all' || favs.includes(f.id));
+    const visible = realFiles.filter(f => matchesFilter(f, favs));
 
     emptyEl.classList.toggle('show', realFilterMode === 'favorites' && visible.length === 0);
 
-    gridEl.innerHTML = visible.map((f, i) => {
+    gridEl.innerHTML = visible.map((f) => {
       const isFav = favs.includes(f.id);
       return `
       <div class="mitem show" data-id="${f.id}" data-index="${realFiles.indexOf(f)}">
@@ -643,18 +831,6 @@
       });
     });
   }
-
-  // Real-gallery filter buttons (All / Favorites) — scoped to
-  // #liveGallery only, so they don't collide with the demo
-  // gallery's own category filter buttons below.
-  document.querySelectorAll('#liveGallery .filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#liveGallery .filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      realFilterMode = btn.dataset.realfilter;
-      renderRealGrid();
-    });
-  });
 
   // ─────────────────────────────────────────────────────────
   // PART 6 — Lightbox

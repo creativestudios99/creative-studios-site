@@ -272,6 +272,8 @@
       const folderIdx = header.indexOf('folderid');
       const passIdx = header.indexOf('passcode');
       const expiryIdx = header.indexOf('expireson');
+      const coverIdx = header.indexOf('coverphotoid');
+      const videoIdx = header.indexOf('introvideourl');
       if(passIdx === -1) return null;
       const match = rows.find(r => (r[passIdx] || '').toLowerCase() === code.toLowerCase());
       if(!match) return null;
@@ -284,7 +286,12 @@
         }
       }
 
-      return { name: match[nameIdx] || 'there', folderId: extractFolderId(match[folderIdx] || '') };
+      return {
+        name: match[nameIdx] || 'there',
+        folderId: extractFolderId(match[folderIdx] || ''),
+        coverPhotoId: coverIdx !== -1 ? extractFolderId(match[coverIdx] || '') : '',
+        introVideoUrl: videoIdx !== -1 ? (match[videoIdx] || '').trim() : '',
+      };
     } catch(err){
       console.error('Passcode lookup failed:', err);
       return null;
@@ -308,6 +315,8 @@
       sessionStorage.setItem('cs_client_name', result.name);
       sessionStorage.setItem('cs_client_email', '');
       sessionStorage.setItem('cs_folder_id', result.folderId);
+      sessionStorage.setItem('cs_cover_photo_id', result.coverPhotoId || '');
+      sessionStorage.setItem('cs_intro_video_url', result.introVideoUrl || '');
       window.location.href = 'gallery.html';
     } else {
       errorMsg.textContent = "That code didn't match a gallery. Double-check it and try again.";
