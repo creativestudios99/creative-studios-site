@@ -134,6 +134,11 @@
     backdrop-filter:blur(6px);
     box-shadow:0 6px 24px rgba(0,0,0,0.15);
   }
+  @media (max-width:480px){
+    .nav{ padding:18px 20px; }
+    .nav.scrolled{ padding:14px 20px; }
+    .nav-logo{ font-size:1.1rem; }
+  }
   .nav-logo{ font-family:'Fraunces', serif; font-style:italic; font-weight:500; font-size:1.3rem; }
   .nav-links{ display:flex; gap:38px; font-size:0.82rem; letter-spacing:0.08em; text-transform:uppercase; font-family:'JetBrains Mono', monospace; }
   .nav-links a{ opacity:0.85; position:relative; padding-bottom:4px; }
@@ -154,7 +159,9 @@
   .nav-login-btn:hover{ background:var(--rose); border-color:var(--rose); color:var(--ink); opacity:1; }
   .nav.scrolled .nav-login-btn{ border-color:rgba(239,233,225,0.3); }
   @media (max-width:920px){ .nav-utility a:not(.nav-login-btn){ display:none; } }
-  @media (max-width:480px){ .nav-utility{ display:none; } }
+  @media (max-width:480px){
+    .nav-login-btn{ padding:8px 14px; font-size:0.68rem; }
+  }
 
   /* ---------- Hero ---------- */
   .hero{
@@ -471,6 +478,8 @@
   .info-row{ display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid var(--line); font-size:0.95rem; transition:padding-left 0.3s ease; }
   .info-row:hover{ padding-left:8px; }
   .info-row span:first-child{ font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:var(--gold); text-transform:uppercase; }
+  a.info-link{ cursor:pointer; }
+  a.info-link:hover span:last-child{ color:var(--rose); }
   .field{ position:relative; margin-bottom:30px; }
   .field label{
     position:absolute; left:2px; top:12px;
@@ -681,8 +690,8 @@
       <h2 class="split">Let's talk about your day.</h2>
       <p class="lead">Tell us your date and venue and we'll follow up within two business days with availability and pricing.</p>
 
-      <div class="info-row"><span>Email</span><span>polamreddysiva9@gmail.com</span></div>
-      <div class="info-row"><span>Phone</span><span>+91 99497 06000</span></div>
+      <a href="mailto:polamreddysiva9@gmail.com" class="info-row info-link hoverable"><span>Email</span><span>polamreddysiva9@gmail.com</span></a>
+      <a href="tel:+919949706000" class="info-row info-link hoverable"><span>Phone</span><span>+91 99497 06000</span></a>
       <div class="info-row"><span>Studio</span><span>By appointment &middot; Nellore</span></div>
     </div>
   </div>

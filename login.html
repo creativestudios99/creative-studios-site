@@ -106,6 +106,29 @@
   }
   .back-home:hover{ color:var(--rose); }
 
+  .or-divider{
+    display:flex; align-items:center; gap:14px; margin:26px 0;
+    font-family:'JetBrains Mono', monospace; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .or-divider::before, .or-divider::after{ content:''; flex:1; height:1px; background:var(--line); }
+
+  .passcode-box .eyebrow{ font-size:0.68rem; color:var(--ink-soft); margin-bottom:10px; display:block; }
+  .passcode-row{ display:flex; gap:10px; }
+  .passcode-row input{
+    flex:1; background:var(--paper-dim); border:1px solid var(--line); border-radius:2px;
+    padding:12px 14px; font-family:'JetBrains Mono', monospace; font-size:0.95rem; letter-spacing:0.08em;
+    color:var(--ink); outline:none; transition:border-color 0.3s ease; text-transform:uppercase;
+  }
+  .passcode-row input:focus{ border-color:var(--rose); }
+  .passcode-row button{
+    flex:0 0 auto; padding:12px 22px; background:var(--ink); color:var(--paper); border:none; border-radius:2px;
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase;
+    cursor:pointer; transition:background 0.3s ease;
+  }
+  .passcode-row button:hover{ background:var(--rose); color:var(--ink); }
+  .passcode-hint{ font-size:0.76rem; color:var(--ink-soft); margin-top:10px; }
+
   @media (max-width:860px){
     body{ grid-template-columns:1fr; }
     .panel-left{ display:none; }
@@ -131,7 +154,7 @@
   <div class="login-box">
     <span class="eyebrow mono">Welcome Back</span>
     <h1>Access Your Gallery</h1>
-    <p class="sub">Sign in with the Google account we shared your gallery with to view your photos.</p>
+    <p class="sub">Sign in with Google, or enter a gallery code if the couple shared one with you.</p>
 
     <div class="error-msg" id="errorMsg">We couldn't sign you in. Please try again.</div>
 
@@ -140,8 +163,19 @@
       <p style="font-size:0.85rem; color:var(--ink-soft); margin-bottom:16px;">Google Sign-In isn't configured yet on this preview.</p>
     </div>
 
+    <div class="or-divider">Or, family &amp; guest access</div>
+
+    <div class="passcode-box">
+      <span class="eyebrow mono">Have a gallery code?</span>
+      <div class="passcode-row">
+        <input type="text" id="passcodeInput" placeholder="e.g. MAYA2026" maxlength="20" autocomplete="off">
+        <button type="button" id="passcodeBtn" class="hoverable">Enter</button>
+      </div>
+      <p class="passcode-hint">If the couple shared a gallery code with you instead of an email invite, enter it here &mdash; no Google account needed.</p>
+    </div>
+
     <div class="demo-note">
-      <strong>Setup needed:</strong> this uses real Google Sign-In. Replace <code>YOUR_GOOGLE_CLIENT_ID</code> in the page source with your own free Google OAuth Client ID, then share each couple's Drive folder with the exact Google account they'll log in with. Google Drive's own sharing permissions are what actually keep galleries private &mdash; this login just gets clients to the right one.
+      <strong>Setup needed:</strong> this uses real Google Sign-In. Replace <code>YOUR_GOOGLE_CLIENT_ID</code> in the page source with your own free Google OAuth Client ID, then share each couple's Drive folder with the exact Google account they'll log in with. Google Drive's own sharing permissions are what actually keep galleries private &mdash; this login just gets clients to the right one. The gallery code option above works differently &mdash; see the note in <code>admin.html</code> about what that means for privacy.
     </div>
 
     <a href="index.html" class="back-home">&larr; Back to homepage</a>
@@ -151,7 +185,7 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   // ⚠️ Replace this with your own Google OAuth Client ID (free — see setup steps in chat/docs)
-  const GOOGLE_CLIENT_ID = '252968289143-91ttv89ej06ehvvdpbce4r5ebh6kk6l7.apps.googleusercontent.com';
+  const GOOGLE_CLIENT_ID = '231534432257-on3e0umt9gfar5cnu4bjmc6afn8ohpqe.apps.googleusercontent.com';
 
   const errorMsg = document.getElementById('errorMsg');
 
@@ -189,6 +223,74 @@
       errorMsg.classList.add('show');
     }
   }
+
+  // ─────────────────────────────────────────────────────────
+  // Family & Guest passcode login. Looks up the same published
+  // Google Sheet as gallery.html, but matches on a Passcode
+  // column instead of an email address — so the couple can hand
+  // one shared code to as many relatives as they want, with no
+  // individual Google accounts required.
+  //
+  // Add a 4th column called "Passcode" to your sheet (see
+  // admin.html) with a short code per couple, e.g. MAYA2026.
+  //
+  // Trade-off to know: this only works if that couple's Drive
+  // folder is shared as "Anyone with the link" rather than
+  // restricted to specific emails, since there's no individual
+  // account to check against. That means the real gatekeeper
+  // becomes the passcode itself, not Drive's own permissions —
+  // treat the code the same way you'd treat a shared house key,
+  // and change it if it ever gets passed around further than
+  // you'd like.
+  // ─────────────────────────────────────────────────────────
+  const SHEET_CSV_URL_LOGIN = 'PASTE_YOUR_PUBLISHED_SHEET_CSV_URL_HERE';
+
+  async function lookupPasscode(code){
+    if(SHEET_CSV_URL_LOGIN.startsWith('PASTE_YOUR')) return null;
+    try{
+      const res = await fetch(SHEET_CSV_URL_LOGIN, { cache: 'no-store' });
+      if(!res.ok) throw new Error('Sheet fetch failed');
+      const text = await res.text();
+      const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+      const header = rows.shift().map(h => h.toLowerCase());
+      const nameIdx = header.indexOf('name');
+      const folderIdx = header.indexOf('folderid');
+      const passIdx = header.indexOf('passcode');
+      if(passIdx === -1) return null;
+      const match = rows.find(r => (r[passIdx] || '').toLowerCase() === code.toLowerCase());
+      if(!match) return null;
+      return { name: match[nameIdx] || 'there', folderId: match[folderIdx] || '' };
+    } catch(err){
+      console.error('Passcode lookup failed:', err);
+      return null;
+    }
+  }
+
+  const passcodeBtn = document.getElementById('passcodeBtn');
+  const passcodeInput = document.getElementById('passcodeInput');
+
+  async function submitPasscode(){
+    const code = passcodeInput.value.trim();
+    if(!code) return;
+    passcodeBtn.textContent = 'Checking...';
+    const result = await lookupPasscode(code);
+    passcodeBtn.textContent = 'Enter';
+    if(result && result.folderId){
+      sessionStorage.setItem('cs_authed', 'true');
+      sessionStorage.setItem('cs_client_name', result.name);
+      sessionStorage.setItem('cs_client_email', '');
+      sessionStorage.setItem('cs_folder_id', result.folderId);
+      window.location.href = 'gallery.html';
+    } else {
+      errorMsg.textContent = "That code didn't match a gallery. Double-check it and try again.";
+      errorMsg.classList.add('show');
+    }
+  }
+
+  passcodeBtn.addEventListener('click', submitPasscode);
+  passcodeInput.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter'){ e.preventDefault(); submitPasscode(); }
+  });
 </script>
 
 </body>

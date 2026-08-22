@@ -141,11 +141,12 @@
     <h2><span class="step-num">3</span> One-time: connect a Google Sheet as your client list</h2>
     <p>This is what lets you add new clients later without ever touching code again.</p>
     <ol>
-      <li>Make a new Google Sheet with three column headers in row 1: <code>Name</code>, <code>Email</code>, <code>FolderId</code></li>
+      <li>Make a new Google Sheet with four column headers in row 1: <code>Name</code>, <code>Email</code>, <code>FolderId</code>, <code>Passcode</code></li>
       <li>In the sheet, go to <strong>File &rarr; Share &rarr; Publish to web</strong></li>
       <li>Choose the correct sheet tab, set format to <strong>Comma-separated values (.csv)</strong>, click <strong>Publish</strong></li>
       <li>Copy the URL it gives you</li>
       <li>Open <code>gallery.html</code>, find <code>SHEET_CSV_URL</code> near the top of the script, and paste your URL in</li>
+      <li>Do the same in <code>login.html</code> &mdash; find <code>SHEET_CSV_URL_LOGIN</code> and paste the same URL in</li>
     </ol>
     <p>That's it — this only needs to be done once, ever.</p>
   </div>
@@ -162,12 +163,23 @@
     <p><strong>Why this is still secure:</strong> Google Drive itself blocks anyone who isn't the shared email, even if they somehow saw the folder ID in the sheet. Your site's login and sheet just get the right couple to the right gallery &mdash; Drive does the actual guarding.</p>
   </div>
 
+  <div class="step-card">
+    <h2><span class="step-num">5</span> Optional: one shared code for family &amp; guests</h2>
+    <p>Individual Google accounts work well for the couple themselves, but asking every parent, sibling, and relative to have their exact email added to Drive isn't realistic. For them, use a shared passcode instead &mdash; one code, handed out however the couple likes (text message, printed card, WhatsApp group).</p>
+    <ol>
+      <li>Change that couple's Drive folder sharing from "Restricted" to <strong>"Anyone with the link"</strong> (view only). This is the trade-off: the passcode becomes the real gatekeeper instead of Drive's per-email check.</li>
+      <li>In your Google Sheet, fill in the <code>Passcode</code> column for that row with a short code, e.g. <code>MAYA2026</code>.</li>
+      <li>Share the passcode with the couple, and let them pass it on to whoever they want to have access.</li>
+    </ol>
+    <p><strong>Good for:</strong> letting a wedding party of 20 relatives in without 20 separate Google account invites. <strong>Worth knowing:</strong> anyone with the code can get in, and anyone with the code could technically pass it along further &mdash; treat it like a shared house key, not a bank password. If a couple wants tighter control, stick to individual email invites for them instead.</p>
+  </div>
+
 </div>
 
 <div class="wrap">
   <div class="generator">
     <h2>Build a Client Row</h2>
-    <p>Fill in a couple's details to generate a row you can paste directly into your Google Sheet (as Name, Email, FolderId).</p>
+    <p>Fill in a couple's details to generate a row you can paste directly into your Google Sheet (as Name, Email, FolderId, Passcode).</p>
 
     <div class="gen-grid">
       <div class="gfield">
@@ -178,9 +190,13 @@
         <label for="cEmail">Google Account Email</label>
         <input id="cEmail" type="email" placeholder="maya.jonah@gmail.com">
       </div>
-      <div class="gfield full">
+      <div class="gfield">
         <label for="cFolder">Drive Folder ID</label>
         <input id="cFolder" type="text" placeholder="1AbCDeFGhIJkLmNoPQRstuVWxyz0123456">
+      </div>
+      <div class="gfield">
+        <label for="cPasscode">Family &amp; Guest Passcode (Optional)</label>
+        <input id="cPasscode" type="text" placeholder="e.g. MAYA2026">
       </div>
     </div>
 
@@ -202,6 +218,7 @@
   const nameInput = document.getElementById('cName');
   const emailInput = document.getElementById('cEmail');
   const folderInput = document.getElementById('cFolder');
+  const passcodeInput = document.getElementById('cPasscode');
   const output = document.getElementById('genOutput');
   const copyBtn = document.getElementById('copyBtn');
 
@@ -209,15 +226,16 @@
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
     const folder = folderInput.value.trim();
-    if(!email || !folder) return null;
-    return `${name}\t${email}\t${folder}`;
+    const passcode = passcodeInput.value.trim();
+    if(!folder || (!email && !passcode)) return null;
+    return `${name}\t${email}\t${folder}\t${passcode}`;
   }
 
   function updateOutput(){
     const line = currentLine();
-    output.textContent = line || '// Fill in the fields above to generate a row';
+    output.textContent = line || '// Fill in the fields above to generate a row (email and/or passcode, plus folder ID, are required)';
   }
-  [nameInput, emailInput, folderInput].forEach(el => el.addEventListener('input', updateOutput));
+  [nameInput, emailInput, folderInput, passcodeInput].forEach(el => el.addEventListener('input', updateOutput));
 
   copyBtn.addEventListener('click', () => {
     const line = currentLine();
@@ -244,14 +262,15 @@
     let rows = log.map((entry, i) => `
       <tr>
         <td>${entry.name || '—'}</td>
-        <td>${entry.email}</td>
+        <td>${entry.email || '—'}</td>
         <td>${entry.folder}</td>
+        <td>${entry.passcode || '—'}</td>
         <td><button class="del-btn" data-i="${i}">Remove</button></td>
       </tr>
     `).join('');
     wrap.innerHTML = `
       <table>
-        <thead><tr><th>Couple</th><th>Email</th><th>Folder ID</th><th></th></tr></thead>
+        <thead><tr><th>Couple</th><th>Email</th><th>Folder ID</th><th>Passcode</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     `;
@@ -268,12 +287,13 @@
   document.getElementById('addLogBtn').addEventListener('click', () => {
     const email = emailInput.value.trim();
     const folder = folderInput.value.trim();
-    if(!email || !folder){
-      alert('Fill in at least the email and folder ID first.');
+    const passcode = passcodeInput.value.trim();
+    if(!folder || (!email && !passcode)){
+      alert('Fill in the folder ID, plus at least an email or a passcode, first.');
       return;
     }
     const log = getLog();
-    log.push({ name: nameInput.value.trim(), email, folder });
+    log.push({ name: nameInput.value.trim(), email, folder, passcode });
     setLog(log);
     renderLog();
   });

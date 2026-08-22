@@ -322,6 +322,7 @@
   }
   const clientName = sessionStorage.getItem('cs_client_name');
   const clientEmail = (sessionStorage.getItem('cs_client_email') || '').toLowerCase();
+  const directFolderId = sessionStorage.getItem('cs_folder_id') || '';
   if(clientName){
     document.getElementById('clientGreeting').textContent = 'Welcome, ' + clientName.split(' ')[0];
   }
@@ -330,30 +331,40 @@
   const liveGallery = document.getElementById('liveGallery');
   const demoGallery = document.getElementById('demoGallery');
 
-  modeBanner.style.display = 'block';
-  modeBanner.innerHTML = '<strong>Loading your gallery...</strong>';
+  // Passcode logins (family & guest access) already carry their folder ID
+  // from login.html — no sheet lookup needed, show the gallery right away.
+  if(directFolderId){
+    modeBanner.style.display = 'none';
+    liveGallery.style.display = 'block';
+    demoGallery.style.display = 'none';
+    document.getElementById('driveFrame').src = 'https://drive.google.com/embeddedfolderview?id=' + directFolderId + '#grid';
+  } else {
+    modeBanner.style.display = 'block';
+    modeBanner.innerHTML = '<strong>Loading your gallery...</strong>';
 
-  loadClientFolders().then(clientFolders => {
-    const folderId = clientFolders[clientEmail];
+    loadClientFolders().then(clientFolders => {
+      const folderId = clientFolders[clientEmail];
 
-    if(folderId){
-      modeBanner.style.display = 'none';
-      liveGallery.style.display = 'block';
-      demoGallery.style.display = 'none';
-      document.getElementById('driveFrame').src = 'https://drive.google.com/embeddedfolderview?id=' + folderId + '#grid';
-    } else {
-      modeBanner.style.display = 'block';
-      modeBanner.innerHTML = clientEmail
-        ? '<strong>Demo mode:</strong> no Drive folder is linked to <em>' + clientEmail + '</em> yet. Add a row for them to your client sheet. Showing sample layout below.'
-        : '<strong>Demo mode:</strong> showing a sample gallery layout with placeholder frames.';
-    }
-  });
+      if(folderId){
+        modeBanner.style.display = 'none';
+        liveGallery.style.display = 'block';
+        demoGallery.style.display = 'none';
+        document.getElementById('driveFrame').src = 'https://drive.google.com/embeddedfolderview?id=' + folderId + '#grid';
+      } else {
+        modeBanner.style.display = 'block';
+        modeBanner.innerHTML = clientEmail
+          ? '<strong>Demo mode:</strong> no Drive folder is linked to <em>' + clientEmail + '</em> yet. Add a row for them to your client sheet. Showing sample layout below.'
+          : '<strong>Demo mode:</strong> showing a sample gallery layout with placeholder frames.';
+      }
+    });
+  }
 
   document.getElementById('logoutLink').addEventListener('click', (e) => {
     e.preventDefault();
     sessionStorage.removeItem('cs_authed');
     sessionStorage.removeItem('cs_client_name');
     sessionStorage.removeItem('cs_client_email');
+    sessionStorage.removeItem('cs_folder_id');
     window.location.href = 'login.html';
   });
 
