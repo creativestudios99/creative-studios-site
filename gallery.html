@@ -54,6 +54,17 @@
   .filter-btn:hover{ border-color:var(--rose); color:var(--rose); }
   .filter-btn.active{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
   .toolbar-actions{ display:flex; gap:12px; }
+
+  @media (max-width:600px){
+    .toolbar{ flex-wrap:nowrap; flex-direction:column; align-items:stretch; gap:14px; }
+    .filters{
+      flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px; margin:0 -16px; padding-left:16px; padding-right:16px;
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .filters::-webkit-scrollbar{ display:none; }
+    .filter-btn{ flex:0 0 auto; white-space:nowrap; }
+    .toolbar-actions{ flex-wrap:wrap; }
+  }
   .tbtn{
     font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase;
     padding:10px 20px; border-radius:2px; cursor:pointer; border:1px solid var(--ink);
@@ -129,11 +140,13 @@
   /* ── Premium masonry grid (real photos, pulled live from Drive) ── */
   .masonry{ column-count:3; column-gap:20px; padding-bottom:20px; }
   .masonry .mitem{
-    break-inside:avoid; margin-bottom:20px; position:relative; border-radius:3px; overflow:hidden;
+    break-inside:avoid; margin-bottom:20px; position:relative; border-radius:6px; overflow:hidden;
     cursor:pointer; background:var(--paper-dim);
-    opacity:0; transform:translateY(16px); transition:opacity 0.6s ease, transform 0.6s ease;
+    opacity:0; transform:translateY(16px); transition:opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
+    box-shadow:0 2px 10px rgba(36,31,38,0.08);
   }
   .masonry .mitem.show{ opacity:1; transform:translateY(0); }
+  .masonry .mitem:hover{ box-shadow:0 14px 34px rgba(36,31,38,0.18); }
   .masonry .mitem img{
     width:100%; display:block; transition:transform 0.6s cubic-bezier(0.2,0.7,0.2,1), filter 0.4s ease;
   }
@@ -152,6 +165,17 @@
   .masonry .mitem .m-fav:hover{ transform:scale(1.1); }
   .masonry .mitem .m-fav svg{ width:14px; height:14px; stroke:var(--ink); fill:none; stroke-width:1.8; }
   .masonry .mitem .m-fav.active svg{ fill:var(--rose); stroke:var(--rose); }
+
+  /* Touch devices have no :hover, so the favorite heart needs to
+     be visible by default instead of hidden until a hover that
+     will never come. Kept subtler than the desktop hover state
+     (small gradient only) so it doesn't compete with the photo. */
+  @media (hover:none){
+    .masonry .mitem .m-overlay{
+      opacity:1; background:linear-gradient(to top, rgba(36,31,38,0.45), transparent 35%);
+    }
+    .masonry .mitem .m-fav{ width:34px; height:34px; }
+  }
 
   .skeleton{ break-inside:avoid; margin-bottom:20px; border-radius:3px; overflow:hidden; }
   .skeleton .shimmer{
@@ -212,7 +236,12 @@
   }
 
   @media (max-width:900px){ .grid{ grid-template-columns:repeat(2,1fr); } .masonry{ column-count:2; } }
-  @media (max-width:600px){ .grid{ grid-template-columns:1fr; } .wrap{ padding:0 22px; } .masonry{ column-count:1; } }
+  @media (max-width:600px){
+    .grid{ grid-template-columns:1fr; }
+    .wrap{ padding:0 16px; }
+    .masonry{ column-count:2; column-gap:12px; }
+    .masonry .mitem{ margin-bottom:12px; border-radius:5px; }
+  }
 
   /* ── Welcome intro overlay (cover photo or video) ── */
   .intro-overlay{
@@ -223,11 +252,22 @@
   .intro-overlay.show{ display:flex; }
   .intro-overlay.closing{ opacity:0; pointer-events:none; }
   .intro-media{ position:absolute; inset:0; }
-  .intro-media img, .intro-media video, .intro-media iframe{
+  .intro-media video, .intro-media iframe{
     width:100%; height:100%; object-fit:cover; border:none; display:block;
   }
+  /* Photo intro: blurred, filled backdrop behind a fully uncropped
+     foreground image — so nothing important ever gets cut off,
+     regardless of the photo's shape or the screen's aspect ratio. */
+  .intro-photo-wrap{ position:absolute; inset:0; }
+  .intro-photo-bg{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    filter:blur(40px) brightness(0.65) saturate(1.1); transform:scale(1.15);
+  }
+  .intro-photo-fg{
+    position:relative; width:100%; height:100%; object-fit:contain; display:block;
+  }
   .intro-media::after{
-    content:''; position:absolute; inset:0;
+    content:''; position:absolute; inset:0; z-index:1;
     background:linear-gradient(180deg, rgba(36,31,38,0.35) 0%, rgba(36,31,38,0.15) 40%, rgba(36,31,38,0.75) 100%);
   }
   .intro-content{
@@ -291,6 +331,7 @@
         <button class="filter-btn hoverable" data-realfilter="favorites">Favorites</button>
       </div>
       <div class="toolbar-actions">
+        <button id="downloadFavsBtn" class="tbtn hoverable" style="display:none;">Download My Favorites</button>
         <a href="#" id="driveOpenBtnSmall" target="_blank" rel="noopener" class="tbtn ghost hoverable" style="display:inline-block; text-decoration:none;">Open in Drive</a>
       </div>
     </div>
@@ -610,7 +651,11 @@
       return `<video src="${introVideoUrl}" autoplay muted loop playsinline></video>`;
     }
     if(coverPhotoId){
-      return `<img src="${driveThumb(coverPhotoId, 1600)}" alt="">`;
+      const src = driveThumb(coverPhotoId, 1600);
+      return `<div class="intro-photo-wrap">
+        <img class="intro-photo-bg" src="${src}" alt="">
+        <img class="intro-photo-fg" src="${src}" alt="">
+      </div>`;
     }
     return '';
   }
@@ -714,8 +759,52 @@
     let favs = getFavs();
     if(favs.includes(id)){ favs = favs.filter(f => f !== id); } else { favs.push(id); }
     setFavs(favs);
+    updateDownloadFavsButton();
     return favs.includes(id);
   }
+
+  // Shows/hides and updates the count on the "Download My Favorites"
+  // button — only counts favorites that are actually real photos in
+  // THIS couple's gallery (a guest's favorites are stored per-browser,
+  // so this avoids showing a stale count from a different gallery).
+  function updateDownloadFavsButton(){
+    const btn = document.getElementById('downloadFavsBtn');
+    if(!btn || !realFiles.length) return;
+    const favs = getFavs();
+    const favCount = realFiles.filter(f => favs.includes(f.id)).length;
+    if(favCount > 0){
+      btn.style.display = 'inline-block';
+      btn.textContent = `Download My Favorites (${favCount})`;
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+
+  // Triggers a real download for each favorited photo, one at a
+  // time with a short pause between each — browsers block or
+  // prompt for permission if you try to fire off many downloads
+  // simultaneously, so this spaces them out instead.
+  async function downloadFavorites(){
+    const btn = document.getElementById('downloadFavsBtn');
+    const favs = getFavs();
+    const favFiles = realFiles.filter(f => favs.includes(f.id));
+    if(favFiles.length === 0) return;
+
+    const originalText = btn.textContent;
+    for(let i = 0; i < favFiles.length; i++){
+      btn.textContent = `Downloading ${i + 1} of ${favFiles.length}...`;
+      const link = document.createElement('a');
+      link.href = driveDownloadUrl(favFiles[i].id);
+      link.download = favFiles[i].name || `photo-${i + 1}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      await new Promise(resolve => setTimeout(resolve, 600));
+    }
+    btn.textContent = originalText;
+  }
+
+  document.getElementById('downloadFavsBtn').addEventListener('click', downloadFavorites);
 
   // ─────────────────────────────────────────────────────────
   // PART 5 — Real photo grid: fetch, render as masonry, wire
@@ -759,6 +848,7 @@
     fallbackCard.style.display = 'block'; // still offer full-album/zip access via Drive
     renderOccasionFilters();
     renderRealGrid();
+    updateDownloadFavsButton();
   }
 
   // Builds the filter bar from whatever occasion subfolders were
