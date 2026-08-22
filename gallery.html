@@ -416,7 +416,7 @@
   const SHEET_CSV_URL = 'PASTE_YOUR_PUBLISHED_SHEET_CSV_URL_HERE';
 
   async function loadClientFolders(){
-    if(SHEET_CSV_URL.startsWith('PASTE_YOUR')) return {};
+    if(SHEET_CSV_URL.startsWith('https://docs.google.com/spreadsheets/d/e/2PACX-1vQeyK0TXc_Q3ZlNkojuIetUQQTZboqexqXvxgk_0FWOolgXwZHYzCHJ99FVtZ32Gw7gnuZ04_WCrRFX/pubhtml')) return {};
     try{
       const res = await fetch(SHEET_CSV_URL, { cache: 'no-store' });
       if(!res.ok) throw new Error('Sheet fetch failed');
