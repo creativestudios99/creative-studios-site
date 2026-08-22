@@ -415,6 +415,20 @@
   // ─────────────────────────────────────────────────────────
   const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQeyK0TXc_Q3ZlNkojuIetUQQTZboqexqXvxgk_0FWOolgXwZHYzCHJ99FVtZ32Gw7gnuZ04_WCrRFX/pub?output=csv';
 
+  // Sheets sometimes end up with the full Drive share link pasted in
+  // (e.g. from Drive's own "Copy link" button) instead of just the
+  // bare folder ID — this pulls the real ID out either way, so a
+  // common copy-paste mistake doesn't break the gallery link.
+  function extractFolderId(raw){
+    if(!raw) return '';
+    const trimmed = raw.trim();
+    const match = trimmed.match(/folders\/([a-zA-Z0-9_-]+)/);
+    if(match) return match[1];
+    const idParam = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if(idParam) return idParam[1];
+    return trimmed; // already looks like a bare ID
+  }
+
   async function loadClientFolders(){
     if(SHEET_CSV_URL.startsWith('PASTE_YOUR')) return {};
     try{
@@ -428,7 +442,7 @@
       const map = {};
       rows.forEach(r => {
         const email = (r[emailIdx] || '').toLowerCase();
-        const folder = r[folderIdx] || '';
+        const folder = extractFolderId(r[folderIdx] || '');
         if(email && folder) map[email] = folder;
       });
       return map;
@@ -484,7 +498,7 @@
   }
   const clientName = sessionStorage.getItem('cs_client_name');
   const clientEmail = (sessionStorage.getItem('cs_client_email') || '').toLowerCase();
-  const directFolderId = sessionStorage.getItem('cs_folder_id') || '';
+  const directFolderId = extractFolderId(sessionStorage.getItem('cs_folder_id') || '');
   if(clientName){
     document.getElementById('clientGreeting').textContent = 'Welcome, ' + clientName.split(' ')[0];
     // Only replace the generic heading if we have a real name from

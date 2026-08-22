@@ -247,6 +247,19 @@
   // ─────────────────────────────────────────────────────────
   const SHEET_CSV_URL_LOGIN = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQeyK0TXc_Q3ZlNkojuIetUQQTZboqexqXvxgk_0FWOolgXwZHYzCHJ99FVtZ32Gw7gnuZ04_WCrRFX/pub?output=csv';
 
+  // Sheets sometimes end up with the full Drive share link pasted in
+  // (e.g. from Drive's own "Copy link" button) instead of just the
+  // bare folder ID — this pulls the real ID out either way.
+  function extractFolderId(raw){
+    if(!raw) return '';
+    const trimmed = raw.trim();
+    const match = trimmed.match(/folders\/([a-zA-Z0-9_-]+)/);
+    if(match) return match[1];
+    const idParam = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if(idParam) return idParam[1];
+    return trimmed; // already looks like a bare ID
+  }
+
   async function lookupPasscode(code){
     if(SHEET_CSV_URL_LOGIN.startsWith('PASTE_YOUR')) return null;
     try{
@@ -271,7 +284,7 @@
         }
       }
 
-      return { name: match[nameIdx] || 'there', folderId: match[folderIdx] || '' };
+      return { name: match[nameIdx] || 'there', folderId: extractFolderId(match[folderIdx] || '') };
     } catch(err){
       console.error('Passcode lookup failed:', err);
       return null;
