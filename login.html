@@ -31,20 +31,23 @@
       radial-gradient(ellipse at 75% 80%, rgba(169,133,82,0.28), transparent 55%),
       linear-gradient(160deg, #2c2530 0%, #241f26 45%, #34222a 100%);
     color:var(--paper);
-    display:flex; flex-direction:column; justify-content:space-between;
+    display:flex; align-items:center; justify-content:center;
     padding:52px;
   }
   .panel-left .grain{
     position:absolute; inset:0; opacity:0.05; pointer-events:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-  .brand{ font-style:italic; font-size:1.3rem; position:relative; z-index:2; }
+  .brand{ position:absolute; top:52px; left:52px; font-style:italic; font-size:1.3rem; z-index:2; }
   .brand a{ text-decoration:none; }
   .left-quote{ max-width:420px; position:relative; z-index:2; }
-  .left-quote .eyebrow{ font-size:0.72rem; color:var(--rose); margin-bottom:20px; display:block; }
+  .left-quote .eyebrow{ font-size:0.72rem; color:var(--rose); margin-bottom:0; display:block; }
   .left-quote h2{ font-size:clamp(1.8rem, 3vw, 2.5rem); line-height:1.2; font-style:italic; font-weight:400; }
-  .left-art{ position:relative; z-index:2; opacity:0.5; }
-  .left-art svg{ width:120px; height:120px; stroke:var(--rose); fill:none; stroke-width:1; }
+
+  /* Small ornamental divider — thin line, gold diamond, thin line */
+  .quote-ornament{ display:flex; align-items:center; gap:12px; margin:18px 0; }
+  .quote-ornament .oline{ width:32px; height:1px; background:rgba(169,133,82,0.5); }
+  .quote-ornament .odiamond{ width:5px; height:5px; border:1px solid var(--gold); transform:rotate(45deg); flex-shrink:0; }
 
   /* Right panel */
   .panel-right{
@@ -92,7 +95,13 @@
     display:none; background:rgba(185,119,107,0.12); border:1px solid var(--rose); color:var(--wine);
     font-size:0.85rem; padding:12px 14px; border-radius:2px; margin-bottom:24px;
   }
-  .error-msg.show{ display:block; }
+  .error-msg.show{ display:block; animation:shake 0.45s cubic-bezier(0.36,0.07,0.19,0.97); }
+  @keyframes shake{
+    10%,90%{ transform:translateX(-1px); }
+    20%,80%{ transform:translateX(2px); }
+    30%,50%,70%{ transform:translateX(-4px); }
+    40%,60%{ transform:translateX(4px); }
+  }
 
   .demo-note{
     margin-top:28px; font-size:0.78rem; color:var(--ink-soft);
@@ -113,21 +122,42 @@
   }
   .or-divider::before, .or-divider::after{ content:''; flex:1; height:1px; background:var(--line); }
 
+  /* Subtle card around the Google button so it feels designed-in
+     rather than a plain third-party widget dropped on the page */
+  .gsi-wrap{
+    background:var(--paper-dim); border:1px solid var(--line); border-radius:3px;
+    padding:14px; display:flex; justify-content:center;
+  }
+
   .passcode-box .eyebrow{ font-size:0.68rem; color:var(--ink-soft); margin-bottom:10px; display:block; }
   .passcode-row{ display:flex; gap:10px; }
   .passcode-row input{
     flex:1; background:var(--paper-dim); border:1px solid var(--line); border-radius:2px;
     padding:12px 14px; font-family:'JetBrains Mono', monospace; font-size:0.95rem; letter-spacing:0.08em;
-    color:var(--ink); outline:none; transition:border-color 0.3s ease; text-transform:uppercase;
+    color:var(--ink); outline:none; transition:border-color 0.3s ease, box-shadow 0.3s ease; text-transform:uppercase;
   }
-  .passcode-row input:focus{ border-color:var(--rose); }
+  .passcode-row input:focus{ border-color:var(--rose); box-shadow:0 0 0 3px rgba(185,119,107,0.14); }
   .passcode-row button{
-    flex:0 0 auto; padding:12px 22px; background:var(--ink); color:var(--paper); border:none; border-radius:2px;
+    flex:0 0 auto; min-width:88px; padding:12px 22px; background:var(--ink); color:var(--paper); border:none; border-radius:2px;
     font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase;
     cursor:pointer; transition:background 0.3s ease;
   }
   .passcode-row button:hover{ background:var(--rose); color:var(--ink); }
+  .passcode-row button:disabled{ opacity:0.7; cursor:default; }
   .passcode-hint{ font-size:0.76rem; color:var(--ink-soft); margin-top:10px; }
+
+  .trust-line{
+    display:flex; align-items:center; gap:7px; margin-top:16px;
+    font-family:'JetBrains Mono', monospace; font-size:0.66rem; letter-spacing:0.04em; color:var(--ink-soft);
+  }
+  .trust-line svg{ width:12px; height:12px; stroke:var(--gold); fill:none; stroke-width:1.6; flex-shrink:0; }
+
+  /* Loading dots shown inside the Enter button while checking */
+  .btn-dots{ display:inline-flex; gap:3px; }
+  .btn-dots span{ width:4px; height:4px; border-radius:50%; background:var(--paper); animation:dotPulse 1s ease-in-out infinite; }
+  .btn-dots span:nth-child(2){ animation-delay:0.15s; }
+  .btn-dots span:nth-child(3){ animation-delay:0.3s; }
+  @keyframes dotPulse{ 0%,80%,100%{ opacity:0.25; transform:scale(0.8); } 40%{ opacity:1; transform:scale(1); } }
 
   @media (max-width:860px){
     body{ grid-template-columns:1fr; }
@@ -143,10 +173,8 @@
   <div class="brand"><a href="index.html">Creative Studios</a></div>
   <div class="left-quote">
     <span class="eyebrow mono">Client Access</span>
-    <h2>&ldquo;Every gallery is a small piece of someone's history. We just get to keep it safe.&rdquo;</h2>
-  </div>
-  <div class="left-art">
-    <svg viewBox="0 0 100 100"><circle cx="38" cy="55" r="20"/><circle cx="62" cy="55" r="20"/><path d="M38 35 L45 15 L55 15 L62 35" stroke-linecap="round"/></svg>
+    <div class="quote-ornament"><div class="oline"></div><div class="odiamond"></div><div class="oline"></div></div>
+    <h2>&ldquo;Every gallery is a little piece of your story. We just get to preserve it.&rdquo;</h2>
   </div>
 </div>
 
@@ -154,7 +182,7 @@
   <div class="login-box">
     <span class="eyebrow mono">Welcome Back</span>
     <h1>Access Your Gallery</h1>
-    <p class="sub">Enter the gallery code shared with you to view your photos.</p>
+    <p class="sub">Enter the private gallery code shared with you by the couple or Creative Studios.</p>
 
     <div class="error-msg" id="errorMsg">We couldn't sign you in. Please try again.</div>
 
@@ -162,20 +190,19 @@
       <span class="eyebrow mono">Gallery Code</span>
       <div class="passcode-row">
         <input type="text" id="passcodeInput" placeholder="e.g. MAYA2026" maxlength="20" autocomplete="off">
-        <button type="button" id="passcodeBtn" class="hoverable">Enter</button>
+        <button type="button" id="passcodeBtn" class="hoverable"><span id="passcodeBtnText">Enter</span></button>
       </div>
-      <p class="passcode-hint">Ask the couple for their gallery code if you don't have it &mdash; the same code works for everyone they share it with.</p>
+      <p class="passcode-hint">Ask the couple for their gallery code if you don't have it.</p>
+      <div class="trust-line"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>Private &amp; secure &mdash; only shared with you</div>
     </div>
 
     <div class="or-divider">Or, sign in with Google</div>
 
-    <div id="gsiBtn" style="margin-bottom:8px;"></div>
-    <div id="gsiFallback" style="display:none;">
-      <p style="font-size:0.85rem; color:var(--ink-soft); margin-bottom:16px;">Google Sign-In isn't configured yet on this preview.</p>
-    </div>
-
-    <div class="demo-note">
-      <strong>Setup needed:</strong> the gallery code above is the main way in for most people &mdash; see <code>admin.html</code> for how to set one up per couple. Google Sign-In is available as a second option for couples who specifically want their own account tied to their gallery; it needs a free OAuth Client ID (also in <code>admin.html</code>).
+    <div class="gsi-wrap">
+      <div id="gsiBtn"></div>
+      <div id="gsiFallback" style="display:none;">
+        <p style="font-size:0.85rem; color:var(--ink-soft);">Google Sign-In isn't configured yet on this preview.</p>
+      </div>
     </div>
 
     <a href="index.html" class="back-home">&larr; Back to homepage</a>
@@ -188,6 +215,19 @@
   const GOOGLE_CLIENT_ID = '231534432257-on3e0umt9gfar5cnu4bjmc6afn8ohpqe.apps.googleusercontent.com';
 
   const errorMsg = document.getElementById('errorMsg');
+
+  // Passcode input auto-uppercases as you type, matching how
+  // codes are generated and displayed everywhere else.
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('passcodeInput');
+    if(input){
+      input.addEventListener('input', () => {
+        const pos = input.selectionStart;
+        input.value = input.value.toUpperCase();
+        input.setSelectionRange(pos, pos);
+      });
+    }
+  });
 
   window.addEventListener('load', () => {
     if(GOOGLE_CLIENT_ID.startsWith('YOUR_GOOGLE_CLIENT_ID')){
@@ -299,18 +339,23 @@
   }
 
   const passcodeBtn = document.getElementById('passcodeBtn');
+  const passcodeBtnText = document.getElementById('passcodeBtnText');
   const passcodeInput = document.getElementById('passcodeInput');
 
   async function submitPasscode(){
     const code = passcodeInput.value.trim();
     if(!code) return;
-    passcodeBtn.textContent = 'Checking...';
+    passcodeBtn.disabled = true;
+    passcodeBtnText.innerHTML = '<span class="btn-dots"><span></span><span></span><span></span></span>';
     const result = await lookupPasscode(code);
-    passcodeBtn.textContent = 'Enter';
+    passcodeBtn.disabled = false;
+    passcodeBtnText.textContent = 'Enter';
     if(result && result.expired){
+      errorMsg.classList.remove('show'); void errorMsg.offsetWidth; // restart shake
       errorMsg.textContent = "This gallery code has expired. Please contact the studio for a new link.";
       errorMsg.classList.add('show');
     } else if(result && result.folderId){
+      passcodeBtnText.textContent = 'Success';
       sessionStorage.setItem('cs_authed', 'true');
       sessionStorage.setItem('cs_client_name', result.name);
       sessionStorage.setItem('cs_client_email', '');
@@ -319,6 +364,7 @@
       sessionStorage.setItem('cs_intro_video_url', result.introVideoUrl || '');
       window.location.href = 'gallery.html';
     } else {
+      errorMsg.classList.remove('show'); void errorMsg.offsetWidth; // restart shake
       errorMsg.textContent = "That code didn't match a gallery. Double-check it and try again.";
       errorMsg.classList.add('show');
     }
