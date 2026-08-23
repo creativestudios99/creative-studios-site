@@ -348,73 +348,78 @@
   .split.is-visible .sw{ opacity:1; transform:translateY(0); }
 
   /* ---------- About ---------- */
-  /* ── Featured Weddings — real client work, horizontally
-     scrollable row of cards (reference: mangostudios.com) ── */
+  /* ── Featured Weddings — one couple shown at a time, photos in
+     a center-tall arrangement, Prev/Next switches to a different
+     couple entirely (reference: mangostudios.com) ── */
   .featured{ padding:100px 0 90px; }
-  .featured-head{
-    display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap;
-    margin-bottom:44px;
-  }
-  .featured-head h2{ font-size:clamp(1.8rem,3.4vw,2.6rem); }
-  .featured-head p{ color:var(--ink-soft); max-width:38ch; font-size:0.95rem; }
+  .featured-head{ margin-bottom:36px; }
 
-  .featured-scroll{
-    display:flex; gap:22px; overflow-x:auto; padding:4px 4px 20px;
-    scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
-    scrollbar-width:thin; scrollbar-color:var(--rose) transparent;
+  .featured-slide{ text-align:center; }
+  .f-photo-row{
+    display:flex; align-items:center; justify-content:center; gap:18px;
+    margin-bottom:40px;
   }
-  .featured-scroll::-webkit-scrollbar{ height:6px; }
-  .featured-scroll::-webkit-scrollbar-thumb{ background:var(--rose); border-radius:10px; }
-  .featured-scroll::-webkit-scrollbar-track{ background:var(--paper-dim); }
-
-  .f-item{
-    position:relative; flex:0 0 auto; width:290px; cursor:pointer; scroll-snap-align:start;
+  .f-photo{
+    position:relative; overflow:hidden; border-radius:2px; background:var(--paper-dim);
+    cursor:pointer; flex:0 0 auto;
+    width:170px; aspect-ratio:3/4;
+    opacity:0; transform:translateY(14px); transition:opacity 0.6s ease, transform 0.6s ease;
   }
-  .f-item .f-photo{
-    position:relative; width:100%; aspect-ratio:3/4; overflow:hidden; border-radius:2px;
-    background:var(--paper-dim);
-  }
-  .f-item img{
+  .f-photo.show{ opacity:1; transform:translateY(0); }
+  .f-photo.center{ width:270px; z-index:2; box-shadow:0 30px 60px -20px rgba(36,31,38,0.35); }
+  .f-photo img{
     width:100%; height:100%; object-fit:cover; display:block;
     transition:transform 0.7s cubic-bezier(0.16,1,0.3,1);
   }
-  .f-item:hover img{ transform:scale(1.05); }
-
-  /* Caption sits below the image, always visible — matching the
-     reference site, rather than a hover-only overlay. */
-  .f-caption{ padding-top:16px; }
-  .f-names{ font-family:'Fraunces', serif; font-style:italic; font-size:1.15rem; }
-  .f-venue{ font-family:'JetBrains Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--rose); margin-top:4px; }
-
-  /* Small badge showing photo count, only when a wedding has more
-     than one photo — signals "click to see more" without needing
-     extra copy cluttering the caption. */
-  .f-count-badge{
-    position:absolute; top:14px; right:14px; z-index:2;
-    background:rgba(36,31,38,0.55); backdrop-filter:blur(4px); color:var(--paper);
-    font-family:'JetBrains Mono', monospace; font-size:0.65rem; letter-spacing:0.04em;
-    padding:5px 10px; border-radius:20px; display:flex; align-items:center; gap:5px;
-  }
-  .f-count-badge svg{ width:11px; height:11px; stroke:var(--paper); fill:none; stroke-width:1.6; }
-
-  /* Placeholder state — shown until real photos replace the src
-     attributes below. Makes it obvious in-browser what still needs
-     a real image, instead of failing silently. */
-  .f-item img.placeholder{ display:none; }
-  .f-item .f-placeholder-label{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    font-family:'JetBrains Mono', monospace; font-size:0.65rem; letter-spacing:0.06em; text-transform:uppercase;
-    color:var(--ink-soft); text-align:center; padding:20px;
-    background:var(--paper-dim); border-radius:2px; aspect-ratio:3/4; width:290px;
+  .f-photo:hover img{ transform:scale(1.05); }
+  .f-photo.placeholder-slot{
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace; font-size:0.6rem; color:var(--ink-soft); text-align:center; padding:12px;
   }
 
+  .f-names{ font-family:'Fraunces', serif; font-weight:450; font-size:clamp(1.8rem,3vw,2.4rem); color:var(--ink); }
+  .f-venue{
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--gold); margin-top:12px;
+  }
+
+  .f-slide-nav{ display:flex; align-items:center; justify-content:center; gap:24px; margin-top:34px; }
+  .f-nav-btn{
+    width:48px; height:48px; border-radius:50%; border:1px solid var(--line); background:var(--paper);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:border-color 0.25s ease, background 0.25s ease;
+  }
+  .f-nav-btn:hover{ border-color:var(--rose); background:var(--paper-dim); }
+  .f-nav-btn svg{ width:16px; height:16px; stroke:var(--ink); fill:none; stroke-width:1.5; }
+  .f-slide-dots{ font-family:'JetBrains Mono', monospace; font-size:0.68rem; color:var(--ink-soft); letter-spacing:0.06em; }
+
+  .featured-more{ text-align:center; margin-top:44px; }
+  .featured-more a{
+    display:inline-block; background:var(--wine); color:var(--paper); padding:15px 32px; border-radius:2px;
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase;
+    transition:background 0.25s ease;
+  }
+  .featured-more a:hover{ background:var(--rose); color:var(--ink); }
+
+  /* Loading / empty / not-configured states */
+  .featured-msg{
+    text-align:center; padding:60px 20px; color:var(--ink-soft);
+    font-family:'JetBrains Mono', monospace; font-size:0.78rem; border:1px dashed var(--line);
+  }
+
+  @media (max-width:900px){
+    .f-photo{ width:110px; }
+    .f-photo.center{ width:190px; }
+    .f-photo-row{ gap:10px; }
+  }
   @media (max-width:600px){
-    .f-item{ width:220px; }
-    .featured-scroll{ gap:16px; }
+    .f-photo-row{ gap:0; }
+    .f-photo{ display:none; }
+    .f-photo.center{ display:block; width:70vw; max-width:280px; }
   }
 
-  /* ── Featured wedding lightbox — click a tile to click through
-     every photo for that couple ── */
+  /* ── Featured wedding lightbox — click a photo to view it large,
+     with its own next/prev through that couple's photo set ── */
   .f-lightbox{
     position:fixed; inset:0; background:rgba(20,17,21,0.96); z-index:1000;
     display:none; align-items:center; justify-content:center; flex-direction:column;
@@ -786,17 +791,15 @@
 <section class="featured">
   <div class="wrap">
     <div class="featured-head reveal">
-      <div>
-        <span class="eyebrow">Recent Work</span>
-        <h2 class="split">Real weddings, real light.</h2>
-      </div>
-      <p>A few of the couples we've had the honor of documenting. Each gallery tells its own story.</p>
+      <span class="eyebrow">Recent Work</span>
     </div>
 
-    <div class="featured-scroll" id="featuredGrid">
-      <div class="f-item">
-        <div class="f-placeholder-label">Loading featured weddings&hellip;</div>
-      </div>
+    <div id="featuredSlideWrap">
+      <div class="featured-msg">Loading featured weddings&hellip;</div>
+    </div>
+
+    <div class="featured-more">
+      <a href="#contact" class="hoverable">See More Galleries</a>
     </div>
   </div>
 </section>
@@ -881,7 +884,7 @@
     <div class="reveal">
       <span class="eyebrow">Get In Touch</span>
       <h2 class="split">Let's talk about your day.</h2>
-      <p class="lead">Tell us your date and venue and we'll follow up within two business days with availability and pricing.</p>
+      <p class="lead">Have a question or want to work with us? Contact us directly by email or phone. We'll get back to you soon.</p>
 
       <a href="mailto:polamreddysiva9@gmail.com" class="info-row info-link hoverable"><span>Email</span><span>polamreddysiva9@gmail.com</span></a>
       <a href="tel:+919949706000" class="info-row info-link hoverable"><span>Phone</span><span>+91 99497 06000</span></a>
@@ -937,14 +940,13 @@
     return `https://drive.google.com/thumbnail?id=${id}&sz=w${size}`;
   }
 
-  let featuredEntries = []; // cached for the lightbox to reference
-  let flIndex = 0;
-  let flPhotoIndex = 0;
+  let featuredEntries = [];
+  let currentSlide = 0;
 
   async function loadFeaturedWeddings(){
-    const grid = document.getElementById('featuredGrid');
+    const wrap = document.getElementById('featuredSlideWrap');
     if(FEATURED_SHEET_CSV_URL.startsWith('PASTE_YOUR')){
-      grid.innerHTML = `<div class="f-item"><div class="f-placeholder-label">Featured weddings aren't connected yet.<br>See admin.html to set up the Sheet.</div></div>`;
+      wrap.innerHTML = `<div class="featured-msg">Featured weddings aren't connected yet.<br>See admin.html to set up the Sheet.</div>`;
       return;
     }
     try{
@@ -966,54 +968,73 @@
         .map(r => ({
           names: r[namesIdx] || '',
           venue: r[venueIdx] || '',
-          // Split on comma OR pipe, since Sheet cells sometimes use
-          // either depending on how someone pastes a list in.
-          photoIds: r[photoIdx].split(/[|,]/).map(s => s.trim()).filter(Boolean),
+          photoIds: r[photoIdx].split(/[|,]/).map(s => s.trim()).filter(Boolean).slice(0, 5),
           order: orderIdx !== -1 && r[orderIdx] ? parseFloat(r[orderIdx]) : 999,
         }));
 
       if(orderIdx !== -1) entries.sort((a, b) => a.order - b.order);
-      entries = entries.slice(0, 5);
       featuredEntries = entries;
 
       if(entries.length === 0){
-        grid.innerHTML = `<div class="f-item"><div class="f-placeholder-label">No featured weddings added yet.<br>Add rows to the Sheet to show work here.</div></div>`;
+        wrap.innerHTML = `<div class="featured-msg">No featured weddings added yet.<br>Add rows to the Sheet to show work here.</div>`;
         return;
       }
 
-      grid.innerHTML = entries.map((e, i) => `
-        <div class="f-item reveal has-image" data-index="${i}">
-          <div class="f-photo">
-            <img src="${driveThumbUrl(e.photoIds[0], 1200)}" alt="Wedding of ${e.names.replace(/"/g,'')}" loading="lazy">
-            ${e.photoIds.length > 1 ? `<div class="f-count-badge"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="14" height="14" rx="1"/><path d="M7 7V4a1 1 0 011-1h11a1 1 0 011 1v11a1 1 0 01-1 1h-3"/></svg>${e.photoIds.length}</div>` : ''}
-          </div>
-          <div class="f-caption">
-            <div class="f-names">${e.names || '—'}</div>
-            <div class="f-venue">${e.venue || ''}</div>
+      wrap.innerHTML = `
+        <div class="featured-slide">
+          <div class="f-photo-row" id="fPhotoRow"></div>
+          <div class="f-names" id="fSlideNames"></div>
+          <div class="f-venue" id="fSlideVenue"></div>
+          <div class="f-slide-nav">
+            <button class="f-nav-btn hoverable" id="fPrevSlide" aria-label="Previous wedding"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <span class="f-slide-dots" id="fSlideCount"></span>
+            <button class="f-nav-btn hoverable" id="fNextSlide" aria-label="Next wedding"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
           </div>
         </div>
-      `).join('');
+      `;
 
-      grid.querySelectorAll('.f-item').forEach(el => {
-        el.addEventListener('click', () => openFeaturedLightbox(parseInt(el.dataset.index, 10)));
+      document.getElementById('fPrevSlide').addEventListener('click', () => {
+        currentSlide = (currentSlide - 1 + featuredEntries.length) % featuredEntries.length;
+        renderSlide();
+      });
+      document.getElementById('fNextSlide').addEventListener('click', () => {
+        currentSlide = (currentSlide + 1) % featuredEntries.length;
+        renderSlide();
       });
 
-      // Newly-inserted .reveal elements need to be (re)observed —
-      // the main reveal-on-scroll observer only ran once, on the
-      // original page load, before these existed.
-      grid.querySelectorAll('.reveal').forEach(el => {
-        const io2 = new IntersectionObserver((entries2) => {
-          entries2.forEach(entry => {
-            if(entry.isIntersecting){ entry.target.classList.add('is-visible'); io2.unobserve(entry.target); }
-          });
-        }, { threshold: 0.15 });
-        io2.observe(el);
-      });
+      renderSlide();
     } catch(err){
       console.error('Could not load featured weddings:', err);
-      grid.innerHTML = `<div class="f-item"><div class="f-placeholder-label">Couldn't load featured weddings right now.</div></div>`;
+      wrap.innerHTML = `<div class="featured-msg">Couldn't load featured weddings right now.</div>`;
     }
   }
+
+  // Renders one couple's photo set: center image largest, up to two
+  // smaller images flanking each side — matching the reference
+  // layout. Works gracefully with fewer than 5 photos too.
+  function renderSlide(){
+    const entry = featuredEntries[currentSlide];
+    if(!entry) return;
+    const row = document.getElementById('fPhotoRow');
+    const photos = entry.photoIds;
+    const centerIdx = Math.floor((photos.length - 1) / 2);
+
+    row.innerHTML = photos.map((id, i) => `
+      <div class="f-photo ${i === centerIdx ? 'center' : ''}" data-photo-index="${i}">
+        <img src="${driveThumbUrl(id, i === centerIdx ? 900 : 500)}" alt="${entry.names.replace(/"/g,'')}" loading="lazy">
+      </div>
+    `).join('');
+
+    document.getElementById('fSlideNames').textContent = entry.names || '—';
+    document.getElementById('fSlideVenue').textContent = entry.venue || '';
+    document.getElementById('fSlideCount').textContent = featuredEntries.length > 1 ? `${currentSlide + 1} / ${featuredEntries.length}` : '';
+
+    row.querySelectorAll('.f-photo').forEach(el => {
+      el.addEventListener('click', () => openFeaturedLightbox(currentSlide, parseInt(el.dataset.photoIndex, 10)));
+      requestAnimationFrame(() => el.classList.add('show'));
+    });
+  }
+
   loadFeaturedWeddings();
 
   // ── Featured wedding lightbox ──
@@ -1022,10 +1043,12 @@
   const flNames = document.getElementById('flNames');
   const flVenue = document.getElementById('flVenue');
   const flCount = document.getElementById('flCount');
+  let flIndex = 0;
+  let flPhotoIndex = 0;
 
-  function openFeaturedLightbox(entryIndex){
+  function openFeaturedLightbox(entryIndex, photoIndex){
     flIndex = entryIndex;
-    flPhotoIndex = 0;
+    flPhotoIndex = photoIndex || 0;
     renderFeaturedLightbox();
     fLightbox.classList.add('open');
   }
