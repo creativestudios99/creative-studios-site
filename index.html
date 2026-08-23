@@ -198,12 +198,25 @@
       linear-gradient(160deg, #2c2530 0%, #241f26 45%, #34222a 100%);
     overflow:hidden;
   }
+  /* Full-bleed background video — silent, looping, no controls, same
+     ambient-motion pattern used by premium studio sites. Falls back
+     to the gradient above if no video is set or it fails to load. */
+  .hero-video{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    z-index:0; opacity:0; transition:opacity 1.2s ease;
+  }
+  .hero-video.loaded{ opacity:1; }
+  .hero-video-overlay{
+    position:absolute; inset:0; z-index:1;
+    background:
+      linear-gradient(180deg, rgba(36,31,38,0.55) 0%, rgba(36,31,38,0.25) 35%, rgba(36,31,38,0.65) 100%);
+  }
   .hero-grain{
-    position:absolute;inset:0; opacity:0.05;
+    position:absolute;inset:0; opacity:0.05; z-index:2;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     pointer-events:none;
   }
-  .bokeh{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+  .bokeh{ position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden; }
   .bokeh span{ position:absolute; border-radius:50%; filter:blur(2px); opacity:0; animation:bokehFloat linear infinite; }
   .hero-spotlight{
     position:absolute; inset:0; z-index:2; pointer-events:none;
@@ -217,6 +230,16 @@
     90%{ opacity:var(--o,0.5); }
     100%{ transform:translateY(-70vh) translateX(var(--dx,20px)) scale(1.1); opacity:0; }
   }
+  .hero-mute-btn{
+    position:absolute; z-index:5; bottom:100px; right:26px;
+    width:42px; height:42px; border-radius:50%; background:rgba(36,31,38,0.5); backdrop-filter:blur(6px);
+    border:1px solid rgba(239,233,225,0.25); display:none; align-items:center; justify-content:center;
+    cursor:pointer; transition:background 0.25s ease;
+  }
+  .hero-mute-btn.show{ display:flex; }
+  .hero-mute-btn:hover{ background:rgba(36,31,38,0.75); }
+  .hero-mute-btn svg{ width:16px; height:16px; stroke:var(--paper); fill:none; stroke-width:1.6; }
+  @media (max-width:600px){ .hero-mute-btn{ bottom:88px; right:16px; } }
 
   .hero-content{ position:relative; z-index:5; text-align:center; color:var(--paper); padding:0 24px; will-change:transform; }
 
@@ -324,6 +347,61 @@
   .split.is-visible .sw{ opacity:1; transform:translateY(0); }
 
   /* ---------- About ---------- */
+  /* ── Featured Weddings — real client work ── */
+  .featured{ padding:100px 0 90px; }
+  .featured-head{
+    display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap;
+    margin-bottom:56px;
+  }
+  .featured-head h2{ font-size:clamp(1.8rem,3.4vw,2.6rem); }
+  .featured-head p{ color:var(--ink-soft); max-width:38ch; font-size:0.95rem; }
+
+  .featured-grid{
+    display:grid; grid-template-columns:repeat(6, 1fr); grid-auto-rows:130px; gap:16px;
+  }
+  .f-item{
+    position:relative; overflow:hidden; border-radius:2px; cursor:pointer;
+    background:var(--paper-dim);
+  }
+  .f-item:nth-child(1){ grid-column:span 4; grid-row:span 4; }
+  .f-item:nth-child(2){ grid-column:span 2; grid-row:span 2; }
+  .f-item:nth-child(3){ grid-column:span 2; grid-row:span 2; }
+  .f-item:nth-child(4){ grid-column:span 3; grid-row:span 3; }
+  .f-item:nth-child(5){ grid-column:span 3; grid-row:span 3; }
+  .f-item img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    transition:transform 0.9s cubic-bezier(0.16,1,0.3,1);
+  }
+  .f-item:hover img{ transform:scale(1.06); }
+  .f-item .f-overlay{
+    position:absolute; inset:0;
+    background:linear-gradient(0deg, rgba(36,31,38,0.82) 0%, rgba(36,31,38,0.1) 45%, transparent 70%);
+    opacity:0; transition:opacity 0.4s ease;
+    display:flex; align-items:flex-end; padding:22px;
+  }
+  .f-item:hover .f-overlay{ opacity:1; }
+  .f-item .f-caption{ color:var(--paper); transform:translateY(8px); transition:transform 0.4s ease; }
+  .f-item:hover .f-caption{ transform:translateY(0); }
+  .f-item .f-names{ font-family:'Fraunces', serif; font-style:italic; font-size:1.2rem; }
+  .f-item .f-venue{ font-family:'JetBrains Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--rose); margin-top:4px; }
+
+  /* Placeholder state — shown until real photos replace the src
+     attributes below. Makes it obvious in-browser what still needs
+     a real image, instead of failing silently. */
+  .f-item img.placeholder{ display:none; }
+  .f-item .f-placeholder-label{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace; font-size:0.65rem; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--ink-soft); text-align:center; padding:20px;
+  }
+  .f-item.has-image .f-placeholder-label{ display:none; }
+
+  @media (max-width:860px){
+    .featured-grid{ grid-template-columns:repeat(2,1fr); grid-auto-rows:180px; }
+    .f-item{ grid-column:span 1 !important; grid-row:span 1 !important; }
+    .f-item .f-overlay{ opacity:1; background:linear-gradient(0deg, rgba(36,31,38,0.75) 0%, transparent 60%); }
+  }
+
   .about{ padding:110px 0 90px; }
   .about-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:80px; align-items:start; }
   .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:0.74rem; letter-spacing:0.18em; color:var(--rose); margin-bottom:20px; display:block; }
@@ -605,6 +683,13 @@
 
 <!-- HERO -->
 <section class="hero" id="top">
+  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline poster="">
+    <source src="hero-video.mp4" type="video/mp4">
+  </video>
+  <div class="hero-video-overlay"></div>
+  <button class="hero-mute-btn hoverable" id="heroMuteBtn" aria-label="Toggle sound">
+    <svg id="heroMuteIcon" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg>
+  </button>
   <div class="hero-grain"></div>
   <div class="bokeh" id="bokeh"></div>
   <div class="hero-spotlight" id="spotlight"></div>
@@ -637,6 +722,25 @@
     <span>Destination Weddings</span><span class="dot">·</span>
   </div>
 </div>
+
+<!-- FEATURED WEDDINGS -->
+<section class="featured">
+  <div class="wrap">
+    <div class="featured-head reveal">
+      <div>
+        <span class="eyebrow">Recent Work</span>
+        <h2 class="split">Real weddings, real light.</h2>
+      </div>
+      <p>A few of the couples we've had the honor of documenting. Each gallery tells its own story.</p>
+    </div>
+
+    <div class="featured-grid" id="featuredGrid">
+      <div class="f-item">
+        <div class="f-placeholder-label">Loading featured weddings&hellip;</div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ABOUT -->
 <section class="about" id="about">
@@ -715,25 +819,6 @@
   </div>
 </section>
 
-<!-- FOR BOOKED COUPLES -->
-<section class="tools">
-  <div class="wrap">
-    <div class="tools-head reveal">
-      <span class="eyebrow">Already Booked?</span>
-      <h2 class="split">Built just for our couples.</h2>
-    </div>
-
-    <div class="tools-grid" style="max-width:520px; margin:0 auto;">
-      <div class="tool-card dark reveal">
-        <svg class="tool-icon" viewBox="0 0 40 40"><rect x="6" y="6" width="28" height="28" rx="3"/><circle cx="20" cy="17" r="5"/><path d="M10 32c1-6 5-9 10-9s9 3 10 9"/></svg>
-        <h3>Your Private Gallery</h3>
-        <p>Log in any time to browse your full wedding gallery, save favorites, and download images the moment they're ready.</p>
-        <a href="login.html" class="btn btn-solid hoverable">Client Login</a>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- CONTACT -->
 <section class="contact" id="contact">
   <div class="wrap">
@@ -772,6 +857,116 @@
 
 <script>
   function reducedMotion(){ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+  // ─────────────────────────────────────────────────────────
+  // Featured Weddings — pulled live from a published Google
+  // Sheet, so you can swap which weddings show on the homepage
+  // any time just by editing a spreadsheet. No code edits, no
+  // re-uploading this file, ever.
+  //
+  // Setup (one-time): see admin.html for full steps. In short —
+  // make a Sheet with columns: Names, Venue, PhotoId, Order
+  // (Order is optional, controls left-to-right position).
+  // PhotoId is a Drive file ID (or full share link — either
+  // works) for one photo, shared as "Anyone with the link".
+  // Publish that sheet as CSV and paste the URL below.
+  // ─────────────────────────────────────────────────────────
+  const FEATURED_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTneh7BxxOjTnqTT47ties7XC3vQLqj-xb4lKhAbOzWWbaOidyY44rOEXGCctmI2LDrkgsxaPsXso9t/pub?gid=0&single=true&output=csv';
+
+  function driveThumbUrl(fileOrLink, size){
+    if(!fileOrLink) return '';
+    const trimmed = fileOrLink.trim();
+    const match = trimmed.match(/\/d\/([a-zA-Z0-9_-]+)/) || trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    const id = match ? match[1] : trimmed;
+    return `https://drive.google.com/thumbnail?id=${id}&sz=w${size}`;
+  }
+
+  async function loadFeaturedWeddings(){
+    const grid = document.getElementById('featuredGrid');
+    if(FEATURED_SHEET_CSV_URL.startsWith('PASTE_YOUR')){
+      grid.innerHTML = `<div class="f-item"><div class="f-placeholder-label">Featured weddings aren't connected yet.<br>See admin.html to set up the Sheet.</div></div>`;
+      return;
+    }
+    try{
+      const res = await fetch(FEATURED_SHEET_CSV_URL, { cache: 'no-store' });
+      if(!res.ok) throw new Error('Sheet fetch failed');
+      const text = await res.text();
+      const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+      const header = rows.shift().map(h => h.toLowerCase());
+      const namesIdx = header.indexOf('names');
+      const venueIdx = header.indexOf('venue');
+      const photoIdx = header.indexOf('photoid');
+      const orderIdx = header.indexOf('order');
+
+      let entries = rows
+        .filter(r => r[photoIdx])
+        .map(r => ({
+          names: r[namesIdx] || '',
+          venue: r[venueIdx] || '',
+          photoId: r[photoIdx],
+          order: orderIdx !== -1 && r[orderIdx] ? parseFloat(r[orderIdx]) : 999,
+        }));
+
+      if(orderIdx !== -1) entries.sort((a, b) => a.order - b.order);
+      entries = entries.slice(0, 5);
+
+      if(entries.length === 0){
+        grid.innerHTML = `<div class="f-item"><div class="f-placeholder-label">No featured weddings added yet.<br>Add rows to the Sheet to show work here.</div></div>`;
+        return;
+      }
+
+      grid.innerHTML = entries.map(e => `
+        <div class="f-item reveal has-image">
+          <img src="${driveThumbUrl(e.photoId, 1200)}" alt="Wedding of ${e.names.replace(/"/g,'')}" loading="lazy">
+          <div class="f-overlay">
+            <div class="f-caption">
+              <div class="f-names">${e.names || '—'}</div>
+              <div class="f-venue">${e.venue || ''}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Newly-inserted .reveal elements need to be (re)observed —
+      // the main reveal-on-scroll observer only ran once, on the
+      // original page load, before these existed.
+      grid.querySelectorAll('.reveal').forEach(el => {
+        const io2 = new IntersectionObserver((entries2) => {
+          entries2.forEach(entry => {
+            if(entry.isIntersecting){ entry.target.classList.add('is-visible'); io2.unobserve(entry.target); }
+          });
+        }, { threshold: 0.15 });
+        io2.observe(el);
+      });
+    } catch(err){
+      console.error('Could not load featured weddings:', err);
+      grid.innerHTML = `<div class="f-item"><div class="f-placeholder-label">Couldn't load featured weddings right now.</div></div>`;
+    }
+  }
+  loadFeaturedWeddings();
+
+  // Hero background video — fades in once it actually has data to
+  // show (avoids a flash of black), and quietly falls back to the
+  // gradient background if hero-video.mp4 doesn't exist yet or fails
+  // to load, rather than breaking the page.
+  const heroVideo = document.getElementById('heroVideo');
+  const heroMuteBtn = document.getElementById('heroMuteBtn');
+  const heroMuteIcon = document.getElementById('heroMuteIcon');
+  if(heroVideo){
+    heroVideo.addEventListener('loadeddata', () => {
+      heroVideo.classList.add('loaded');
+      heroMuteBtn.classList.add('show');
+    });
+    heroVideo.addEventListener('error', () => {
+      console.warn('Hero video not found or failed to load — showing gradient background instead. Add hero-video.mp4 to the repo root to enable it.');
+    });
+    heroMuteBtn.addEventListener('click', () => {
+      heroVideo.muted = !heroVideo.muted;
+      heroMuteIcon.innerHTML = heroVideo.muted
+        ? '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/>'
+        : '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/>';
+    });
+  }
 
   // Preloader
   window.addEventListener('load', () => {
