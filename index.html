@@ -44,9 +44,7 @@
     font-weight:400;
     line-height:1.6;
     overflow-x:hidden;
-    cursor:none;
   }
-  @media (hover:none), (max-width:860px){ body{ cursor:auto; } }
   ::selection{background:var(--rose);color:var(--paper);}
 
   /* Subtle film grain — ties the whole site to the camera/cinematic
@@ -84,25 +82,6 @@
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
   }
-
-  /* ---------- Custom cursor ---------- */
-  .cursor-dot, .cursor-ring{
-    position:fixed;
-    top:0; left:0;
-    border-radius:50%;
-    pointer-events:none;
-    z-index:9999;
-    transform:translate(-50%,-50%);
-    mix-blend-mode:difference;
-  }
-  .cursor-dot{ width:6px; height:6px; background:var(--paper); transition:opacity 0.3s ease; }
-  .cursor-ring{
-    width:34px; height:34px;
-    border:1px solid var(--paper);
-    transition:width 0.25s ease, height 0.25s ease, opacity 0.3s ease, background 0.25s ease;
-  }
-  .cursor-ring.big{ width:64px; height:64px; background:rgba(239,233,225,0.15); }
-  @media (hover:none), (max-width:860px){ .cursor-dot,.cursor-ring{ display:none; } }
 
   /* ---------- Preloader ---------- */
   .preloader{
@@ -177,11 +156,33 @@
   .nav-utility{ display:flex; align-items:center; gap:16px; font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; }
   .nav-utility a{ opacity:0.8; transition:opacity 0.25s ease; }
   .nav-utility a:hover{ opacity:1; }
-  .nav-login-btn{
-    padding:9px 18px; border:1px solid rgba(239,233,225,0.4); border-radius:20px;
-    transition:background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  .nav-phone{
+    opacity:0; max-width:0; overflow:hidden; white-space:nowrap;
+    transition:opacity 0.4s ease, max-width 0.4s ease, margin 0.4s ease;
   }
-  .nav-login-btn:hover{ background:var(--rose); border-color:var(--rose); color:var(--ink); opacity:1; }
+  .nav.scrolled .nav-phone{ opacity:0.85; max-width:200px; }
+  .nav.scrolled .nav-phone:hover{ opacity:1; }
+  @media (max-width:920px){ .nav-phone{ display:none; } }
+  .nav-login-btn{
+    padding:9px 18px; border-radius:20px;
+    background:linear-gradient(180deg, rgba(239,233,225,0.22), rgba(239,233,225,0.08));
+    border:1px solid rgba(239,233,225,0.35);
+    backdrop-filter:blur(10px) saturate(160%);
+    -webkit-backdrop-filter:blur(10px) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.25),
+      inset 0 -1px 4px rgba(0,0,0,0.08),
+      0 4px 18px rgba(0,0,0,0.12);
+    transition:background 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  }
+  .nav-login-btn:hover{
+    background:linear-gradient(180deg, rgba(185,119,107,0.85), rgba(185,119,107,0.7));
+    border-color:rgba(185,119,107,0.6); color:var(--ink); opacity:1;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.3),
+      0 6px 22px rgba(185,119,107,0.35);
+    transform:translateY(-1px);
+  }
   .nav.scrolled .nav-login-btn{ border-color:rgba(239,233,225,0.3); }
   @media (max-width:920px){ .nav-utility a:not(.nav-login-btn){ display:none; } }
   @media (max-width:480px){
@@ -347,43 +348,54 @@
   .split.is-visible .sw{ opacity:1; transform:translateY(0); }
 
   /* ---------- About ---------- */
-  /* ── Featured Weddings — real client work ── */
+  /* ── Featured Weddings — real client work, horizontally
+     scrollable row of cards (reference: mangostudios.com) ── */
   .featured{ padding:100px 0 90px; }
   .featured-head{
     display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap;
-    margin-bottom:56px;
+    margin-bottom:44px;
   }
   .featured-head h2{ font-size:clamp(1.8rem,3.4vw,2.6rem); }
   .featured-head p{ color:var(--ink-soft); max-width:38ch; font-size:0.95rem; }
 
-  .featured-grid{
-    display:grid; grid-template-columns:repeat(6, 1fr); grid-auto-rows:130px; gap:16px;
+  .featured-scroll{
+    display:flex; gap:22px; overflow-x:auto; padding:4px 4px 20px;
+    scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin; scrollbar-color:var(--rose) transparent;
   }
+  .featured-scroll::-webkit-scrollbar{ height:6px; }
+  .featured-scroll::-webkit-scrollbar-thumb{ background:var(--rose); border-radius:10px; }
+  .featured-scroll::-webkit-scrollbar-track{ background:var(--paper-dim); }
+
   .f-item{
-    position:relative; overflow:hidden; border-radius:2px; cursor:pointer;
+    position:relative; flex:0 0 auto; width:290px; cursor:pointer; scroll-snap-align:start;
+  }
+  .f-item .f-photo{
+    position:relative; width:100%; aspect-ratio:3/4; overflow:hidden; border-radius:2px;
     background:var(--paper-dim);
   }
-  .f-item:nth-child(1){ grid-column:span 4; grid-row:span 4; }
-  .f-item:nth-child(2){ grid-column:span 2; grid-row:span 2; }
-  .f-item:nth-child(3){ grid-column:span 2; grid-row:span 2; }
-  .f-item:nth-child(4){ grid-column:span 3; grid-row:span 3; }
-  .f-item:nth-child(5){ grid-column:span 3; grid-row:span 3; }
   .f-item img{
     width:100%; height:100%; object-fit:cover; display:block;
-    transition:transform 0.9s cubic-bezier(0.16,1,0.3,1);
+    transition:transform 0.7s cubic-bezier(0.16,1,0.3,1);
   }
-  .f-item:hover img{ transform:scale(1.06); }
-  .f-item .f-overlay{
-    position:absolute; inset:0;
-    background:linear-gradient(0deg, rgba(36,31,38,0.82) 0%, rgba(36,31,38,0.1) 45%, transparent 70%);
-    opacity:0; transition:opacity 0.4s ease;
-    display:flex; align-items:flex-end; padding:22px;
+  .f-item:hover img{ transform:scale(1.05); }
+
+  /* Caption sits below the image, always visible — matching the
+     reference site, rather than a hover-only overlay. */
+  .f-caption{ padding-top:16px; }
+  .f-names{ font-family:'Fraunces', serif; font-style:italic; font-size:1.15rem; }
+  .f-venue{ font-family:'JetBrains Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--rose); margin-top:4px; }
+
+  /* Small badge showing photo count, only when a wedding has more
+     than one photo — signals "click to see more" without needing
+     extra copy cluttering the caption. */
+  .f-count-badge{
+    position:absolute; top:14px; right:14px; z-index:2;
+    background:rgba(36,31,38,0.55); backdrop-filter:blur(4px); color:var(--paper);
+    font-family:'JetBrains Mono', monospace; font-size:0.65rem; letter-spacing:0.04em;
+    padding:5px 10px; border-radius:20px; display:flex; align-items:center; gap:5px;
   }
-  .f-item:hover .f-overlay{ opacity:1; }
-  .f-item .f-caption{ color:var(--paper); transform:translateY(8px); transition:transform 0.4s ease; }
-  .f-item:hover .f-caption{ transform:translateY(0); }
-  .f-item .f-names{ font-family:'Fraunces', serif; font-style:italic; font-size:1.2rem; }
-  .f-item .f-venue{ font-family:'JetBrains Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--rose); margin-top:4px; }
+  .f-count-badge svg{ width:11px; height:11px; stroke:var(--paper); fill:none; stroke-width:1.6; }
 
   /* Placeholder state — shown until real photos replace the src
      attributes below. Makes it obvious in-browser what still needs
@@ -393,20 +405,54 @@
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     font-family:'JetBrains Mono', monospace; font-size:0.65rem; letter-spacing:0.06em; text-transform:uppercase;
     color:var(--ink-soft); text-align:center; padding:20px;
+    background:var(--paper-dim); border-radius:2px; aspect-ratio:3/4; width:290px;
   }
-  .f-item.has-image .f-placeholder-label{ display:none; }
 
-  @media (max-width:860px){
-    .featured-grid{ grid-template-columns:repeat(2,1fr); grid-auto-rows:180px; }
-    .f-item{ grid-column:span 1 !important; grid-row:span 1 !important; }
-    .f-item .f-overlay{ opacity:1; background:linear-gradient(0deg, rgba(36,31,38,0.75) 0%, transparent 60%); }
+  @media (max-width:600px){
+    .f-item{ width:220px; }
+    .featured-scroll{ gap:16px; }
+  }
+
+  /* ── Featured wedding lightbox — click a tile to click through
+     every photo for that couple ── */
+  .f-lightbox{
+    position:fixed; inset:0; background:rgba(20,17,21,0.96); z-index:1000;
+    display:none; align-items:center; justify-content:center; flex-direction:column;
+    opacity:0; transition:opacity 0.3s ease;
+  }
+  .f-lightbox.open{ display:flex; opacity:1; }
+  .f-lightbox img{
+    max-width:88vw; max-height:74vh; object-fit:contain; border-radius:2px;
+    box-shadow:0 40px 100px rgba(0,0,0,0.5);
+  }
+  .f-lightbox-info{ text-align:center; color:var(--paper); margin-top:20px; }
+  .f-lightbox-info .fl-names{ font-family:'Fraunces', serif; font-style:italic; font-size:1.4rem; }
+  .f-lightbox-info .fl-venue{ font-family:'JetBrains Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--rose); margin-top:6px; }
+  .f-lightbox-count{ font-family:'JetBrains Mono', monospace; font-size:0.68rem; color:rgba(239,233,225,0.6); margin-top:10px; }
+  .f-lb-close{
+    position:fixed; top:24px; right:24px; width:42px; height:42px; border-radius:50%;
+    background:rgba(239,233,225,0.08); border:1px solid rgba(239,233,225,0.2); color:var(--paper);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .f-lb-close svg{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; }
+  .f-lb-nav{
+    position:fixed; top:50%; transform:translateY(-50%); width:48px; height:48px; border-radius:50%;
+    background:rgba(239,233,225,0.08); border:1px solid rgba(239,233,225,0.2); color:var(--paper);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background 0.25s ease;
+  }
+  .f-lb-nav:hover{ background:rgba(239,233,225,0.18); }
+  .f-lb-nav.prev{ left:24px; } .f-lb-nav.next{ right:24px; }
+  .f-lb-nav svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.8; }
+  @media (max-width:700px){
+    .f-lb-nav{ width:40px; height:40px; }
+    .f-lb-nav.prev{ left:8px; } .f-lb-nav.next{ right:8px; }
   }
 
   .about{ padding:110px 0 90px; }
   .about-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:80px; align-items:start; }
   .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:0.74rem; letter-spacing:0.18em; color:var(--rose); margin-bottom:20px; display:block; }
   .about h2{ font-size:clamp(1.9rem, 3.4vw, 2.6rem); line-height:1.15; }
-  .about p{ color:var(--ink-soft); font-size:1.02rem; max-width:46ch; margin-top:10px; }
+  .about p{ color:var(--ink-soft); font-size:1.02rem; max-width:46ch; margin-top:10px; text-align:justify; }
   .about p.drop-cap::first-letter{
     font-family:'Fraunces', serif; font-weight:450; font-size:3.6em; line-height:0.75;
     float:left; padding-right:10px; padding-top:6px; color:var(--rose);
@@ -666,9 +712,6 @@
   <div class="preloader-label mono">Creative Studios</div>
 </div>
 
-<div class="cursor-dot" id="cursorDot"></div>
-<div class="cursor-ring" id="cursorRing"></div>
-
 <nav class="nav" id="nav">
   <div class="nav-logo">Creative Studios</div>
   <div class="nav-links">
@@ -677,6 +720,7 @@
     <a href="#contact" class="hoverable" data-nav="contact">Contact</a>
   </div>
   <div class="nav-utility">
+    <a href="tel:+919949706000" class="hoverable nav-phone">+91 99497 06000</a>
     <a href="login.html" class="hoverable nav-login-btn">Client Login</a>
   </div>
 </nav>
@@ -723,6 +767,21 @@
   </div>
 </div>
 
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="wrap about-grid">
+    <div class="reveal">
+      <span class="eyebrow">About Creative Studios</span>
+      <h2 class="split">The stories worth remembering</h2>
+      <p class="drop-cap">Creative Studios is a photography and filmmaking studio based in Nellore, capturing weddings with an eye for the moments that matter. We look for the quiet glances, unexpected laughter, and in-between moments that make each celebration uniquely yours.</p>
+      <p>Our approach is simple &mdash; to let the day unfold naturally and create photographs and films that bring you back to how it truly felt.</p>
+    </div>
+    <div class="reveal about-quote">
+      &ldquo;Real moments, beautifully told.&rdquo;
+    </div>
+  </div>
+</section>
+
 <!-- FEATURED WEDDINGS -->
 <section class="featured">
   <div class="wrap">
@@ -734,7 +793,7 @@
       <p>A few of the couples we've had the honor of documenting. Each gallery tells its own story.</p>
     </div>
 
-    <div class="featured-grid" id="featuredGrid">
+    <div class="featured-scroll" id="featuredGrid">
       <div class="f-item">
         <div class="f-placeholder-label">Loading featured weddings&hellip;</div>
       </div>
@@ -742,20 +801,17 @@
   </div>
 </section>
 
-<!-- ABOUT -->
-<section class="about" id="about">
-  <div class="wrap about-grid">
-    <div class="reveal">
-      <span class="eyebrow">The Studio</span>
-      <h2 class="split">An eye for the unrepeatable moment.</h2>
-      <p class="drop-cap">Creative Studios is a photography and videography team, based in Nellore and documenting weddings with a documentary eye and a painter's patience for light. We shoot every wedding as though it's the only one we'll ever get to tell.</p>
-      <p>No forced poses &mdash; just the day, as it actually happened, kept for the rest of your life.</p>
-    </div>
-    <div class="reveal about-quote">
-      &ldquo;Real moments, beautifully told.&rdquo;
-    </div>
+<div class="f-lightbox" id="fLightbox">
+  <button class="f-lb-close hoverable" id="flClose"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <button class="f-lb-nav prev hoverable" id="flPrev"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <button class="f-lb-nav next hoverable" id="flNext"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+  <img id="flImage" src="" alt="">
+  <div class="f-lightbox-info">
+    <div class="fl-names" id="flNames"></div>
+    <div class="fl-venue" id="flVenue"></div>
+    <div class="f-lightbox-count" id="flCount"></div>
   </div>
-</section>
+</div>
 
 <div class="sprockets"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 
@@ -881,6 +937,10 @@
     return `https://drive.google.com/thumbnail?id=${id}&sz=w${size}`;
   }
 
+  let featuredEntries = []; // cached for the lightbox to reference
+  let flIndex = 0;
+  let flPhotoIndex = 0;
+
   async function loadFeaturedWeddings(){
     const grid = document.getElementById('featuredGrid');
     if(FEATURED_SHEET_CSV_URL.startsWith('PASTE_YOUR')){
@@ -895,7 +955,10 @@
       const header = rows.shift().map(h => h.toLowerCase());
       const namesIdx = header.indexOf('names');
       const venueIdx = header.indexOf('venue');
-      const photoIdx = header.indexOf('photoid');
+      // Accepts either "PhotoIds" (preferred, comma/pipe-separated
+      // list) or the older single "PhotoId" column — either header
+      // works, so existing sheets don't break.
+      const photoIdx = header.indexOf('photoids') !== -1 ? header.indexOf('photoids') : header.indexOf('photoid');
       const orderIdx = header.indexOf('order');
 
       let entries = rows
@@ -903,29 +966,37 @@
         .map(r => ({
           names: r[namesIdx] || '',
           venue: r[venueIdx] || '',
-          photoId: r[photoIdx],
+          // Split on comma OR pipe, since Sheet cells sometimes use
+          // either depending on how someone pastes a list in.
+          photoIds: r[photoIdx].split(/[|,]/).map(s => s.trim()).filter(Boolean),
           order: orderIdx !== -1 && r[orderIdx] ? parseFloat(r[orderIdx]) : 999,
         }));
 
       if(orderIdx !== -1) entries.sort((a, b) => a.order - b.order);
       entries = entries.slice(0, 5);
+      featuredEntries = entries;
 
       if(entries.length === 0){
         grid.innerHTML = `<div class="f-item"><div class="f-placeholder-label">No featured weddings added yet.<br>Add rows to the Sheet to show work here.</div></div>`;
         return;
       }
 
-      grid.innerHTML = entries.map(e => `
-        <div class="f-item reveal has-image">
-          <img src="${driveThumbUrl(e.photoId, 1200)}" alt="Wedding of ${e.names.replace(/"/g,'')}" loading="lazy">
-          <div class="f-overlay">
-            <div class="f-caption">
-              <div class="f-names">${e.names || '—'}</div>
-              <div class="f-venue">${e.venue || ''}</div>
-            </div>
+      grid.innerHTML = entries.map((e, i) => `
+        <div class="f-item reveal has-image" data-index="${i}">
+          <div class="f-photo">
+            <img src="${driveThumbUrl(e.photoIds[0], 1200)}" alt="Wedding of ${e.names.replace(/"/g,'')}" loading="lazy">
+            ${e.photoIds.length > 1 ? `<div class="f-count-badge"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="14" height="14" rx="1"/><path d="M7 7V4a1 1 0 011-1h11a1 1 0 011 1v11a1 1 0 01-1 1h-3"/></svg>${e.photoIds.length}</div>` : ''}
+          </div>
+          <div class="f-caption">
+            <div class="f-names">${e.names || '—'}</div>
+            <div class="f-venue">${e.venue || ''}</div>
           </div>
         </div>
       `).join('');
+
+      grid.querySelectorAll('.f-item').forEach(el => {
+        el.addEventListener('click', () => openFeaturedLightbox(parseInt(el.dataset.index, 10)));
+      });
 
       // Newly-inserted .reveal elements need to be (re)observed —
       // the main reveal-on-scroll observer only ran once, on the
@@ -944,6 +1015,51 @@
     }
   }
   loadFeaturedWeddings();
+
+  // ── Featured wedding lightbox ──
+  const fLightbox = document.getElementById('fLightbox');
+  const flImage = document.getElementById('flImage');
+  const flNames = document.getElementById('flNames');
+  const flVenue = document.getElementById('flVenue');
+  const flCount = document.getElementById('flCount');
+
+  function openFeaturedLightbox(entryIndex){
+    flIndex = entryIndex;
+    flPhotoIndex = 0;
+    renderFeaturedLightbox();
+    fLightbox.classList.add('open');
+  }
+  function closeFeaturedLightbox(){ fLightbox.classList.remove('open'); }
+  function renderFeaturedLightbox(){
+    const entry = featuredEntries[flIndex];
+    if(!entry) return;
+    flImage.src = driveThumbUrl(entry.photoIds[flPhotoIndex], 1800);
+    flNames.textContent = entry.names || '';
+    flVenue.textContent = entry.venue || '';
+    flCount.textContent = entry.photoIds.length > 1 ? `${flPhotoIndex + 1} / ${entry.photoIds.length}` : '';
+  }
+  function flNextPhoto(){
+    const entry = featuredEntries[flIndex];
+    if(!entry) return;
+    flPhotoIndex = (flPhotoIndex + 1) % entry.photoIds.length;
+    renderFeaturedLightbox();
+  }
+  function flPrevPhoto(){
+    const entry = featuredEntries[flIndex];
+    if(!entry) return;
+    flPhotoIndex = (flPhotoIndex - 1 + entry.photoIds.length) % entry.photoIds.length;
+    renderFeaturedLightbox();
+  }
+  document.getElementById('flClose').addEventListener('click', closeFeaturedLightbox);
+  document.getElementById('flNext').addEventListener('click', flNextPhoto);
+  document.getElementById('flPrev').addEventListener('click', flPrevPhoto);
+  fLightbox.addEventListener('click', (e) => { if(e.target === fLightbox) closeFeaturedLightbox(); });
+  document.addEventListener('keydown', (e) => {
+    if(!fLightbox.classList.contains('open')) return;
+    if(e.key === 'Escape') closeFeaturedLightbox();
+    if(e.key === 'ArrowRight') flNextPhoto();
+    if(e.key === 'ArrowLeft') flPrevPhoto();
+  });
 
   // Hero background video — fades in once it actually has data to
   // show (avoids a flash of black), and quietly falls back to the
@@ -974,28 +1090,6 @@
       document.getElementById('preloader').classList.add('hide');
     }, 700);
   });
-
-  // Custom cursor
-  const dot = document.getElementById('cursorDot');
-  const ring = document.getElementById('cursorRing');
-  if(dot && ring && !('ontouchstart' in window)){
-    let mx = 0, my = 0, rx = 0, ry = 0;
-    window.addEventListener('mousemove', (e) => {
-      mx = e.clientX; my = e.clientY;
-      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
-    });
-    function loop(){
-      rx += (mx - rx) * 0.18;
-      ry += (my - ry) * 0.18;
-      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-      requestAnimationFrame(loop);
-    }
-    loop();
-    document.querySelectorAll('.hoverable, a, button').forEach(el => {
-      el.addEventListener('mouseenter', () => ring.classList.add('big'));
-      el.addEventListener('mouseleave', () => ring.classList.remove('big'));
-    });
-  }
 
   // Nav scroll state
   const nav = document.getElementById('nav');
