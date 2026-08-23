@@ -96,6 +96,76 @@
   footer{ background:var(--ink); color:rgba(239,233,225,0.6); padding:36px 0; text-align:center; font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; }
 
   @media (max-width:680px){ .gen-grid{ grid-template-columns:1fr; } }
+
+  /* ── Write-enabled dashboard ── */
+  .dash{ padding:0 0 70px; }
+  .dash-card{
+    background:var(--ink); color:var(--paper); border-radius:3px; padding:36px; margin-bottom:30px;
+  }
+  .dash-signin{ text-align:center; padding:40px 20px; }
+  .dash-signin p{ color:rgba(239,233,225,0.75); font-size:0.92rem; max-width:52ch; margin:0 auto 24px; }
+  .dash-signin-btn{
+    background:var(--rose); color:var(--ink); border:none; padding:14px 28px; border-radius:2px;
+    font-family:'JetBrains Mono', monospace; font-size:0.78rem; letter-spacing:0.06em; text-transform:uppercase;
+    cursor:pointer; transition:background 0.25s ease;
+  }
+  .dash-signin-btn:hover{ background:var(--gold); }
+  .dash-status{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;
+    padding-bottom:20px; border-bottom:1px solid rgba(239,233,225,0.15);
+  }
+  .dash-status .who{ font-family:'JetBrains Mono', monospace; font-size:0.75rem; color:rgba(239,233,225,0.7); }
+  .dash-status .who strong{ color:var(--paper); }
+  .dash-signout{ background:none; border:1px solid rgba(239,233,225,0.3); color:rgba(239,233,225,0.8); padding:8px 16px; border-radius:2px; font-family:'JetBrains Mono', monospace; font-size:0.68rem; text-transform:uppercase; cursor:pointer; }
+  .dash-signout:hover{ border-color:var(--rose); color:var(--rose); }
+
+  .dash-tabs{ display:flex; gap:10px; margin-bottom:26px; }
+  .dash-tab{
+    background:none; border:1px solid rgba(239,233,225,0.25); color:rgba(239,233,225,0.7);
+    padding:10px 20px; border-radius:2px; font-family:'JetBrains Mono', monospace; font-size:0.72rem;
+    letter-spacing:0.05em; text-transform:uppercase; cursor:pointer; transition:all 0.25s ease;
+  }
+  .dash-tab.active{ background:var(--rose); border-color:var(--rose); color:var(--ink); }
+  .dash-panel{ display:none; }
+  .dash-panel.active{ display:block; }
+
+  .dash-form{
+    background:rgba(239,233,225,0.05); border:1px solid rgba(239,233,225,0.15); border-radius:2px;
+    padding:24px; margin-bottom:26px;
+  }
+  .dash-form h3{ font-size:0.95rem; margin-bottom:16px; color:var(--paper); }
+  .dash-form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+  .dfield label{ display:block; font-family:'JetBrains Mono', monospace; font-size:0.64rem; letter-spacing:0.06em; text-transform:uppercase; color:rgba(239,233,225,0.55); margin-bottom:6px; }
+  .dfield input{
+    width:100%; background:rgba(239,233,225,0.06); border:1px solid rgba(239,233,225,0.2); border-radius:2px;
+    padding:10px 11px; color:var(--paper); font-family:'Work Sans', sans-serif; font-size:0.88rem; outline:none;
+  }
+  .dfield input:focus{ border-color:var(--rose); }
+  .dfield.full{ grid-column:1 / -1; }
+  .dash-form-actions{ display:flex; gap:10px; align-items:center; }
+  .dash-btn{
+    background:var(--rose); color:var(--ink); border:none; padding:11px 22px; border-radius:2px;
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.05em; text-transform:uppercase;
+    cursor:pointer; transition:background 0.25s ease;
+  }
+  .dash-btn:hover{ background:var(--gold); }
+  .dash-btn.ghost{ background:none; border:1px solid rgba(239,233,225,0.3); color:rgba(239,233,225,0.8); }
+  .dash-btn.ghost:hover{ border-color:var(--rose); color:var(--rose); }
+  .dash-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .dash-msg{ font-family:'JetBrains Mono', monospace; font-size:0.72rem; margin-left:4px; }
+  .dash-msg.ok{ color:#8fbf8f; }
+  .dash-msg.err{ color:var(--rose); }
+
+  .dash-table-wrap{ overflow-x:auto; }
+  .dash-table{ width:100%; border-collapse:collapse; min-width:640px; }
+  .dash-table th, .dash-table td{ text-align:left; padding:10px 12px; border-bottom:1px solid rgba(239,233,225,0.12); font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+  .dash-table th{ font-family:'JetBrains Mono', monospace; font-size:0.62rem; letter-spacing:0.05em; text-transform:uppercase; color:rgba(239,233,225,0.55); }
+  .dash-row-actions{ display:flex; gap:8px; }
+  .dash-row-actions button{ background:none; border:none; cursor:pointer; font-family:'JetBrains Mono', monospace; font-size:0.66rem; text-transform:uppercase; color:rgba(239,233,225,0.6); }
+  .dash-row-actions button:hover{ color:var(--rose); }
+  .dash-row-actions .del:hover{ color:#d97878; }
+  .dash-empty{ padding:30px; text-align:center; color:rgba(239,233,225,0.5); font-size:0.85rem; }
+  .dash-loading{ padding:30px; text-align:center; color:rgba(239,233,225,0.5); font-size:0.85rem; font-family:'JetBrains Mono', monospace; }
 </style>
 </head>
 <body>
@@ -111,11 +181,78 @@
 
 <section class="intro">
   <div class="wrap">
-    <span class="eyebrow mono">Admin Reference</span>
-    <h1>Client Gallery Setup</h1>
-    <p>This page walks through connecting real Google Sign-In and a live Google Sheet client list to your site &mdash; once set up, adding new clients never requires touching code again.</p>
+    <span class="eyebrow mono">Admin Dashboard</span>
+    <h1>Manage Your Site</h1>
+    <p>Sign in below to add, edit, and remove clients and featured photos directly &mdash; changes save straight to your Google Sheets, no manual copy-pasting required. First-time setup steps are further down this page.</p>
   </div>
 </section>
+
+<div class="wrap dash">
+  <div class="dash-card">
+    <div id="dashSignedOut" class="dash-signin">
+      <p>Sign in with the Google account that owns your Clients and Featured Weddings sheets. This grants write access only for this session &mdash; nothing is stored after you close the tab.</p>
+      <button class="dash-signin-btn" id="dashSignInBtn">Sign In With Google</button>
+      <p id="dashSignInError" style="color:#d97878; margin-top:16px; display:none;"></p>
+    </div>
+
+    <div id="dashSignedIn" style="display:none;">
+      <div class="dash-status">
+        <div class="who">Signed in as <strong id="dashUserEmail"></strong></div>
+        <button class="dash-signout" id="dashSignOutBtn">Sign Out</button>
+      </div>
+
+      <div class="dash-tabs">
+        <button class="dash-tab active" data-tab="clients">Clients</button>
+        <button class="dash-tab" data-tab="featured">Featured Weddings</button>
+      </div>
+
+      <!-- CLIENTS PANEL -->
+      <div class="dash-panel active" id="panelClients">
+        <div class="dash-form">
+          <h3 id="clientFormTitle">Add a New Client</h3>
+          <div class="dash-form-grid">
+            <div class="dfield"><label>Couple's Names</label><input id="cfName" type="text" placeholder="Maya &amp; Jonah"></div>
+            <div class="dfield"><label>Email</label><input id="cfEmail" type="email" placeholder="maya.jonah@gmail.com"></div>
+            <div class="dfield"><label>Drive Folder ID</label><input id="cfFolder" type="text" placeholder="Folder ID or share link"></div>
+            <div class="dfield"><label>Passcode</label><input id="cfPasscode" type="text" placeholder="e.g. B7K2XQPM"></div>
+            <div class="dfield"><label>Expires On</label><input id="cfExpiry" type="date"></div>
+            <div class="dfield"><label>Cover Photo ID</label><input id="cfCover" type="text" placeholder="Optional"></div>
+            <div class="dfield full"><label>Intro Video URL</label><input id="cfVideo" type="text" placeholder="Optional — YouTube, Vimeo, Drive, or .mp4 link"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="dash-btn" id="clientSaveBtn">Add Client</button>
+            <button class="dash-btn ghost" id="clientCancelBtn" style="display:none;">Cancel Edit</button>
+            <span class="dash-msg" id="clientFormMsg"></span>
+          </div>
+        </div>
+        <div class="dash-table-wrap">
+          <div id="clientsTableContainer"><div class="dash-loading">Loading clients&hellip;</div></div>
+        </div>
+      </div>
+
+      <!-- FEATURED WEDDINGS PANEL -->
+      <div class="dash-panel" id="panelFeatured">
+        <div class="dash-form">
+          <h3 id="featuredFormTitle">Add a Featured Wedding</h3>
+          <div class="dash-form-grid">
+            <div class="dfield"><label>Couple's Names</label><input id="ffNames" type="text" placeholder="Priya &amp; Dev"></div>
+            <div class="dfield"><label>Venue</label><input id="ffVenue" type="text" placeholder="Udaipur, Rajasthan"></div>
+            <div class="dfield"><label>Photo IDs</label><input id="ffPhoto" type="text" placeholder="One Drive ID/link, or several separated by commas"></div>
+            <div class="dfield"><label>Order</label><input id="ffOrder" type="number" placeholder="1"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="dash-btn" id="featuredSaveBtn">Add Featured Wedding</button>
+            <button class="dash-btn ghost" id="featuredCancelBtn" style="display:none;">Cancel Edit</button>
+            <span class="dash-msg" id="featuredFormMsg"></span>
+          </div>
+        </div>
+        <div class="dash-table-wrap">
+          <div id="featuredTableContainer"><div class="dash-loading">Loading featured weddings&hellip;</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="wrap steps">
 
@@ -199,6 +336,35 @@
     <p>The overlay shows once per login session (not every time someone clicks around the gallery) and has a "View Gallery" button to dismiss it.</p>
   </div>
 
+  <div class="step-card">
+    <h2><span class="step-num">8</span> Optional: change the homepage's "Recent Work" photos anytime</h2>
+    <p>The homepage's "Real weddings, real light" section reads from its own separate Google Sheet, so you can swap which weddings are featured without ever touching code.</p>
+    <ol>
+      <li>Make a new Google Sheet (or a new tab in an existing one) with four column headers in row 1: <code>Names</code>, <code>Venue</code>, <code>PhotoIds</code>, <code>Order</code></li>
+      <li>Each row is one featured wedding. <code>Names</code> is what shows on hover and in the lightbox (e.g. "Priya &amp; Dev"), <code>Venue</code> is the small caption underneath (e.g. "Udaipur, Rajasthan"), and <code>Order</code> is an optional number controlling left-to-right position (1 = first, 2 = second, and so on).</li>
+      <li><code>PhotoIds</code> can hold <strong>one photo or several</strong> &mdash; for one, just paste a single Drive file ID or share link. For a small gallery within that tile (like clicking through a couple's story, similar to Mango Studios' featured weddings), paste multiple, separated by commas: <code>abc123, def456, ghi789</code>. The homepage shows the first one as the cover image, with a small photo-count badge, and clicking opens all of them in a lightbox with next/previous navigation.</li>
+      <li>The photo itself must be shared as <strong>"Anyone with the link"</strong> in Drive &mdash; same requirement as everything else that shows a real Drive-hosted image.</li>
+      <li>Publish this sheet as CSV the same way as before (File &rarr; Share &rarr; Publish to web &rarr; CSV format), and paste that URL into <code>index.html</code> where it says <code>FEATURED_SHEET_CSV_URL</code>.</li>
+      <li>From then on, changing which weddings appear on the homepage is just editing rows in this sheet &mdash; add a row, delete a row, or renumber <code>Order</code> to reshuffle them. The homepage picks up the first 5 rows automatically.</li>
+    </ol>
+    <p>Until this is set up, the homepage shows a quiet placeholder message instead of broken images &mdash; nothing looks wrong to visitors either way.</p>
+  </div>
+
+  <div class="step-card">
+    <h2><span class="step-num">9</span> Set up the write-enabled Dashboard (skip manual copy-pasting)</h2>
+    <p>The Dashboard at the top of this page lets you add, edit, and delete both clients and featured weddings directly &mdash; changes save straight to your Sheets. Here's the one-time setup.</p>
+    <ol>
+      <li>In Google Cloud Console (the same project as your OAuth Client ID), go to <strong>APIs &amp; Services &rarr; Library</strong>, search for <strong>"Google Sheets API"</strong>, and click <strong>Enable</strong>.</li>
+      <li>Open your Clients Google Sheet. Look at its normal edit URL: <code>docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit</code>. Copy that long ID.</li>
+      <li>Do the same for your Featured Weddings sheet &mdash; copy its ID too.</li>
+      <li>Open this file (<code>admin.html</code>), find <code>DASH_GOOGLE_CLIENT_ID</code> near the bottom of the script, and paste in the same OAuth Client ID you already used in <code>login.html</code>.</li>
+      <li>Just below it, paste your two copied Spreadsheet IDs into <code>CLIENTS_SPREADSHEET_ID</code> and <code>FEATURED_SPREADSHEET_ID</code>. If either sheet's tab isn't literally named "Sheet1", update <code>CLIENTS_SHEET_NAME</code> / <code>FEATURED_SHEET_NAME</code> to match the real tab name.</li>
+      <li>Re-upload this file, then reload the page and click <strong>Sign In With Google</strong> at the top. The first time, Google may show an "unverified app" warning &mdash; that's expected for a small internal tool like this; click <strong>Advanced &rarr; Go to (your app) (unsafe)</strong> to proceed. This warning only appears because the app hasn't gone through Google's public-app review, which isn't necessary for a tool only you will ever use.</li>
+    </ol>
+    <p><strong>Why this is still secure:</strong> anyone could technically load this page, but the Sign In button only grants real access to whatever Google account actually clicks it and approves the permission &mdash; and the Sheets API itself will reject any changes unless that account has edit access to your specific Sheets. Someone finding this page without edit access to your Sheets can look, but can't change anything.</p>
+    <p><strong>You don't have to use this.</strong> The manual "Build a Client Row" tool further down still works exactly as before, if you'd rather stick with copy-pasting into Sheets yourself.</p>
+  </div>
+
 </div>
 
 <div class="wrap">
@@ -254,6 +420,7 @@
 
 <footer>&copy; 2026 Creative Studios &middot; Internal Use Only</footer>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   const nameInput = document.getElementById('cName');
   const emailInput = document.getElementById('cEmail');
@@ -362,6 +529,378 @@
   });
 
   renderLog();
+
+  // ═════════════════════════════════════════════════════════
+  // WRITE-ENABLED ADMIN DASHBOARD
+  // Reads and writes directly to your Google Sheets via the
+  // Sheets API — this is what lets you skip manually pasting
+  // rows into Sheets yourself.
+  //
+  // Setup required (see Step 9 below in the numbered guide):
+  // 1. Enable the Google Sheets API in Cloud Console
+  // 2. Paste your OAuth Client ID below (same one from login.html)
+  // 3. Paste your two Spreadsheet IDs below (NOT the published
+  //    CSV link — the actual ID from the Sheet's normal edit URL:
+  //    docs.google.com/spreadsheets/d/THIS_PART/edit)
+  // ═════════════════════════════════════════════════════════
+  const DASH_GOOGLE_CLIENT_ID = '231534432257-on3e0umt9gfar5cnu4bjmc6afn8ohpqe.apps.googleusercontent.com';
+  const CLIENTS_SPREADSHEET_ID = '1w8U6q4v_ejLtwm5GalzffG0vDcwtTmIQd3bwl1l39oY';
+  const CLIENTS_SHEET_NAME = 'Sheet1';
+  const FEATURED_SPREADSHEET_ID = '1kXieNkaB-vBcXnlR5bSSMQ3g94hcjBz2bvlGK-DKGsI';
+  const FEATURED_SHEET_NAME = 'Sheet1';
+
+  const CLIENTS_COLUMNS = ['Name','Email','FolderId','Passcode','ExpiresOn','CoverPhotoId','IntroVideoUrl'];
+  const FEATURED_COLUMNS = ['Names','Venue','PhotoIds','Order'];
+
+  let dashAccessToken = null;
+  let dashTokenClient = null;
+  let clientsRows = [];   // cached rows, each: { rowNumber, values: [...] }
+  let featuredRows = [];
+  let editingClientRow = null;
+  let editingFeaturedRow = null;
+
+  function dashConfigured(){
+    return !DASH_GOOGLE_CLIENT_ID.startsWith('PASTE_YOUR')
+      && !CLIENTS_SPREADSHEET_ID.startsWith('PASTE_YOUR')
+      && !FEATURED_SPREADSHEET_ID.startsWith('PASTE_YOUR');
+  }
+
+  function initDashboard(){
+    if(!dashConfigured()){
+      document.getElementById('dashSignInError').style.display = 'block';
+      document.getElementById('dashSignInError').textContent =
+        'Dashboard not configured yet — add your OAuth Client ID and both Spreadsheet IDs near DASH_GOOGLE_CLIENT_ID in this page\'s source before signing in. See Step 9 below.';
+      document.getElementById('dashSignInBtn').disabled = true;
+      return;
+    }
+    if(typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2){
+      setTimeout(initDashboard, 300); // GSI script may still be loading
+      return;
+    }
+    dashTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: DASH_GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email',
+      callback: async (response) => {
+        if(response.error){
+          document.getElementById('dashSignInError').style.display = 'block';
+          document.getElementById('dashSignInError').textContent = 'Sign-in failed or was cancelled. Try again.';
+          return;
+        }
+        dashAccessToken = response.access_token;
+        await onDashSignedIn();
+      },
+    });
+    document.getElementById('dashSignInBtn').addEventListener('click', () => {
+      dashTokenClient.requestAccessToken();
+    });
+  }
+
+  async function onDashSignedIn(){
+    document.getElementById('dashSignedOut').style.display = 'none';
+    document.getElementById('dashSignedIn').style.display = 'block';
+
+    try{
+      const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: 'Bearer ' + dashAccessToken }
+      });
+      const info = await res.json();
+      document.getElementById('dashUserEmail').textContent = info.email || 'your account';
+    } catch(err){ /* non-critical */ }
+
+    loadClientsTable();
+    loadFeaturedTable();
+  }
+
+  document.getElementById('dashSignOutBtn').addEventListener('click', () => {
+    if(dashAccessToken){
+      google.accounts.oauth2.revoke(dashAccessToken, () => {});
+    }
+    dashAccessToken = null;
+    document.getElementById('dashSignedOut').style.display = 'block';
+    document.getElementById('dashSignedIn').style.display = 'none';
+  });
+
+  document.querySelectorAll('.dash-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab === 'clients' ? 'panelClients' : 'panelFeatured').classList.add('active');
+    });
+  });
+
+  // ── Low-level Sheets API helpers ──
+  async function sheetsFetch(url, options){
+    const res = await fetch(url, {
+      ...options,
+      headers: { ...(options && options.headers), Authorization: 'Bearer ' + dashAccessToken, 'Content-Type': 'application/json' }
+    });
+    if(!res.ok){
+      const body = await res.text();
+      throw new Error(`Sheets API error (${res.status}): ${body}`);
+    }
+    return res.json();
+  }
+
+  async function sheetsGetValues(spreadsheetId, sheetName){
+    const range = encodeURIComponent(`${sheetName}!A2:Z`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`;
+    const data = await sheetsFetch(url);
+    return data.values || [];
+  }
+
+  async function sheetsAppendRow(spreadsheetId, sheetName, rowValues){
+    const range = encodeURIComponent(`${sheetName}!A:Z`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`;
+    await sheetsFetch(url, { method: 'POST', body: JSON.stringify({ values: [rowValues] }) });
+  }
+
+  async function sheetsUpdateRow(spreadsheetId, sheetName, rowNumber, rowValues){
+    const range = encodeURIComponent(`${sheetName}!A${rowNumber}:Z${rowNumber}`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`;
+    await sheetsFetch(url, { method: 'PUT', body: JSON.stringify({ values: [rowValues] }) });
+  }
+
+  async function sheetsGetTabId(spreadsheetId, sheetName){
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties`;
+    const data = await sheetsFetch(url);
+    const match = (data.sheets || []).find(s => s.properties.title === sheetName);
+    return match ? match.properties.sheetId : 0;
+  }
+
+  async function sheetsDeleteRow(spreadsheetId, sheetName, rowNumber){
+    const tabId = await sheetsGetTabId(spreadsheetId, sheetName);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
+    await sheetsFetch(url, { method: 'POST', body: JSON.stringify({
+      requests: [{ deleteDimension: { range: {
+        sheetId: tabId, dimension: 'ROWS', startIndex: rowNumber - 1, endIndex: rowNumber
+      }}}]
+    })});
+  }
+
+  // ── Clients panel ──
+  async function loadClientsTable(){
+    const container = document.getElementById('clientsTableContainer');
+    container.innerHTML = '<div class="dash-loading">Loading clients&hellip;</div>';
+    try{
+      const values = await sheetsGetValues(CLIENTS_SPREADSHEET_ID, CLIENTS_SHEET_NAME);
+      clientsRows = values.map((v, i) => ({ rowNumber: i + 2, values: v }));
+      renderClientsTable();
+    } catch(err){
+      container.innerHTML = `<div class="dash-empty">Couldn't load clients. ${err.message}</div>`;
+    }
+  }
+
+  function renderClientsTable(){
+    const container = document.getElementById('clientsTableContainer');
+    if(clientsRows.length === 0){
+      container.innerHTML = '<div class="dash-empty">No clients yet — add one above.</div>';
+      return;
+    }
+    const rowsHtml = clientsRows.map(r => {
+      const [name, email, folder, passcode] = r.values;
+      return `<tr>
+        <td>${name || '—'}</td>
+        <td>${email || '—'}</td>
+        <td>${folder || '—'}</td>
+        <td>${passcode || '—'}</td>
+        <td><div class="dash-row-actions">
+          <button class="edit" data-row="${r.rowNumber}">Edit</button>
+          <button class="del" data-row="${r.rowNumber}">Delete</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+    container.innerHTML = `<table class="dash-table">
+      <thead><tr><th>Name</th><th>Email</th><th>Folder ID</th><th>Passcode</th><th></th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>`;
+
+    container.querySelectorAll('.edit').forEach(btn => {
+      btn.addEventListener('click', () => startEditClient(parseInt(btn.dataset.row, 10)));
+    });
+    container.querySelectorAll('.del').forEach(btn => {
+      btn.addEventListener('click', () => deleteClientRow(parseInt(btn.dataset.row, 10)));
+    });
+  }
+
+  function startEditClient(rowNumber){
+    const row = clientsRows.find(r => r.rowNumber === rowNumber);
+    if(!row) return;
+    editingClientRow = rowNumber;
+    const [name, email, folder, passcode, expiry, cover, video] = row.values;
+    document.getElementById('cfName').value = name || '';
+    document.getElementById('cfEmail').value = email || '';
+    document.getElementById('cfFolder').value = folder || '';
+    document.getElementById('cfPasscode').value = passcode || '';
+    document.getElementById('cfExpiry').value = expiry || '';
+    document.getElementById('cfCover').value = cover || '';
+    document.getElementById('cfVideo').value = video || '';
+    document.getElementById('clientFormTitle').textContent = 'Editing Client — Row ' + rowNumber;
+    document.getElementById('clientSaveBtn').textContent = 'Save Changes';
+    document.getElementById('clientCancelBtn').style.display = 'inline-block';
+    document.getElementById('panelClients').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function resetClientForm(){
+    editingClientRow = null;
+    ['cfName','cfEmail','cfFolder','cfPasscode','cfExpiry','cfCover','cfVideo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('clientFormTitle').textContent = 'Add a New Client';
+    document.getElementById('clientSaveBtn').textContent = 'Add Client';
+    document.getElementById('clientCancelBtn').style.display = 'none';
+  }
+  document.getElementById('clientCancelBtn').addEventListener('click', resetClientForm);
+
+  document.getElementById('clientSaveBtn').addEventListener('click', async () => {
+    const msg = document.getElementById('clientFormMsg');
+    const rowValues = [
+      document.getElementById('cfName').value.trim(),
+      document.getElementById('cfEmail').value.trim(),
+      document.getElementById('cfFolder').value.trim(),
+      document.getElementById('cfPasscode').value.trim(),
+      document.getElementById('cfExpiry').value.trim(),
+      document.getElementById('cfCover').value.trim(),
+      document.getElementById('cfVideo').value.trim(),
+    ];
+    if(!rowValues[2] || (!rowValues[1] && !rowValues[3])){
+      msg.textContent = 'Folder ID, plus email or passcode, are required.';
+      msg.className = 'dash-msg err';
+      return;
+    }
+    msg.textContent = 'Saving…'; msg.className = 'dash-msg';
+    try{
+      if(editingClientRow){
+        await sheetsUpdateRow(CLIENTS_SPREADSHEET_ID, CLIENTS_SHEET_NAME, editingClientRow, rowValues);
+      } else {
+        await sheetsAppendRow(CLIENTS_SPREADSHEET_ID, CLIENTS_SHEET_NAME, rowValues);
+      }
+      msg.textContent = 'Saved.'; msg.className = 'dash-msg ok';
+      resetClientForm();
+      await loadClientsTable();
+      setTimeout(() => { msg.textContent = ''; }, 2000);
+    } catch(err){
+      msg.textContent = 'Failed: ' + err.message; msg.className = 'dash-msg err';
+    }
+  });
+
+  async function deleteClientRow(rowNumber){
+    if(!confirm('Delete this client? This removes the row from your Sheet permanently.')) return;
+    try{
+      await sheetsDeleteRow(CLIENTS_SPREADSHEET_ID, CLIENTS_SHEET_NAME, rowNumber);
+      await loadClientsTable();
+    } catch(err){
+      alert('Could not delete: ' + err.message);
+    }
+  }
+
+  // ── Featured Weddings panel ──
+  async function loadFeaturedTable(){
+    const container = document.getElementById('featuredTableContainer');
+    container.innerHTML = '<div class="dash-loading">Loading featured weddings&hellip;</div>';
+    try{
+      const values = await sheetsGetValues(FEATURED_SPREADSHEET_ID, FEATURED_SHEET_NAME);
+      featuredRows = values.map((v, i) => ({ rowNumber: i + 2, values: v }));
+      renderFeaturedTable();
+    } catch(err){
+      container.innerHTML = `<div class="dash-empty">Couldn't load featured weddings. ${err.message}</div>`;
+    }
+  }
+
+  function renderFeaturedTable(){
+    const container = document.getElementById('featuredTableContainer');
+    if(featuredRows.length === 0){
+      container.innerHTML = '<div class="dash-empty">No featured weddings yet — add one above.</div>';
+      return;
+    }
+    const rowsHtml = featuredRows.map(r => {
+      const [names, venue, photoId, order] = r.values;
+      return `<tr>
+        <td>${names || '—'}</td>
+        <td>${venue || '—'}</td>
+        <td>${photoId || '—'}</td>
+        <td>${order || '—'}</td>
+        <td><div class="dash-row-actions">
+          <button class="edit" data-row="${r.rowNumber}">Edit</button>
+          <button class="del" data-row="${r.rowNumber}">Delete</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+    container.innerHTML = `<table class="dash-table">
+      <thead><tr><th>Names</th><th>Venue</th><th>Photo IDs</th><th>Order</th><th></th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>`;
+
+    container.querySelectorAll('.edit').forEach(btn => {
+      btn.addEventListener('click', () => startEditFeatured(parseInt(btn.dataset.row, 10)));
+    });
+    container.querySelectorAll('.del').forEach(btn => {
+      btn.addEventListener('click', () => deleteFeaturedRow(parseInt(btn.dataset.row, 10)));
+    });
+  }
+
+  function startEditFeatured(rowNumber){
+    const row = featuredRows.find(r => r.rowNumber === rowNumber);
+    if(!row) return;
+    editingFeaturedRow = rowNumber;
+    const [names, venue, photoId, order] = row.values;
+    document.getElementById('ffNames').value = names || '';
+    document.getElementById('ffVenue').value = venue || '';
+    document.getElementById('ffPhoto').value = photoId || '';
+    document.getElementById('ffOrder').value = order || '';
+    document.getElementById('featuredFormTitle').textContent = 'Editing — Row ' + rowNumber;
+    document.getElementById('featuredSaveBtn').textContent = 'Save Changes';
+    document.getElementById('featuredCancelBtn').style.display = 'inline-block';
+    document.getElementById('panelFeatured').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function resetFeaturedForm(){
+    editingFeaturedRow = null;
+    ['ffNames','ffVenue','ffPhoto','ffOrder'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('featuredFormTitle').textContent = 'Add a Featured Wedding';
+    document.getElementById('featuredSaveBtn').textContent = 'Add Featured Wedding';
+    document.getElementById('featuredCancelBtn').style.display = 'none';
+  }
+  document.getElementById('featuredCancelBtn').addEventListener('click', resetFeaturedForm);
+
+  document.getElementById('featuredSaveBtn').addEventListener('click', async () => {
+    const msg = document.getElementById('featuredFormMsg');
+    const rowValues = [
+      document.getElementById('ffNames').value.trim(),
+      document.getElementById('ffVenue').value.trim(),
+      document.getElementById('ffPhoto').value.trim(),
+      document.getElementById('ffOrder').value.trim(),
+    ];
+    if(!rowValues[2]){
+      msg.textContent = 'Photo ID is required.';
+      msg.className = 'dash-msg err';
+      return;
+    }
+    msg.textContent = 'Saving…'; msg.className = 'dash-msg';
+    try{
+      if(editingFeaturedRow){
+        await sheetsUpdateRow(FEATURED_SPREADSHEET_ID, FEATURED_SHEET_NAME, editingFeaturedRow, rowValues);
+      } else {
+        await sheetsAppendRow(FEATURED_SPREADSHEET_ID, FEATURED_SHEET_NAME, rowValues);
+      }
+      msg.textContent = 'Saved.'; msg.className = 'dash-msg ok';
+      resetFeaturedForm();
+      await loadFeaturedTable();
+      setTimeout(() => { msg.textContent = ''; }, 2000);
+    } catch(err){
+      msg.textContent = 'Failed: ' + err.message; msg.className = 'dash-msg err';
+    }
+  });
+
+  async function deleteFeaturedRow(rowNumber){
+    if(!confirm('Delete this featured wedding? This removes the row from your Sheet permanently.')) return;
+    try{
+      await sheetsDeleteRow(FEATURED_SPREADSHEET_ID, FEATURED_SHEET_NAME, rowNumber);
+      await loadFeaturedTable();
+    } catch(err){
+      alert('Could not delete: ' + err.message);
+    }
+  }
+
+  initDashboard();
 </script>
 
 </body>
