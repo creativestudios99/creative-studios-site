@@ -348,42 +348,45 @@
   .split.is-visible .sw{ opacity:1; transform:translateY(0); }
 
   /* ---------- About ---------- */
-  /* ── Featured Weddings — one couple shown at a time, photos in
-     a center-tall arrangement, Prev/Next switches to a different
-     couple entirely (reference: mangostudios.com) ── */
+  /* ── Featured Weddings — a sliding window showing several
+     DIFFERENT clients' cover photos together in one row (center
+     tile largest), each with its own small caption. Prev/Next
+     glides the window over to reveal the next set of clients,
+     rather than switching one couple's whole photo set. ── */
   .featured{ padding:100px 0 90px; }
   .featured-head{ margin-bottom:36px; }
 
   .featured-slide{ text-align:center; }
   .f-photo-row{
-    display:flex; align-items:center; justify-content:center; gap:18px;
-    margin-bottom:40px;
+    display:flex; align-items:flex-end; justify-content:center; gap:18px;
+    margin-bottom:12px; transition:opacity 0.35s ease;
   }
+  .f-photo-row.sliding{ opacity:0; }
+  .f-photo-item{ flex:0 0 auto; width:170px; }
+  .f-photo-item.center{ width:270px; }
   .f-photo{
     position:relative; overflow:hidden; border-radius:2px; background:var(--paper-dim);
-    cursor:pointer; flex:0 0 auto;
-    width:170px; aspect-ratio:3/4;
+    cursor:pointer; width:100%; aspect-ratio:3/4;
     opacity:0; transform:translateY(14px); transition:opacity 0.6s ease, transform 0.6s ease;
   }
   .f-photo.show{ opacity:1; transform:translateY(0); }
-  .f-photo.center{ width:270px; z-index:2; box-shadow:0 30px 60px -20px rgba(36,31,38,0.35); }
+  .f-photo-item.center .f-photo{ z-index:2; box-shadow:0 30px 60px -20px rgba(36,31,38,0.35); }
   .f-photo img{
     width:100%; height:100%; object-fit:cover; display:block;
     transition:transform 0.7s cubic-bezier(0.16,1,0.3,1);
   }
   .f-photo:hover img{ transform:scale(1.05); }
-  .f-photo.placeholder-slot{
-    display:flex; align-items:center; justify-content:center;
-    font-family:'JetBrains Mono', monospace; font-size:0.6rem; color:var(--ink-soft); text-align:center; padding:12px;
+
+  /* Small per-photo caption, since each tile is a different couple */
+  .f-mini-caption{ padding-top:12px; }
+  .f-mini-names{ font-family:'Fraunces', serif; font-style:italic; font-size:0.95rem; color:var(--ink); }
+  .f-photo-item.center .f-mini-names{ font-size:1.15rem; }
+  .f-mini-venue{
+    font-family:'JetBrains Mono', monospace; font-size:0.6rem; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--gold); margin-top:3px;
   }
 
-  .f-names{ font-family:'Fraunces', serif; font-weight:450; font-size:clamp(1.8rem,3vw,2.4rem); color:var(--ink); }
-  .f-venue{
-    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
-    color:var(--gold); margin-top:12px;
-  }
-
-  .f-slide-nav{ display:flex; align-items:center; justify-content:center; gap:24px; margin-top:34px; }
+  .f-slide-nav{ display:flex; align-items:center; justify-content:center; gap:24px; margin-top:30px; }
   .f-nav-btn{
     width:48px; height:48px; border-radius:50%; border:1px solid var(--line); background:var(--paper);
     display:flex; align-items:center; justify-content:center; cursor:pointer;
@@ -408,14 +411,14 @@
   }
 
   @media (max-width:900px){
-    .f-photo{ width:110px; }
-    .f-photo.center{ width:190px; }
+    .f-photo-item{ width:110px; }
+    .f-photo-item.center{ width:190px; }
     .f-photo-row{ gap:10px; }
   }
   @media (max-width:600px){
-    .f-photo-row{ gap:0; }
-    .f-photo{ display:none; }
-    .f-photo.center{ display:block; width:70vw; max-width:280px; }
+    .f-photo-row{ gap:8px; }
+    .f-photo-item{ display:none; }
+    .f-photo-item.center{ display:block; width:60vw; max-width:240px; }
   }
 
   /* ── Featured wedding lightbox — click a photo to view it large,
@@ -941,7 +944,8 @@
   }
 
   let featuredEntries = [];
-  let currentSlide = 0;
+  let windowStart = 0;
+  const WINDOW_SIZE = 5; // how many different clients show at once
 
   async function loadFeaturedWeddings(){
     const wrap = document.getElementById('featuredSlideWrap');
@@ -959,7 +963,9 @@
       const venueIdx = header.indexOf('venue');
       // Accepts either "PhotoIds" (preferred, comma/pipe-separated
       // list) or the older single "PhotoId" column — either header
-      // works, so existing sheets don't break.
+      // works, so existing sheets don't break. Only the FIRST photo
+      // per row is used here as that client's cover image — the
+      // rest are still reachable via the lightbox on click.
       const photoIdx = header.indexOf('photoids') !== -1 ? header.indexOf('photoids') : header.indexOf('photoid');
       const orderIdx = header.indexOf('order');
 
@@ -968,7 +974,7 @@
         .map(r => ({
           names: r[namesIdx] || '',
           venue: r[venueIdx] || '',
-          photoIds: r[photoIdx].split(/[|,]/).map(s => s.trim()).filter(Boolean).slice(0, 5),
+          photoIds: r[photoIdx].split(/[|,]/).map(s => s.trim()).filter(Boolean),
           order: orderIdx !== -1 && r[orderIdx] ? parseFloat(r[orderIdx]) : 999,
         }));
 
@@ -983,54 +989,68 @@
       wrap.innerHTML = `
         <div class="featured-slide">
           <div class="f-photo-row" id="fPhotoRow"></div>
-          <div class="f-names" id="fSlideNames"></div>
-          <div class="f-venue" id="fSlideVenue"></div>
           <div class="f-slide-nav">
-            <button class="f-nav-btn hoverable" id="fPrevSlide" aria-label="Previous wedding"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button class="f-nav-btn hoverable" id="fPrevSlide" aria-label="Show previous clients"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
             <span class="f-slide-dots" id="fSlideCount"></span>
-            <button class="f-nav-btn hoverable" id="fNextSlide" aria-label="Next wedding"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+            <button class="f-nav-btn hoverable" id="fNextSlide" aria-label="Show next clients"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
           </div>
         </div>
       `;
 
-      document.getElementById('fPrevSlide').addEventListener('click', () => {
-        currentSlide = (currentSlide - 1 + featuredEntries.length) % featuredEntries.length;
-        renderSlide();
-      });
-      document.getElementById('fNextSlide').addEventListener('click', () => {
-        currentSlide = (currentSlide + 1) % featuredEntries.length;
-        renderSlide();
-      });
+      document.getElementById('fPrevSlide').addEventListener('click', () => shiftWindow(-1));
+      document.getElementById('fNextSlide').addEventListener('click', () => shiftWindow(1));
 
-      renderSlide();
+      renderWindow();
     } catch(err){
       console.error('Could not load featured weddings:', err);
       wrap.innerHTML = `<div class="featured-msg">Couldn't load featured weddings right now.</div>`;
     }
   }
 
-  // Renders one couple's photo set: center image largest, up to two
-  // smaller images flanking each side — matching the reference
-  // layout. Works gracefully with fewer than 5 photos too.
-  function renderSlide(){
-    const entry = featuredEntries[currentSlide];
-    if(!entry) return;
+  // Moves the visible window by one client at a time (not a full
+  // page), so it feels like gliding through a stack of albums
+  // rather than jumping in large chunks. Wraps around at the ends.
+  function shiftWindow(direction){
+    const total = featuredEntries.length;
+    windowStart = (windowStart + direction + total) % total;
     const row = document.getElementById('fPhotoRow');
-    const photos = entry.photoIds;
-    const centerIdx = Math.floor((photos.length - 1) / 2);
+    row.classList.add('sliding');
+    setTimeout(() => {
+      renderWindow();
+      row.classList.remove('sliding');
+    }, 180);
+  }
 
-    row.innerHTML = photos.map((id, i) => `
-      <div class="f-photo ${i === centerIdx ? 'center' : ''}" data-photo-index="${i}">
-        <img src="${driveThumbUrl(id, i === centerIdx ? 900 : 500)}" alt="${entry.names.replace(/"/g,'')}" loading="lazy">
+  // Renders WINDOW_SIZE different clients' cover photos together —
+  // center tile largest, gracefully shrinks the window if there
+  // are fewer total clients than WINDOW_SIZE.
+  function renderWindow(){
+    const row = document.getElementById('fPhotoRow');
+    const total = featuredEntries.length;
+    const size = Math.min(WINDOW_SIZE, total);
+    const centerSlot = Math.floor((size - 1) / 2);
+
+    const visible = [];
+    for(let i = 0; i < size; i++){
+      visible.push(featuredEntries[(windowStart + i) % total]);
+    }
+
+    row.innerHTML = visible.map((entry, slot) => `
+      <div class="f-photo-item ${slot === centerSlot ? 'center' : ''}">
+        <div class="f-photo" data-entry-index="${(windowStart + slot) % total}">
+          <img src="${driveThumbUrl(entry.photoIds[0], slot === centerSlot ? 900 : 500)}" alt="${entry.names.replace(/"/g,'')}" loading="lazy">
+        </div>
+        <div class="f-mini-caption">
+          <div class="f-mini-names">${entry.names || '—'}</div>
+          <div class="f-mini-venue">${entry.venue || ''}</div>
+        </div>
       </div>
     `).join('');
 
-    document.getElementById('fSlideNames').textContent = entry.names || '—';
-    document.getElementById('fSlideVenue').textContent = entry.venue || '';
-    document.getElementById('fSlideCount').textContent = featuredEntries.length > 1 ? `${currentSlide + 1} / ${featuredEntries.length}` : '';
+    document.getElementById('fSlideCount').textContent = total > size ? `${windowStart + 1} / ${total}` : '';
 
     row.querySelectorAll('.f-photo').forEach(el => {
-      el.addEventListener('click', () => openFeaturedLightbox(currentSlide, parseInt(el.dataset.photoIndex, 10)));
+      el.addEventListener('click', () => openFeaturedLightbox(parseInt(el.dataset.entryIndex, 10), 0));
       requestAnimationFrame(() => el.classList.add('show'));
     });
   }
