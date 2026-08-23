@@ -13,6 +13,21 @@
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{ font-family:'Work Sans', sans-serif; color:var(--ink); background:var(--paper); overflow-x:hidden; max-width:100%; }
+
+  /* ── Page gate ── */
+  .page-gate{
+    position:fixed; inset:0; z-index:2000; background:var(--ink);
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .page-gate-box{ width:100%; max-width:360px; text-align:center; }
+  .page-gate-brand{ font-family:'Fraunces', serif; font-style:italic; font-size:1.4rem; color:var(--paper); margin-bottom:10px; }
+  .page-gate-label{
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--rose); margin-bottom:14px;
+  }
+  .page-gate-sub{ color:rgba(239,233,225,0.7); font-size:0.9rem; margin-bottom:28px; }
+  .gate-gsi-btn{ display:flex; justify-content:center; }
+  .page-gate-error{ color:#d97878; font-size:0.82rem; margin-top:20px; }
   html{ overflow-x:hidden; width:100%; }
   h1,h2,h3,.serif{ font-family:'Fraunces', serif; font-weight:450; letter-spacing:-0.01em; }
   .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.04em; }
@@ -169,6 +184,34 @@
 </style>
 </head>
 <body>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE GATE — nothing below this loads visibly until you sign
+     in with an allowed Google account. Set your own email(s) in
+     ALLOWED_ADMIN_EMAILS near the bottom of this file.
+
+     This is meaningfully stronger than a shared password: access
+     is tied to your actual Google identity, verified by Google
+     itself, not a secret embedded in the page's code that anyone
+     could find by viewing source. Someone would need to actually
+     be signed into one of your allowed Google accounts to get past
+     this gate at all — and even then, real Sheet changes are still
+     independently checked by Google's own permissions, same as
+     always.
+     ═══════════════════════════════════════════════════════════ -->
+<div class="page-gate" id="pageGate">
+  <div class="page-gate-box">
+    <div class="page-gate-brand">Creative Studios</div>
+    <p class="page-gate-label">Staff Access Only</p>
+    <p class="page-gate-sub">Sign in with your Google account to continue.</p>
+    <div id="gateGsiBtn" class="gate-gsi-btn"></div>
+    <p id="pageGateError" class="page-gate-error" style="display:none;"></p>
+  </div>
+</div>
+
+<div id="pageContent" style="display:none;">
 
 <header>
   <div class="wrap head-row">
@@ -420,7 +463,6 @@
 
 <footer>&copy; 2026 Creative Studios &middot; Internal Use Only</footer>
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   const nameInput = document.getElementById('cName');
   const emailInput = document.getElementById('cEmail');
@@ -901,6 +943,83 @@
   }
 
   initDashboard();
+</script>
+
+</div>
+<!-- /#pageContent -->
+
+<script>
+  // ═══════════════════════════════════════════════════════════
+  // List every Google account email allowed to open this page at
+  // all. Add more by separating with commas — e.g. if a second
+  // staff member needs access, add their email here too.
+  // ═══════════════════════════════════════════════════════════
+  const ALLOWED_ADMIN_EMAILS = ['sivacreativestudios@gmail.com'];
+
+  const GATE_SESSION_KEY = 'cs_admin_gate_email';
+
+  function unlockPage(){
+    document.getElementById('pageGate').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
+  }
+
+  function showGateError(msg){
+    const error = document.getElementById('pageGateError');
+    error.textContent = msg;
+    error.style.display = 'block';
+  }
+
+  function handleGateCredential(response){
+    try{
+      const payload = JSON.parse(atob(response.credential.split('.')[1]));
+      const email = (payload.email || '').toLowerCase();
+      const allowed = ALLOWED_ADMIN_EMAILS.map(e => e.toLowerCase());
+      if(allowed.includes(email)){
+        sessionStorage.setItem(GATE_SESSION_KEY, email);
+        unlockPage();
+      } else {
+        showGateError(`${payload.email} doesn't have access to this page. Signed into the wrong account?`);
+      }
+    } catch(err){
+      showGateError('Something went wrong signing in — please try again.');
+    }
+  }
+
+  function initGate(){
+    if(ALLOWED_ADMIN_EMAILS[0].startsWith('PASTE_YOUR')){
+      showGateError('Set ALLOWED_ADMIN_EMAILS near the bottom of this file with your real Google account email before relying on this gate.');
+      document.getElementById('pageGateError').style.color = '#a98552';
+      return;
+    }
+    // Reuses the same OAuth Client ID already configured for the
+    // Dashboard further down this file, so no new setup needed.
+    if(typeof google === 'undefined' || !google.accounts || !google.accounts.id){
+      setTimeout(initGate, 300); // GSI script may still be loading
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: DASH_GOOGLE_CLIENT_ID_FOR_GATE,
+      callback: handleGateCredential,
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('gateGsiBtn'),
+      { theme: 'filled_black', size: 'large', shape: 'rectangular', width: 300 }
+    );
+  }
+
+  // Reads the same Client ID the Dashboard uses further down this
+  // file, so there's only one place to ever update it.
+  const DASH_GOOGLE_CLIENT_ID_FOR_GATE = '231534432257-on3e0umt9gfar5cnu4bjmc6afn8ohpqe.apps.googleusercontent.com';
+
+  // Stays unlocked for the rest of this browser tab's session —
+  // re-signing-in every click while you work would be tedious.
+  // Closing the tab resets it.
+  const savedEmail = sessionStorage.getItem(GATE_SESSION_KEY);
+  if(savedEmail && ALLOWED_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(savedEmail.toLowerCase())){
+    unlockPage();
+  } else {
+    initGate();
+  }
 </script>
 
 </body>
