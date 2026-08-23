@@ -354,12 +354,23 @@
      glides the window over to reveal the next set of clients,
      rather than switching one couple's whole photo set. ── */
   .featured{ padding:100px 0 90px; }
-  .featured-head{ margin-bottom:36px; }
+  .featured-head{ margin-bottom:44px; text-align:center; }
+  .featured-locations{
+    font-family:'JetBrains Mono', monospace; font-size:0.85rem; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--ink-soft); margin-bottom:18px;
+  }
+  .featured-locations span:not(:last-child)::after{ content:'|'; margin:0 14px; color:var(--line); }
+  .featured-huge-title{
+    font-family:'Fraunces', serif; font-weight:600; font-size:clamp(2.6rem,7vw,5.2rem);
+    letter-spacing:-0.01em; color:var(--ink); line-height:1.15;
+    display:inline-block; padding:4px 20px;
+    background:rgba(185,119,107,0.32);
+  }
 
   .featured-slide{ text-align:center; }
   .f-photo-row{
     display:flex; align-items:flex-end; justify-content:center; gap:18px;
-    margin-bottom:12px; transition:opacity 0.35s ease;
+    margin-bottom:40px; transition:opacity 0.35s ease;
   }
   .f-photo-row.sliding{ opacity:0; }
   .f-photo-item{ flex:0 0 auto; width:170px; }
@@ -367,26 +378,28 @@
   .f-photo{
     position:relative; overflow:hidden; border-radius:2px; background:var(--paper-dim);
     cursor:pointer; width:100%; aspect-ratio:3/4;
-    opacity:0; transform:translateY(14px); transition:opacity 0.6s ease, transform 0.6s ease;
+    opacity:0; transform:translateY(14px);
+    transition:opacity 0.6s ease, transform 0.6s ease, box-shadow 0.4s ease;
   }
   .f-photo.show{ opacity:1; transform:translateY(0); }
   .f-photo-item.center .f-photo{ z-index:2; box-shadow:0 30px 60px -20px rgba(36,31,38,0.35); }
+  .f-photo:hover{ box-shadow:0 24px 50px -16px rgba(36,31,38,0.4); }
   .f-photo img{
     width:100%; height:100%; object-fit:cover; display:block;
-    transition:transform 0.7s cubic-bezier(0.16,1,0.3,1);
+    transition:transform 0.6s cubic-bezier(0.22,1,0.36,1);
   }
-  .f-photo:hover img{ transform:scale(1.05); }
+  .f-photo:hover img{ transform:scale(1.09); }
 
-  /* Small per-photo caption, since each tile is a different couple */
-  .f-mini-caption{ padding-top:12px; }
-  .f-mini-names{ font-family:'Fraunces', serif; font-style:italic; font-size:0.95rem; color:var(--ink); }
-  .f-photo-item.center .f-mini-names{ font-size:1.15rem; }
-  .f-mini-venue{
-    font-family:'JetBrains Mono', monospace; font-size:0.6rem; letter-spacing:0.06em; text-transform:uppercase;
-    color:var(--gold); margin-top:3px;
+  /* Single caption for the center (active) photo only — the
+     peeking side photos stay caption-free, matching the real
+     reference site's structure. */
+  .f-names{ font-family:'Fraunces', serif; font-weight:450; font-size:clamp(1.8rem,3vw,2.4rem); color:var(--ink); }
+  .f-venue{
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--gold); margin-top:12px;
   }
 
-  .f-slide-nav{ display:flex; align-items:center; justify-content:center; gap:24px; margin-top:30px; }
+  .f-slide-nav{ display:flex; align-items:center; justify-content:center; gap:24px; margin-top:34px; }
   .f-nav-btn{
     width:48px; height:48px; border-radius:50%; border:1px solid var(--line); background:var(--paper);
     display:flex; align-items:center; justify-content:center; cursor:pointer;
@@ -794,15 +807,11 @@
 <section class="featured">
   <div class="wrap">
     <div class="featured-head reveal">
-      <span class="eyebrow">Recent Work</span>
+      <div class="featured-huge-title">Featured Wedding</div>
     </div>
 
     <div id="featuredSlideWrap">
       <div class="featured-msg">Loading featured weddings&hellip;</div>
-    </div>
-
-    <div class="featured-more">
-      <a href="#contact" class="hoverable">See More Galleries</a>
     </div>
   </div>
 </section>
@@ -989,10 +998,12 @@
       wrap.innerHTML = `
         <div class="featured-slide">
           <div class="f-photo-row" id="fPhotoRow"></div>
+          <div class="f-names" id="fCenterNames"></div>
+          <div class="f-venue" id="fCenterVenue"></div>
           <div class="f-slide-nav">
-            <button class="f-nav-btn hoverable" id="fPrevSlide" aria-label="Show previous clients"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button class="f-nav-btn hoverable" id="fPrevSlide" aria-label="Show previous couple"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
             <span class="f-slide-dots" id="fSlideCount"></span>
-            <button class="f-nav-btn hoverable" id="fNextSlide" aria-label="Show next clients"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+            <button class="f-nav-btn hoverable" id="fNextSlide" aria-label="Show next couple"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
           </div>
         </div>
       `;
@@ -1035,18 +1046,20 @@
       visible.push(featuredEntries[(windowStart + i) % total]);
     }
 
+    // Only the center (active) photo gets a caption below it —
+    // the peeking side photos stay caption-free, matching the
+    // real reference site's structure exactly.
     row.innerHTML = visible.map((entry, slot) => `
       <div class="f-photo-item ${slot === centerSlot ? 'center' : ''}">
         <div class="f-photo" data-entry-index="${(windowStart + slot) % total}">
           <img src="${driveThumbUrl(entry.photoIds[0], slot === centerSlot ? 900 : 500)}" alt="${entry.names.replace(/"/g,'')}" loading="lazy">
         </div>
-        <div class="f-mini-caption">
-          <div class="f-mini-names">${entry.names || '—'}</div>
-          <div class="f-mini-venue">${entry.venue || ''}</div>
-        </div>
       </div>
     `).join('');
 
+    const centerEntry = visible[centerSlot];
+    document.getElementById('fCenterNames').textContent = centerEntry.names || '—';
+    document.getElementById('fCenterVenue').textContent = centerEntry.venue || '';
     document.getElementById('fSlideCount').textContent = total > size ? `${windowStart + 1} / ${total}` : '';
 
     row.querySelectorAll('.f-photo').forEach(el => {
