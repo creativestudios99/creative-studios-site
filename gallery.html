@@ -205,6 +205,7 @@
   .lightbox img{
     max-width:88vw; max-height:78vh; object-fit:contain; border-radius:2px;
     box-shadow:0 40px 100px rgba(0,0,0,0.5);
+    touch-action:none; user-select:none; -webkit-user-select:none;
   }
   .lightbox-bar{
     display:flex; align-items:center; justify-content:space-between; width:88vw; max-width:900px;
@@ -1218,27 +1219,105 @@
   // Touch swipe — swipe left for next, right for previous. Mainly
   // for mobile/tablet, where dragging feels more natural than
   // tapping the small arrow buttons.
-  (function initLightboxSwipe(){
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchMoved = false;
+  // ─────────────────────────────────────────────────────────
+  // Pinch-to-zoom, pan, double-tap-to-zoom, and swipe-to-navigate
+  // — all on the same image, coordinated so they don't conflict:
+  //   • Two fingers moving apart/together → pinch zoom
+  //   • One finger, zoomed in → pan around the photo
+  //   • One finger, NOT zoomed → swipe left/right changes photo
+  //   • Double-tap → toggle between 1x and 2.5x zoom
+  // ─────────────────────────────────────────────────────────
+  (function initLightboxGestures(){
+    const MIN_ZOOM = 1;
+    const MAX_ZOOM = 4;
+    const DOUBLE_TAP_ZOOM = 2.5;
     const SWIPE_THRESHOLD = 40;
 
+    let zoom = 1;
+    let panX = 0, panY = 0;
+    let startPanX = 0, startPanY = 0;
+    let startTouchX = 0, startTouchY = 0;
+    let pinchStartDist = 0;
+    let pinchStartZoom = 1;
+    let mode = null; // 'pinch' | 'pan' | 'swipe'
+    let lastTapTime = 0;
+
+    function applyTransform(){
+      lbImage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+    }
+
+    function resetZoom(){
+      zoom = 1; panX = 0; panY = 0;
+      lbImage.style.transition = 'transform 0.25s ease';
+      applyTransform();
+      setTimeout(() => { lbImage.style.transition = ''; }, 250);
+    }
+    // Reset zoom every time a new photo loads, so you never
+    // arrive at the next photo still zoomed in from the last one.
+    const origRenderLightbox = renderLightbox;
+    renderLightbox = function(){
+      origRenderLightbox();
+      resetZoom();
+    };
+
+    function touchDistance(touches){
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+
     lightbox.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      touchMoved = false;
+      if(e.touches.length === 2){
+        mode = 'pinch';
+        pinchStartDist = touchDistance(e.touches);
+        pinchStartZoom = zoom;
+      } else if(e.touches.length === 1){
+        startTouchX = e.touches[0].clientX;
+        startTouchY = e.touches[0].clientY;
+        if(zoom > 1.02){
+          mode = 'pan';
+          startPanX = panX;
+          startPanY = panY;
+        } else {
+          mode = 'swipe';
+        }
+      }
     }, { passive: true });
 
-    lightbox.addEventListener('touchmove', () => { touchMoved = true; }, { passive: true });
+    lightbox.addEventListener('touchmove', (e) => {
+      if(mode === 'pinch' && e.touches.length === 2){
+        const dist = touchDistance(e.touches);
+        zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, pinchStartZoom * (dist / pinchStartDist)));
+        applyTransform();
+      } else if(mode === 'pan' && e.touches.length === 1){
+        panX = startPanX + (e.touches[0].clientX - startTouchX);
+        panY = startPanY + (e.touches[0].clientY - startTouchY);
+        applyTransform();
+      }
+      // mode === 'swipe' — no visual change during move, decided on touchend
+    }, { passive: true });
 
     lightbox.addEventListener('touchend', (e) => {
-      if(!touchMoved) return;
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      const dy = e.changedTouches[0].clientY - touchStartY;
-      if(Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)){
-        dx < 0 ? lbNext() : lbPrev();
+      if(mode === 'pinch'){
+        if(zoom < 1.05) resetZoom(); // snap back if barely zoomed
+      } else if(mode === 'swipe'){
+        const dx = e.changedTouches[0].clientX - startTouchX;
+        const dy = e.changedTouches[0].clientY - startTouchY;
+        if(Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)){
+          dx < 0 ? lbNext() : lbPrev();
+        } else {
+          // Not a real swipe — check for a double-tap instead
+          const now = Date.now();
+          if(now - lastTapTime < 300){
+            if(zoom > 1.02) resetZoom();
+            else { zoom = DOUBLE_TAP_ZOOM; applyTransform(); lbImage.style.transition='transform 0.25s ease'; setTimeout(()=>{lbImage.style.transition='';},250); }
+            lastTapTime = 0;
+          } else {
+            lastTapTime = now;
+          }
+        }
       }
+      mode = null;
     });
   })();
 
