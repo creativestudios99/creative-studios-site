@@ -236,9 +236,20 @@
     display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
   .lightbox-close svg{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; }
+  .lightbox-fullscreen{
+    position:fixed; top:24px; right:78px; width:42px; height:42px; border-radius:50%;
+    background:rgba(239,233,225,0.08); border:1px solid rgba(239,233,225,0.2); color:var(--paper);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:background 0.25s ease;
+  }
+  .lightbox-fullscreen:hover{ background:rgba(239,233,225,0.18); }
+  .lightbox-fullscreen.active{ background:var(--rose); border-color:var(--rose); }
+  .lightbox-fullscreen svg{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; }
   @media (max-width:720px){
     .lightbox-nav{ width:38px; height:38px; }
     .lightbox-nav.prev{ left:8px; } .lightbox-nav.next{ right:8px; }
+    .lightbox-fullscreen{ right:70px; width:38px; height:38px; }
+    .lightbox-close{ width:38px; height:38px; }
   }
 
   /* ── Auto-playing slideshow ── */
@@ -432,6 +443,9 @@
 
   <div class="lightbox" id="lightbox">
     <button class="lightbox-close hoverable" id="lbClose"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="lightbox-fullscreen hoverable" id="lbFullscreen" aria-label="View fullscreen">
+      <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M8 21H5a2 2 0 01-2-2v-3M16 21h3a2 2 0 002-2v-3"/></svg>
+    </button>
     <button class="lightbox-nav prev hoverable" id="lbPrev"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
     <button class="lightbox-nav next hoverable" id="lbNext"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
     <img id="lbImage" src="" alt="">
@@ -631,14 +645,20 @@
       const videoIdx = header.indexOf('introvideourl');
       const map = {};
       rows.forEach(r => {
-        const email = (r[emailIdx] || '').toLowerCase();
+        // The Email cell can hold multiple accounts, separated by
+        // semicolons — e.g. "maya@gmail.com; dad@gmail.com" — so
+        // several individually-shared Google accounts can all reach
+        // the same gallery. Semicolons, not commas, since commas
+        // already separate the sheet's own columns.
+        const emails = (r[emailIdx] || '').split(';').map(e => e.trim().toLowerCase()).filter(Boolean);
         const folder = extractFolderId(r[folderIdx] || '');
-        if(email && folder){
-          map[email] = {
+        if(emails.length && folder){
+          const entry = {
             folderId: folder,
             coverPhotoId: coverIdx !== -1 ? extractFolderId(r[coverIdx] || '') : '',
             introVideoUrl: videoIdx !== -1 ? (r[videoIdx] || '').trim() : '',
           };
+          emails.forEach(email => { map[email] = entry; });
         }
       });
       return map;
@@ -1108,8 +1128,15 @@
     lbIndex = index;
     renderLightbox();
     lightbox.classList.add('open');
+    // Locks the page behind the lightbox so scrolling the photo
+    // view doesn't also scroll the gallery grid underneath it.
+    document.body.style.overflow = 'hidden';
   }
-  function closeLightbox(){ lightbox.classList.remove('open'); }
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+    if(document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  }
   function renderLightbox(){
     const f = realFiles[lbIndex];
     if(!f) return;
@@ -1140,10 +1167,57 @@
   lightbox.addEventListener('click', (e) => { if(e.target === lightbox) closeLightbox(); });
   document.addEventListener('keydown', (e) => {
     if(!lightbox.classList.contains('open')) return;
-    if(e.key === 'Escape') closeLightbox();
+    if(e.key === 'Escape' && !document.fullscreenElement) closeLightbox();
     if(e.key === 'ArrowRight') lbNext();
     if(e.key === 'ArrowLeft') lbPrev();
   });
+
+  // Fullscreen toggle — same pattern as the slideshow's fullscreen
+  // button, just applied to the single-photo lightbox instead.
+  const lbFullscreenBtn = document.getElementById('lbFullscreen');
+  if(lbFullscreenBtn){
+    lbFullscreenBtn.addEventListener('click', () => {
+      if(!document.fullscreenElement){
+        lightbox.requestFullscreen().then(() => {
+          lbFullscreenBtn.classList.add('active');
+        }).catch(() => {
+          alert("Fullscreen isn't available in this browser.");
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      lbFullscreenBtn.classList.toggle('active', !!document.fullscreenElement);
+    });
+  }
+
+  // Touch swipe — swipe left for next, right for previous. Mainly
+  // for mobile/tablet, where dragging feels more natural than
+  // tapping the small arrow buttons.
+  (function initLightboxSwipe(){
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchMoved = false;
+    const SWIPE_THRESHOLD = 40;
+
+    lightbox.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchMoved = false;
+    }, { passive: true });
+
+    lightbox.addEventListener('touchmove', () => { touchMoved = true; }, { passive: true });
+
+    lightbox.addEventListener('touchend', (e) => {
+      if(!touchMoved) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if(Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)){
+        dx < 0 ? lbNext() : lbPrev();
+      }
+    });
+  })();
 
   // ─────────────────────────────────────────────────────────
   // PART 6b — Auto-playing slideshow. Plays through whichever
@@ -1182,6 +1256,7 @@
     ssPlaying = true;
     setPauseIcon(true);
     startSsTimer(SLIDE_DURATION);
+    document.body.style.overflow = 'hidden';
   }
 
   function closeSlideshow(){
@@ -1191,6 +1266,7 @@
     ssImgB.classList.remove('show', 'kenburns');
     ssProgressFill.classList.remove('animate');
     ssProgressFill.style.width = '0%';
+    document.body.style.overflow = '';
   }
 
   function updateSsCount(){
