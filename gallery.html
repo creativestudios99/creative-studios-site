@@ -1115,6 +1115,31 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // Shared scroll lock — used by both the lightbox and the
+  // slideshow. Plain `overflow:hidden` on body doesn't reliably
+  // stop scrolling on touch devices (iOS Safari in particular can
+  // still pan the background via touch even with that rule set),
+  // so this instead pins the page in place with position:fixed —
+  // the standard, actually-reliable fix for this — and restores
+  // the exact scroll position when unlocked.
+  // ─────────────────────────────────────────────────────────
+  let lockedScrollY = 0;
+  function lockPageScroll(){
+    lockedScrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = -lockedScrollY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+  }
+  function unlockPageScroll(){
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    window.scrollTo(0, lockedScrollY);
+  }
+
+  // ─────────────────────────────────────────────────────────
   // PART 6 — Lightbox
   // ─────────────────────────────────────────────────────────
   const lightbox = document.getElementById('lightbox');
@@ -1128,13 +1153,11 @@
     lbIndex = index;
     renderLightbox();
     lightbox.classList.add('open');
-    // Locks the page behind the lightbox so scrolling the photo
-    // view doesn't also scroll the gallery grid underneath it.
-    document.body.style.overflow = 'hidden';
+    lockPageScroll();
   }
   function closeLightbox(){
     lightbox.classList.remove('open');
-    document.body.style.overflow = '';
+    unlockPageScroll();
     if(document.fullscreenElement) document.exitFullscreen().catch(() => {});
   }
   function renderLightbox(){
@@ -1256,7 +1279,7 @@
     ssPlaying = true;
     setPauseIcon(true);
     startSsTimer(SLIDE_DURATION);
-    document.body.style.overflow = 'hidden';
+    lockPageScroll();
   }
 
   function closeSlideshow(){
@@ -1266,7 +1289,7 @@
     ssImgB.classList.remove('show', 'kenburns');
     ssProgressFill.classList.remove('animate');
     ssProgressFill.style.width = '0%';
-    document.body.style.overflow = '';
+    unlockPageScroll();
   }
 
   function updateSsCount(){
