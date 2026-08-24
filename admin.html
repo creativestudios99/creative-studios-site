@@ -171,14 +171,28 @@
   .dash-msg.ok{ color:#8fbf8f; }
   .dash-msg.err{ color:var(--rose); }
 
-  .dash-table-wrap{ overflow-x:auto; }
+  .dash-table-wrap{ overflow-x:auto; border-radius:4px; overflow:hidden; }
   .dash-table{ width:100%; border-collapse:collapse; min-width:640px; }
-  .dash-table th, .dash-table td{ text-align:left; padding:10px 12px; border-bottom:1px solid rgba(239,233,225,0.12); font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
-  .dash-table th{ font-family:'JetBrains Mono', monospace; font-size:0.62rem; letter-spacing:0.05em; text-transform:uppercase; color:rgba(239,233,225,0.55); }
-  .dash-row-actions{ display:flex; gap:8px; }
-  .dash-row-actions button{ background:none; border:none; cursor:pointer; font-family:'JetBrains Mono', monospace; font-size:0.66rem; text-transform:uppercase; color:rgba(239,233,225,0.6); }
-  .dash-row-actions button:hover{ color:var(--rose); }
-  .dash-row-actions .del:hover{ color:#d97878; }
+  .dash-table th, .dash-table td{
+    text-align:left; padding:12px 14px; font-size:0.85rem;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;
+  }
+  .dash-table thead{ background:rgba(239,233,225,0.1); }
+  .dash-table th{
+    font-family:'JetBrains Mono', monospace; font-size:0.66rem; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--paper); font-weight:600; border-bottom:2px solid rgba(239,233,225,0.25);
+  }
+  .dash-table td{ color:rgba(239,233,225,0.92); border-bottom:1px solid rgba(239,233,225,0.12); }
+  .dash-table tbody tr:nth-child(even){ background:rgba(239,233,225,0.04); }
+  .dash-table tbody tr:hover{ background:rgba(185,119,107,0.1); }
+  .dash-row-actions{ display:flex; gap:14px; }
+  .dash-row-actions button{
+    background:none; border:none; cursor:pointer; font-family:'JetBrains Mono', monospace;
+    font-size:0.68rem; letter-spacing:0.04em; text-transform:uppercase; font-weight:600; color:var(--rose);
+  }
+  .dash-row-actions button:hover{ color:var(--gold); text-decoration:underline; }
+  .dash-row-actions .del{ color:#e08a8a; }
+  .dash-row-actions .del:hover{ color:#f0a5a5; }
   .dash-empty{ padding:30px; text-align:center; color:rgba(239,233,225,0.5); font-size:0.85rem; }
   .dash-loading{ padding:30px; text-align:center; color:rgba(239,233,225,0.5); font-size:0.85rem; font-family:'JetBrains Mono', monospace; }
 </style>
@@ -255,7 +269,7 @@
           <h3 id="clientFormTitle">Add a New Client</h3>
           <div class="dash-form-grid">
             <div class="dfield"><label>Couple's Names</label><input id="cfName" type="text" placeholder="Maya &amp; Jonah"></div>
-            <div class="dfield"><label>Email</label><input id="cfEmail" type="email" placeholder="maya.jonah@gmail.com"></div>
+            <div class="dfield"><label>Email(s) &mdash; separate multiple with ;</label><input id="cfEmail" type="text" placeholder="maya.jonah@gmail.com; dad@gmail.com"></div>
             <div class="dfield"><label>Drive Folder ID</label><input id="cfFolder" type="text" placeholder="Folder ID or share link"></div>
             <div class="dfield"><label>Passcode</label><input id="cfPasscode" type="text" placeholder="e.g. B7K2XQPM"></div>
             <div class="dfield"><label>Expires On</label><input id="cfExpiry" type="date"></div>
