@@ -353,8 +353,14 @@
      tile largest), each with its own small caption. Prev/Next
      glides the window over to reveal the next set of clients,
      rather than switching one couple's whole photo set. ── */
-  .featured{ padding:100px 0 90px; }
+  .featured{ padding:70px 0 60px; }
   .featured-head{ margin-bottom:44px; text-align:center; }
+
+  /* Breaks out of the site's standard 1180px .wrap so the photo
+     row can actually use the width of the screen, matching the
+     reference's near-edge-to-edge layout instead of leaving big
+     empty gutters on wide monitors. */
+  .featured-wide{ max-width:1680px; margin:0 auto; padding:0 40px; }
   .featured-locations{
     font-family:'JetBrains Mono', monospace; font-size:0.85rem; letter-spacing:0.18em; text-transform:uppercase;
     color:var(--ink-soft); margin-bottom:18px;
@@ -373,8 +379,8 @@
     margin-bottom:40px; transition:opacity 0.35s ease;
   }
   .f-photo-row.sliding{ opacity:0; }
-  .f-photo-item{ flex:0 0 auto; width:180px; }
-  .f-photo-item.center{ width:300px; }
+  .f-photo-item{ flex:0 0 auto; width:230px; }
+  .f-photo-item.center{ width:380px; }
   .f-photo{
     position:relative; overflow:hidden; border-radius:2px; background:var(--paper-dim);
     cursor:pointer; width:100%; aspect-ratio:3/4;
@@ -382,8 +388,8 @@
     transition:opacity 0.6s ease, transform 0.6s ease, box-shadow 0.4s ease;
   }
   .f-photo.show{ opacity:1; transform:translateY(0); }
-  .f-photo-item.center .f-photo{ z-index:2; box-shadow:0 30px 60px -20px rgba(36,31,38,0.35); }
-  .f-photo:hover{ box-shadow:0 24px 50px -16px rgba(36,31,38,0.4); }
+  .f-photo-item.center .f-photo{ z-index:2; box-shadow:0 12px 24px -12px rgba(36,31,38,0.3); }
+  .f-photo:hover{ box-shadow:0 10px 20px -10px rgba(36,31,38,0.35); }
   .f-photo img{
     width:100%; height:100%; object-fit:cover; display:block;
     transition:transform 0.6s cubic-bezier(0.22,1,0.36,1);
@@ -818,7 +824,9 @@
     <div class="featured-head reveal">
       <div class="featured-huge-title">Featured Wedding</div>
     </div>
+  </div>
 
+  <div class="featured-wide">
     <div id="featuredSlideWrap">
       <div class="featured-msg">Loading featured weddings&hellip;</div>
     </div>
