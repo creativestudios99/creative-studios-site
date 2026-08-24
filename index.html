@@ -1038,6 +1038,7 @@
 
       document.getElementById('fPrevSlide').addEventListener('click', () => shiftWindow(-1));
       document.getElementById('fNextSlide').addEventListener('click', () => shiftWindow(1));
+      initFeaturedSwipe();
 
       renderWindow();
     } catch(err){
@@ -1058,6 +1059,38 @@
       renderWindow();
       row.classList.remove('sliding');
     }, 180);
+  }
+
+  // Touch swipe support — mainly for mobile, where dragging left/
+  // right to move between couples feels more natural than tapping
+  // the small arrow buttons. Works alongside the buttons, not
+  // instead of them.
+  function initFeaturedSwipe(){
+    const row = document.getElementById('fPhotoRow');
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchMoved = false;
+    const SWIPE_THRESHOLD = 40; // minimum horizontal px to count as a swipe
+
+    row.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchMoved = false;
+    }, { passive: true });
+
+    row.addEventListener('touchmove', () => { touchMoved = true; }, { passive: true });
+
+    row.addEventListener('touchend', (e) => {
+      if(!touchMoved) return; // treat as a tap, let the normal click/lightbox handler run
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      // Only treat as a swipe if the motion was clearly more
+      // horizontal than vertical — otherwise a normal page scroll
+      // would accidentally trigger a slide change.
+      if(Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)){
+        shiftWindow(dx < 0 ? 1 : -1); // swipe left → next, swipe right → previous
+      }
+    });
   }
 
   // Renders WINDOW_SIZE different clients' cover photos together —
