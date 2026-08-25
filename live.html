@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watch Live — Creative Studios</title>
+<link rel="icon" type="image/png" href="creative-studios-avatar.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#efe9e1; --paper-dim:#e6ded2; --ink:#241f26; --ink-soft:#4a4249;
+    --rose:#b9776b; --gold:#a98552; --wine:#4a1c29; --line: rgba(36,31,38,0.14);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ overflow-x:hidden; }
+  body{
+    font-family:'Work Sans', sans-serif; color:var(--paper); background:var(--ink);
+    min-height:100vh; overflow-x:hidden;
+  }
+  a{ color:inherit; }
+  ::selection{ background:var(--rose); color:var(--paper); }
+  .wrap{ max-width:960px; margin:0 auto; padding:0 24px; }
+
+  header{ padding:26px 0; }
+  .head-row{ display:flex; justify-content:space-between; align-items:center; }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Jost', sans-serif; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase;
+    text-decoration:none;
+  }
+  .brand img{ width:24px; height:24px; display:block; }
+  .back-link{
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase;
+    color:rgba(239,233,225,0.7); text-decoration:none;
+  }
+  .back-link:hover{ color:var(--rose); }
+
+  main{ padding:40px 0 100px; text-align:center; }
+
+  .live-badge{
+    display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:20px;
+    background:rgba(217,90,90,0.15); border:1px solid rgba(217,90,90,0.4); color:#e88a8a;
+    font-family:'JetBrains Mono', monospace; font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase;
+    margin-bottom:24px;
+  }
+  .live-dot{ width:7px; height:7px; border-radius:50%; background:#e05a5a; animation:pulseDot 1.6s ease-in-out infinite; }
+  @keyframes pulseDot{ 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:0.4; transform:scale(0.7); } }
+
+  h1{
+    font-family:'Jost', sans-serif; font-weight:400; letter-spacing:0.06em; text-transform:uppercase;
+    font-size:clamp(1.8rem, 4vw, 2.6rem); margin-bottom:12px;
+  }
+  .live-venue{
+    font-family:'JetBrains Mono', monospace; font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:40px;
+  }
+
+  .player-frame{
+    position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:4px; overflow:hidden;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,0.6);
+  }
+  .player-frame iframe{ position:absolute; inset:0; width:100%; height:100%; border:none; }
+
+  .live-note{
+    margin-top:28px; color:rgba(239,233,225,0.6); font-size:0.9rem; max-width:52ch; margin-left:auto; margin-right:auto;
+  }
+
+  /* Shown when no stream is currently configured/live */
+  .no-live{
+    padding:100px 20px; max-width:480px; margin:0 auto;
+  }
+  .no-live-icon{ width:48px; height:48px; margin:0 auto 28px; opacity:0.5; }
+  .no-live h1{ margin-bottom:16px; }
+  .no-live p{ color:rgba(239,233,225,0.6); font-size:0.95rem; line-height:1.7; margin-bottom:32px; }
+  .no-live a.btn{
+    display:inline-block; padding:14px 28px; border:1px solid rgba(239,233,225,0.3); border-radius:2px;
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase;
+    text-decoration:none; transition:background 0.25s ease, color 0.25s ease;
+  }
+  .no-live a.btn:hover{ background:var(--paper); color:var(--ink); }
+
+  footer{
+    padding:30px 0; text-align:center; color:rgba(239,233,225,0.4);
+    font-family:'JetBrains Mono', monospace; font-size:0.68rem; letter-spacing:0.06em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-row">
+    <a href="index.html" class="brand"><img src="creative-studios-avatar.png" alt="">Creative Studios</a>
+    <a href="index.html" class="back-link">&larr; Back to Homepage</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" id="liveContent">
+    <!-- Filled in by JS below depending on whether an event is
+         currently configured and within its scheduled window -->
+  </div>
+</main>
+
+<footer>&copy; 2026 Creative Studios</footer>
+
+<script>
+  // ─────────────────────────────────────────────────────────
+  // Set these for whichever wedding is being live-streamed.
+  // Leave STREAM_ID blank between events — the page will show a
+  // friendly "nothing live right now" message instead of an
+  // empty/broken player.
+  //
+  // STREAM_ID: just the YouTube video ID, not the full URL —
+  // e.g. for https://youtube.com/watch?v=dQw4w9WgXcQ the ID is
+  // dQw4w9WgXcQ. Works the same whether the stream is upcoming,
+  // live right now, or has already ended — YouTube's own player
+  // handles all three states automatically.
+  //
+  // The start/end times are optional. If set, the page only
+  // shows the player during that window (and shows a normal
+  // "nothing live right now" message outside it) — leave them
+  // blank to just always show the player whenever STREAM_ID is
+  // set, letting YouTube's own state decide what's shown.
+  // Format: 'YYYY-MM-DDTHH:MM' in your local time, e.g.
+  // '2026-09-12T15:30'
+  // ─────────────────────────────────────────────────────────
+  const STREAM_ID = '';
+  const COUPLE_NAMES = '';
+  const VENUE = '';
+  const WINDOW_START = ''; // optional
+  const WINDOW_END = '';   // optional
+
+  function withinWindow(){
+    if(!WINDOW_START || !WINDOW_END) return true; // no window set — always show if STREAM_ID exists
+    const now = new Date();
+    return now >= new Date(WINDOW_START) && now <= new Date(WINDOW_END);
+  }
+
+  const el = document.getElementById('liveContent');
+
+  if(STREAM_ID && withinWindow()){
+    el.innerHTML = `
+      <div class="live-badge"><span class="live-dot"></span>Live Now</div>
+      <h1>${COUPLE_NAMES || 'Watch the Ceremony Live'}</h1>
+      ${VENUE ? `<div class="live-venue">${VENUE}</div>` : ''}
+      <div class="player-frame">
+        <iframe src="https://www.youtube.com/embed/${STREAM_ID}?autoplay=1&mute=1" title="Live stream" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+      </div>
+      <p class="live-note">Having trouble viewing? Try refreshing the page, or watch directly on <a href="https://youtube.com/watch?v=${STREAM_ID}" target="_blank" rel="noopener" style="color:var(--rose); text-decoration:underline;">YouTube</a>.</p>
+    `;
+  } else {
+    el.innerHTML = `
+      <div class="no-live">
+        <svg class="no-live-icon" viewBox="0 0 40 40" fill="none" stroke="rgba(239,233,225,0.6)" stroke-width="1.4">
+          <rect x="4" y="10" width="32" height="20" rx="2"/><path d="M16 17l9 3-9 3v-6z" fill="rgba(239,233,225,0.6)" stroke="none"/>
+        </svg>
+        <h1>Nothing Live Right Now</h1>
+        <p>There's no ceremony being streamed at the moment. Check back around the scheduled time, or explore recent work while you wait.</p>
+        <a href="index.html" class="btn">Back to Homepage</a>
+      </div>
+    `;
+  }
+</script>
+
+</body>
+</html>
