@@ -167,6 +167,9 @@
   .nav.scrolled .nav-phone{ opacity:0.85; max-width:200px; }
   .nav.scrolled .nav-phone:hover{ opacity:1; }
   @media (max-width:920px){ .nav-phone{ display:none; } }
+  .nav-live-link{ display:flex; align-items:center; gap:6px; }
+  .nav-live-dot{ width:6px; height:6px; border-radius:50%; background:#e05a5a; animation:navPulseDot 1.6s ease-in-out infinite; }
+  @keyframes navPulseDot{ 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:0.4; transform:scale(0.7); } }
   .nav-login-btn{
     padding:9px 18px; border-radius:20px;
     background:linear-gradient(180deg, rgba(239,233,225,0.22), rgba(239,233,225,0.08));
@@ -768,6 +771,7 @@
   </div>
   <div class="nav-utility">
     <a href="tel:+919949706000" class="hoverable nav-phone">+91 99497 06000</a>
+    <a href="live.html" class="hoverable nav-live-link"><span class="nav-live-dot"></span>Watch Live</a>
     <a href="login.html" class="hoverable nav-login-btn">Client Login</a>
   </div>
 </nav>
