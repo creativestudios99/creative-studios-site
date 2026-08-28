@@ -132,6 +132,27 @@
     return now >= new Date(start) && now <= new Date(end);
   }
 
+  // Accepts a bare video ID, or a full YouTube link in any common
+  // format (youtu.be/ID, youtube.com/watch?v=ID, youtube.com/embed/ID,
+  // youtube.com/live/ID) — same forgiving approach used for Drive
+  // folder/photo links elsewhere on this site, so you never have to
+  // manually extract the ID yourself.
+  function extractYouTubeId(raw){
+    if(!raw) return '';
+    const trimmed = raw.trim();
+    const patterns = [
+      /youtu\.be\/([a-zA-Z0-9_-]{6,})/,
+      /[?&]v=([a-zA-Z0-9_-]{6,})/,
+      /youtube\.com\/embed\/([a-zA-Z0-9_-]{6,})/,
+      /youtube\.com\/live\/([a-zA-Z0-9_-]{6,})/,
+    ];
+    for(const pattern of patterns){
+      const match = trimmed.match(pattern);
+      if(match) return match[1];
+    }
+    return trimmed; // already a bare ID (or unrecognized — pass through as-is)
+  }
+
   function showNoLive(){
     document.getElementById('liveContent').innerHTML = `
       <div class="no-live">
@@ -173,7 +194,8 @@
         showNoLive();
         return;
       }
-      const [streamId, names, venue, start, end] = row;
+      const [rawStreamId, names, venue, start, end] = row;
+      const streamId = extractYouTubeId(rawStreamId);
       if(streamId && withinWindow(start, end)){
         showLive(streamId, names, venue);
       } else {
