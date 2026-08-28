@@ -17,6 +17,41 @@
 <meta name="twitter:image" content="https://creativestudios.in/og-image.jpg">
 <meta name="description" content="Documentary wedding photography and videography based in Nellore. A documentary eye and a painter's patience for light.">
 
+<!-- Structured data — helps Google understand this is a real local
+     business and can show richer results (name, location, contact)
+     directly in search, not just a plain blue link. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "Creative Studios",
+  "description": "Documentary wedding photography and videography based in Nellore.",
+  "image": "https://creativestudios.in/creative-studios-primary.png",
+  "url": "https://creativestudios.in",
+  "telephone": "+91-99497-06000",
+  "email": "polamreddysiva9@gmail.com",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Nellore",
+    "addressRegion": "Andhra Pradesh",
+    "addressCountry": "IN"
+  },
+  "priceRange": "$$",
+  "areaServed": "Nellore, Andhra Pradesh"
+}
+</script>
+
+<!-- Google Analytics — replace G-MWV3Q3942Q with your own
+     Measurement ID (see admin.html for setup steps). Until then
+     this quietly does nothing. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MWV3Q3942Q"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-MWV3Q3942Q');
+</script>
+
 <!-- Favicon — a simple aperture mark, matching the site's camera motif -->
 <link rel="icon" type="image/png" href="creative-studios-avatar.png">
 
@@ -273,25 +308,25 @@
   @keyframes heroWord{ to{opacity:1; transform:translateY(0) rotate(0);} }
 
   .hero-eyebrow{
-    display:block; font-family:'Jost', sans-serif; font-size:0.85rem; font-weight:400;
-    letter-spacing:0.2em; text-transform:uppercase; color:var(--rose); margin-top:18px;
+    display:block; font-family:'JetBrains Mono', monospace; font-size:0.72rem; font-weight:400;
+    letter-spacing:0.24em; text-transform:uppercase; color:var(--rose); margin-top:20px;
     opacity:0; transform:translateY(14px); animation:heroIn 0.9s ease forwards; animation-delay:1.8s;
   }
   .hero h1{
-    font-family:'Jost', sans-serif; font-weight:400; letter-spacing:0.08em; text-transform:uppercase;
-    font-size:clamp(2.2rem, 5.6vw, 4.6rem); line-height:1.15; overflow:hidden;
+    font-family:'Fraunces', serif; font-weight:450; letter-spacing:-0.01em;
+    font-size:clamp(2.8rem, 6.8vw, 5.6rem); line-height:1; overflow:hidden;
   }
   .hero h1 .word{ display:inline-block; opacity:0; transform:translateY(60%) rotate(4deg); animation:heroWord 1s cubic-bezier(0.2,0.8,0.2,1) forwards; }
-  .hero h1 .word:nth-child(1){ animation-delay:1.45s; }
-  .hero h1 .word:nth-child(2){ animation-delay:1.58s; }
-  .hero h1 em{ font-style:normal; font-weight:400; color:var(--rose); }
+  .hero h1 .word:nth-child(1){ animation-delay:1.6s; }
+  .hero h1 .word:nth-child(2){ animation-delay:1.73s; }
+  .hero h1 em{ font-style:italic; font-weight:400; color:var(--rose); }
   .hero-tag{
-    margin-top:26px; font-size:clamp(1rem, 1.6vw, 1.25rem); color:rgba(239,233,225,0.78); font-weight:300;
-    max-width:480px; margin-left:auto; margin-right:auto;
+    margin-top:14px; font-size:clamp(1rem, 1.6vw, 1.25rem); color:rgba(239,233,225,0.78); font-weight:300;
+    max-width:480px; margin-left:auto; margin-right:auto; font-family:'Fraunces', serif; font-style:italic;
     opacity:0; transform:translateY(14px); animation:heroIn 0.9s ease forwards; animation-delay:1.95s;
   }
   .hero-cta{
-    margin-top:44px; display:inline-flex; gap:18px; align-items:center;
+    margin-top:36px; display:flex; justify-content:center; gap:18px; align-items:center;
     opacity:0; transform:translateY(14px); animation:heroIn 0.9s ease forwards; animation-delay:2.15s;
   }
   .btn{
@@ -307,7 +342,7 @@
   .btn-ghost:hover{ background:rgba(239,233,225,0.1); box-shadow:0 10px 30px rgba(0,0,0,0.2); }
 
   .scroll-cue{
-    position:absolute; bottom:38px; left:50%; transform:translateX(-50%); z-index:5;
+    position:absolute; bottom:38px; left:0; right:0; margin:0 auto; width:fit-content; z-index:5;
     color:var(--paper); opacity:0.5; font-family:'JetBrains Mono',monospace; font-size:0.68rem; letter-spacing:0.15em;
     display:flex; flex-direction:column; align-items:center; gap:10px;
     animation:heroIn 1s ease forwards; animation-delay:1.7s; opacity:0;
@@ -401,6 +436,7 @@
   .f-photo.show{ opacity:1; transform:translateY(0); }
   .f-photo-item.center .f-photo{ z-index:2; box-shadow:0 12px 24px -12px rgba(36,31,38,0.3); }
   .f-photo:hover{ box-shadow:0 10px 20px -10px rgba(36,31,38,0.35); }
+  .f-photo:focus-visible{ outline:3px solid var(--rose); outline-offset:2px; }
   .f-photo img{
     width:100%; height:100%; object-fit:cover; display:block;
     transition:transform 0.6s cubic-bezier(0.22,1,0.36,1);
@@ -849,9 +885,9 @@
 </section>
 
 <div class="f-lightbox" id="fLightbox">
-  <button class="f-lb-close hoverable" id="flClose"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  <button class="f-lb-nav prev hoverable" id="flPrev"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
-  <button class="f-lb-nav next hoverable" id="flNext"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+  <button class="f-lb-close hoverable" id="flClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <button class="f-lb-nav prev hoverable" id="flPrev" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <button class="f-lb-nav next hoverable" id="flNext" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
   <img id="flImage" src="" alt="">
   <div class="f-lightbox-info">
     <div class="fl-names" id="flNames"></div>
@@ -932,7 +968,7 @@
 
       <a href="mailto:polamreddysiva9@gmail.com" class="info-row info-link hoverable"><span>Email</span><span>polamreddysiva9@gmail.com</span></a>
       <a href="tel:+919949706000" class="info-row info-link hoverable"><span>Phone</span><span>+91 99497 06000</span></a>
-      <div class="info-row"><span>Studio</span><span>By appointment &middot; Nellore</span></div>
+      <div class="info-row"><span>Studio</span><span>Nellore</span></div>
     </div>
   </div>
 </section>
@@ -1116,7 +1152,7 @@
     // real reference site's structure exactly.
     row.innerHTML = visible.map((entry, slot) => `
       <div class="f-photo-item ${slot === centerSlot ? 'center' : ''}">
-        <div class="f-photo" data-entry-index="${(windowStart + slot) % total}">
+        <div class="f-photo" data-entry-index="${(windowStart + slot) % total}" tabindex="0" role="button" aria-label="View photo of ${entry.names.replace(/"/g,'')}">
           <img src="${driveThumbUrl(entry.photoIds[0], slot === centerSlot ? 900 : 500)}" alt="${entry.names.replace(/"/g,'')}" loading="lazy">
         </div>
       </div>
@@ -1129,6 +1165,12 @@
 
     row.querySelectorAll('.f-photo').forEach(el => {
       el.addEventListener('click', () => openFeaturedLightbox(parseInt(el.dataset.entryIndex, 10), 0));
+      el.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          openFeaturedLightbox(parseInt(el.dataset.entryIndex, 10), 0);
+        }
+      });
       requestAnimationFrame(() => el.classList.add('show'));
     });
   }
