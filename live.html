@@ -4,7 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Watch Live — Creative Studios</title>
+<meta name="description" content="Watch the wedding ceremony live, streamed by Creative Studios.">
+<meta name="robots" content="noindex">
 <link rel="icon" type="image/png" href="creative-studios-avatar.png">
+
+<!-- Google Analytics — same Measurement ID as index.html -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MWV3Q3942Q"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-MWV3Q3942Q');
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -97,8 +109,7 @@
 
 <main>
   <div class="wrap" id="liveContent">
-    <!-- Filled in by JS below depending on whether an event is
-         currently configured and within its scheduled window -->
+    <div class="no-live"><p style="color:rgba(239,233,225,0.5);">Loading&hellip;</p></div>
   </div>
 </main>
 
@@ -106,51 +117,23 @@
 
 <script>
   // ─────────────────────────────────────────────────────────
-  // Set these for whichever wedding is being live-streamed.
-  // Leave STREAM_ID blank between events — the page will show a
-  // friendly "nothing live right now" message instead of an
-  // empty/broken player.
+  // Reads live from the Live Stream sheet — set via the
+  // write-enabled Dashboard's "Live Stream" tab in admin.html,
+  // no code editing needed here ever again.
   //
-  // STREAM_ID: just the YouTube video ID, not the full URL —
-  // e.g. for https://youtube.com/watch?v=dQw4w9WgXcQ the ID is
-  // dQw4w9WgXcQ. Works the same whether the stream is upcoming,
-  // live right now, or has already ended — YouTube's own player
-  // handles all three states automatically.
-  //
-  // The start/end times are optional. If set, the page only
-  // shows the player during that window (and shows a normal
-  // "nothing live right now" message outside it) — leave them
-  // blank to just always show the player whenever STREAM_ID is
-  // set, letting YouTube's own state decide what's shown.
-  // Format: 'YYYY-MM-DDTHH:MM' in your local time, e.g.
-  // '2026-09-12T15:30'
+  // One-time setup: publish that sheet as CSV (File → Share →
+  // Publish to web → CSV format) and paste the URL below.
   // ─────────────────────────────────────────────────────────
-  const STREAM_ID = '';
-  const COUPLE_NAMES = '';
-  const VENUE = '';
-  const WINDOW_START = ''; // optional
-  const WINDOW_END = '';   // optional
+  const LIVE_SHEET_CSV_URL = 'PASTE_YOUR_PUBLISHED_LIVE_SHEET_CSV_URL_HERE';
 
-  function withinWindow(){
-    if(!WINDOW_START || !WINDOW_END) return true; // no window set — always show if STREAM_ID exists
+  function withinWindow(start, end){
+    if(!start || !end) return true; // no window set — always show if a Stream ID exists
     const now = new Date();
-    return now >= new Date(WINDOW_START) && now <= new Date(WINDOW_END);
+    return now >= new Date(start) && now <= new Date(end);
   }
 
-  const el = document.getElementById('liveContent');
-
-  if(STREAM_ID && withinWindow()){
-    el.innerHTML = `
-      <div class="live-badge"><span class="live-dot"></span>Live Now</div>
-      <h1>${COUPLE_NAMES || 'Watch the Ceremony Live'}</h1>
-      ${VENUE ? `<div class="live-venue">${VENUE}</div>` : ''}
-      <div class="player-frame">
-        <iframe src="https://www.youtube.com/embed/${STREAM_ID}?autoplay=1&mute=1" title="Live stream" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-      </div>
-      <p class="live-note">Having trouble viewing? Try refreshing the page, or watch directly on <a href="https://youtube.com/watch?v=${STREAM_ID}" target="_blank" rel="noopener" style="color:var(--rose); text-decoration:underline;">YouTube</a>.</p>
-    `;
-  } else {
-    el.innerHTML = `
+  function showNoLive(){
+    document.getElementById('liveContent').innerHTML = `
       <div class="no-live">
         <svg class="no-live-icon" viewBox="0 0 40 40" fill="none" stroke="rgba(239,233,225,0.6)" stroke-width="1.4">
           <rect x="4" y="10" width="32" height="20" rx="2"/><path d="M16 17l9 3-9 3v-6z" fill="rgba(239,233,225,0.6)" stroke="none"/>
@@ -161,6 +144,48 @@
       </div>
     `;
   }
+
+  function showLive(streamId, names, venue){
+    document.getElementById('liveContent').innerHTML = `
+      <div class="live-badge"><span class="live-dot"></span>Live Now</div>
+      <h1>${names || 'Watch the Ceremony Live'}</h1>
+      ${venue ? `<div class="live-venue">${venue}</div>` : ''}
+      <div class="player-frame">
+        <iframe src="https://www.youtube.com/embed/${streamId}?autoplay=1&mute=1" title="Live stream" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+      </div>
+      <p class="live-note">Having trouble viewing? Try refreshing the page, or watch directly on <a href="https://youtube.com/watch?v=${streamId}" target="_blank" rel="noopener" style="color:var(--rose); text-decoration:underline;">YouTube</a>.</p>
+    `;
+  }
+
+  async function loadLiveStream(){
+    if(LIVE_SHEET_CSV_URL.startsWith('PASTE_YOUR')){
+      showNoLive();
+      return;
+    }
+    try{
+      const res = await fetch(LIVE_SHEET_CSV_URL, { cache: 'no-store' });
+      if(!res.ok) throw new Error('Sheet fetch failed');
+      const text = await res.text();
+      const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+      rows.shift(); // header row
+      const row = rows[0]; // single-row config — only one "current" stream
+      if(!row || !row[0]){
+        showNoLive();
+        return;
+      }
+      const [streamId, names, venue, start, end] = row;
+      if(streamId && withinWindow(start, end)){
+        showLive(streamId, names, venue);
+      } else {
+        showNoLive();
+      }
+    } catch(err){
+      console.error('Could not load live stream config:', err);
+      showNoLive();
+    }
+  }
+
+  loadLiveStream();
 </script>
 
 </body>
