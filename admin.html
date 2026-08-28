@@ -174,27 +174,28 @@
   .dash-table-wrap{ overflow-x:auto; border-radius:4px; overflow:hidden; }
   .dash-table{ width:100%; border-collapse:collapse; min-width:640px; }
   .dash-table th, .dash-table td{
-    text-align:left; padding:12px 14px; font-size:0.85rem;
+    text-align:left; padding:13px 14px; font-size:0.85rem;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;
   }
-  .dash-table thead{ background:rgba(239,233,225,0.1); }
+  .dash-table thead{ background:#4a3d42; }
   .dash-table th{
     font-family:'JetBrains Mono', monospace; font-size:0.66rem; letter-spacing:0.06em; text-transform:uppercase;
-    color:var(--paper); font-weight:600; border-bottom:2px solid rgba(239,233,225,0.25);
+    color:#e8c9a8; font-weight:700; border-bottom:2px solid #d4a5a0;
   }
-  .dash-table td{ color:rgba(239,233,225,0.92); border-bottom:1px solid rgba(239,233,225,0.12); }
-  .dash-table tbody tr:nth-child(even){ background:rgba(239,233,225,0.04); }
-  .dash-table tbody tr:hover{ background:rgba(185,119,107,0.1); }
+  .dash-table tbody{ background:#2f2731; }
+  .dash-table td{ color:#f3e3d3; border-bottom:1px solid #4a3d42; }
+  .dash-table tbody tr:nth-child(even){ background:#382e39; }
+  .dash-table tbody tr:hover{ background:#4a3540; }
   .dash-row-actions{ display:flex; gap:14px; }
   .dash-row-actions button{
     background:none; border:none; cursor:pointer; font-family:'JetBrains Mono', monospace;
-    font-size:0.68rem; letter-spacing:0.04em; text-transform:uppercase; font-weight:600; color:var(--rose);
+    font-size:0.68rem; letter-spacing:0.04em; text-transform:uppercase; font-weight:700; color:#e0a8a0;
   }
-  .dash-row-actions button:hover{ color:var(--gold); text-decoration:underline; }
-  .dash-row-actions .del{ color:#e08a8a; }
-  .dash-row-actions .del:hover{ color:#f0a5a5; }
-  .dash-empty{ padding:30px; text-align:center; color:rgba(239,233,225,0.5); font-size:0.85rem; }
-  .dash-loading{ padding:30px; text-align:center; color:rgba(239,233,225,0.5); font-size:0.85rem; font-family:'JetBrains Mono', monospace; }
+  .dash-row-actions button:hover{ color:#f0c9a8; text-decoration:underline; }
+  .dash-row-actions .del{ color:#e8a0a0; }
+  .dash-row-actions .del:hover{ color:#f5b8b8; }
+  .dash-empty{ padding:30px; text-align:center; color:#c9b8be; font-size:0.85rem; }
+  .dash-loading{ padding:30px; text-align:center; color:#c9b8be; font-size:0.85rem; font-family:'JetBrains Mono', monospace; }
 </style>
 </head>
 <body>
@@ -261,6 +262,7 @@
       <div class="dash-tabs">
         <button class="dash-tab active" data-tab="clients">Clients</button>
         <button class="dash-tab" data-tab="featured">Featured Weddings</button>
+        <button class="dash-tab" data-tab="live">Live Stream</button>
       </div>
 
       <!-- CLIENTS PANEL -->
@@ -268,13 +270,13 @@
         <div class="dash-form">
           <h3 id="clientFormTitle">Add a New Client</h3>
           <div class="dash-form-grid">
-            <div class="dfield"><label>Couple's Names</label><input id="cfName" type="text" placeholder="Maya &amp; Jonah"></div>
-            <div class="dfield"><label>Email(s) &mdash; separate multiple with ;</label><input id="cfEmail" type="text" placeholder="maya.jonah@gmail.com; dad@gmail.com"></div>
-            <div class="dfield"><label>Drive Folder ID</label><input id="cfFolder" type="text" placeholder="Folder ID or share link"></div>
-            <div class="dfield"><label>Passcode</label><input id="cfPasscode" type="text" placeholder="e.g. B7K2XQPM"></div>
-            <div class="dfield"><label>Expires On</label><input id="cfExpiry" type="date"></div>
-            <div class="dfield"><label>Cover Photo ID</label><input id="cfCover" type="text" placeholder="Optional"></div>
-            <div class="dfield full"><label>Intro Video URL</label><input id="cfVideo" type="text" placeholder="Optional — YouTube, Vimeo, Drive, or .mp4 link"></div>
+            <div class="dfield"><label for="cfName">Couple's Names</label><input id="cfName" type="text" placeholder="Maya &amp; Jonah"></div>
+            <div class="dfield"><label for="cfEmail">Email(s) &mdash; separate multiple with ;</label><input id="cfEmail" type="text" placeholder="maya.jonah@gmail.com; dad@gmail.com"></div>
+            <div class="dfield"><label for="cfFolder">Drive Folder ID</label><input id="cfFolder" type="text" placeholder="Folder ID or share link"></div>
+            <div class="dfield"><label for="cfPasscode">Passcode</label><input id="cfPasscode" type="text" placeholder="e.g. B7K2XQPM"></div>
+            <div class="dfield"><label for="cfExpiry">Expires On</label><input id="cfExpiry" type="date"></div>
+            <div class="dfield"><label for="cfCover">Cover Photo ID</label><input id="cfCover" type="text" placeholder="Optional"></div>
+            <div class="dfield full"><label for="cfVideo">Intro Video URL</label><input id="cfVideo" type="text" placeholder="Optional — YouTube, Vimeo, Drive, or .mp4 link"></div>
           </div>
           <div class="dash-form-actions">
             <button class="dash-btn" id="clientSaveBtn">Add Client</button>
@@ -292,10 +294,10 @@
         <div class="dash-form">
           <h3 id="featuredFormTitle">Add a Featured Wedding</h3>
           <div class="dash-form-grid">
-            <div class="dfield"><label>Couple's Names</label><input id="ffNames" type="text" placeholder="Priya &amp; Dev"></div>
-            <div class="dfield"><label>Venue</label><input id="ffVenue" type="text" placeholder="Udaipur, Rajasthan"></div>
-            <div class="dfield"><label>Photo IDs</label><input id="ffPhoto" type="text" placeholder="One Drive ID/link, or several separated by commas"></div>
-            <div class="dfield"><label>Order</label><input id="ffOrder" type="number" placeholder="1"></div>
+            <div class="dfield"><label for="ffNames">Couple's Names</label><input id="ffNames" type="text" placeholder="Priya &amp; Dev"></div>
+            <div class="dfield"><label for="ffVenue">Venue</label><input id="ffVenue" type="text" placeholder="Udaipur, Rajasthan"></div>
+            <div class="dfield"><label for="ffPhoto">Photo IDs</label><input id="ffPhoto" type="text" placeholder="One Drive ID/link, or several separated by commas"></div>
+            <div class="dfield"><label for="ffOrder">Order</label><input id="ffOrder" type="number" placeholder="1"></div>
           </div>
           <div class="dash-form-actions">
             <button class="dash-btn" id="featuredSaveBtn">Add Featured Wedding</button>
@@ -305,6 +307,26 @@
         </div>
         <div class="dash-table-wrap">
           <div id="featuredTableContainer"><div class="dash-loading">Loading featured weddings&hellip;</div></div>
+        </div>
+      </div>
+
+      <!-- LIVE STREAM PANEL — a single config, not a growing list,
+           since there's only ever one active live event. -->
+      <div class="dash-panel" id="panelLive">
+        <div class="dash-form">
+          <h3>Update Live Stream</h3>
+          <p style="color:rgba(239,233,225,0.6); font-size:0.85rem; margin-bottom:20px;">This controls what shows on live.html. Leave Stream ID blank and clear the Update button to take the page back to "Nothing Live Right Now."</p>
+          <div class="dash-form-grid">
+            <div class="dfield"><label for="lfStreamId">YouTube Stream ID</label><input id="lfStreamId" type="text" placeholder="e.g. dQw4w9WgXcQ (just the ID, not the full URL)"></div>
+            <div class="dfield"><label for="lfNames">Couple's Names</label><input id="lfNames" type="text" placeholder="Priya &amp; Dev"></div>
+            <div class="dfield"><label for="lfVenue">Venue</label><input id="lfVenue" type="text" placeholder="Nellore"></div>
+            <div class="dfield"><label for="lfStart">Window Start (Optional)</label><input id="lfStart" type="datetime-local"></div>
+            <div class="dfield"><label for="lfEnd">Window End (Optional)</label><input id="lfEnd" type="datetime-local"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="dash-btn" id="liveSaveBtn">Update Live Stream</button>
+            <span class="dash-msg" id="liveFormMsg"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -334,9 +356,12 @@
   const CLIENTS_SHEET_NAME = 'Sheet1';
   const FEATURED_SPREADSHEET_ID = '1kXieNkaB-vBcXnlR5bSSMQ3g94hcjBz2bvlGK-DKGsI';
   const FEATURED_SHEET_NAME = 'Sheet1';
+  const LIVE_SPREADSHEET_ID = 'PASTE_YOUR_LIVE_STREAM_SPREADSHEET_ID_HERE';
+  const LIVE_SHEET_NAME = 'Sheet1';
 
   const CLIENTS_COLUMNS = ['Name','Email','FolderId','Passcode','ExpiresOn','CoverPhotoId','IntroVideoUrl'];
   const FEATURED_COLUMNS = ['Names','Venue','PhotoIds','Order'];
+  const LIVE_COLUMNS = ['StreamId','CoupleNames','Venue','WindowStart','WindowEnd'];
 
   let dashAccessToken = null;
   let dashTokenClient = null;
@@ -395,6 +420,7 @@
 
     loadClientsTable();
     loadFeaturedTable();
+    loadLiveConfig();
   }
 
   document.getElementById('dashSignOutBtn').addEventListener('click', () => {
@@ -406,12 +432,13 @@
     document.getElementById('dashSignedIn').style.display = 'none';
   });
 
+  const TAB_PANEL_MAP = { clients: 'panelClients', featured: 'panelFeatured', live: 'panelLive' };
   document.querySelectorAll('.dash-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
-      document.getElementById(tab.dataset.tab === 'clients' ? 'panelClients' : 'panelFeatured').classList.add('active');
+      document.getElementById(TAB_PANEL_MAP[tab.dataset.tab]).classList.add('active');
     });
   });
 
@@ -685,6 +712,59 @@
       alert('Could not delete: ' + err.message);
     }
   }
+
+  // ── Live Stream panel ──
+  // Single-row model — unlike Clients/Featured Weddings, there's
+  // only ever one "current" live stream config, so this reads
+  // whatever's in row 2 and updates that same row (or appends it
+  // the very first time, if the sheet is still empty).
+  let liveRowExists = false;
+
+  async function loadLiveConfig(){
+    const msg = document.getElementById('liveFormMsg');
+    try{
+      const values = await sheetsGetValues(LIVE_SPREADSHEET_ID, LIVE_SHEET_NAME);
+      if(values.length > 0){
+        const [streamId, names, venue, start, end] = values[0];
+        document.getElementById('lfStreamId').value = streamId || '';
+        document.getElementById('lfNames').value = names || '';
+        document.getElementById('lfVenue').value = venue || '';
+        document.getElementById('lfStart').value = start || '';
+        document.getElementById('lfEnd').value = end || '';
+        liveRowExists = true;
+      } else {
+        liveRowExists = false;
+      }
+    } catch(err){
+      msg.textContent = "Couldn't load current live stream settings: " + err.message;
+      msg.className = 'dash-msg err';
+    }
+  }
+
+  document.getElementById('liveSaveBtn').addEventListener('click', async () => {
+    const msg = document.getElementById('liveFormMsg');
+    const rowValues = [
+      document.getElementById('lfStreamId').value.trim(),
+      document.getElementById('lfNames').value.trim(),
+      document.getElementById('lfVenue').value.trim(),
+      document.getElementById('lfStart').value.trim(),
+      document.getElementById('lfEnd').value.trim(),
+    ];
+    msg.textContent = 'Saving…'; msg.className = 'dash-msg';
+    try{
+      if(liveRowExists){
+        await sheetsUpdateRow(LIVE_SPREADSHEET_ID, LIVE_SHEET_NAME, 2, rowValues);
+      } else {
+        await sheetsAppendRow(LIVE_SPREADSHEET_ID, LIVE_SHEET_NAME, rowValues);
+        liveRowExists = true;
+      }
+      msg.textContent = 'Saved — live.html will pick this up within a few seconds.';
+      msg.className = 'dash-msg ok';
+      setTimeout(() => { msg.textContent = ''; }, 3000);
+    } catch(err){
+      msg.textContent = 'Failed: ' + err.message; msg.className = 'dash-msg err';
+    }
+  });
 
   initDashboard();
 </script>
