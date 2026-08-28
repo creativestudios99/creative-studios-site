@@ -27,20 +27,25 @@
   *{ margin:0; padding:0; box-sizing:border-box; }
   html{ overflow-x:hidden; }
   body{
-    font-family:'Work Sans', sans-serif; color:var(--paper); background:var(--ink);
-    min-height:100vh; overflow-x:hidden;
+    font-family:'Work Sans', sans-serif; color:var(--paper); min-height:100vh; overflow-x:hidden;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(185,119,107,0.16), transparent 55%),
+      radial-gradient(ellipse at 85% 30%, rgba(169,133,82,0.13), transparent 55%),
+      linear-gradient(160deg, #2c2530 0%, #241f26 45%, #2a1f24 100%);
+    background-attachment:fixed;
   }
   a{ color:inherit; }
   ::selection{ background:var(--rose); color:var(--paper); }
   .wrap{ max-width:960px; margin:0 auto; padding:0 24px; }
 
-  header{ padding:26px 0; }
+  header{ padding:30px 0; }
   .head-row{ display:flex; justify-content:space-between; align-items:center; }
   .brand{
     display:flex; align-items:center; gap:10px;
     font-family:'Jost', sans-serif; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase;
-    text-decoration:none;
+    text-decoration:none; opacity:0.92; transition:opacity 0.25s ease;
   }
+  .brand:hover{ opacity:1; }
   .brand img{ width:24px; height:24px; display:block; }
   .back-link{
     font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase;
@@ -48,53 +53,93 @@
   }
   .back-link:hover{ color:var(--rose); }
 
-  main{ padding:40px 0 100px; text-align:center; }
+  main{ padding:52px 0 110px; text-align:center; }
 
   .live-badge{
-    display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:20px;
-    background:rgba(217,90,90,0.15); border:1px solid rgba(217,90,90,0.4); color:#e88a8a;
-    font-family:'JetBrains Mono', monospace; font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase;
-    margin-bottom:24px;
+    display:inline-flex; align-items:center; gap:9px; padding:9px 18px; border-radius:20px;
+    background:rgba(217,90,90,0.12); border:1px solid rgba(217,90,90,0.4); color:#e88a8a;
+    font-family:'JetBrains Mono', monospace; font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase;
+    margin-bottom:30px; backdrop-filter:blur(6px);
   }
-  .live-dot{ width:7px; height:7px; border-radius:50%; background:#e05a5a; animation:pulseDot 1.6s ease-in-out infinite; }
+  .live-dot{ width:7px; height:7px; border-radius:50%; background:#e05a5a; animation:pulseDot 1.6s ease-in-out infinite; box-shadow:0 0 8px rgba(224,90,90,0.6); }
   @keyframes pulseDot{ 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:0.4; transform:scale(0.7); } }
 
   h1{
-    font-family:'Jost', sans-serif; font-weight:400; letter-spacing:0.06em; text-transform:uppercase;
-    font-size:clamp(1.8rem, 4vw, 2.6rem); margin-bottom:12px;
+    font-family:'Fraunces', serif; font-weight:450; font-style:italic;
+    font-size:clamp(2.1rem, 4.6vw, 3.2rem); margin-bottom:14px; letter-spacing:-0.005em;
   }
   .live-venue{
-    font-family:'JetBrains Mono', monospace; font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase;
-    color:var(--gold); margin-bottom:40px;
+    font-family:'JetBrains Mono', monospace; font-size:0.76rem; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:48px;
   }
 
   .player-frame{
-    position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:4px; overflow:hidden;
-    box-shadow:0 40px 90px -30px rgba(0,0,0,0.6);
+    position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:5px; overflow:hidden;
+    box-shadow:
+      0 50px 100px -30px rgba(0,0,0,0.65),
+      0 0 0 1px rgba(239,233,225,0.08),
+      inset 0 1px 0 rgba(239,233,225,0.1);
   }
   .player-frame iframe{ position:absolute; inset:0; width:100%; height:100%; border:none; }
 
   .live-note{
-    margin-top:28px; color:rgba(239,233,225,0.6); font-size:0.9rem; max-width:52ch; margin-left:auto; margin-right:auto;
+    margin-top:30px; color:rgba(239,233,225,0.55); font-size:0.88rem; max-width:52ch; margin-left:auto; margin-right:auto;
   }
+
+  /* ── Countdown timer (shown before the scheduled start time) ── */
+  .countdown-badge{ background:rgba(169,133,82,0.12); border-color:rgba(169,133,82,0.4); color:var(--gold); }
+  .countdown-badge .live-dot{ background:var(--gold); box-shadow:0 0 8px rgba(169,133,82,0.6); }
+  .countdown-timer{
+    display:flex; justify-content:center; gap:22px; margin:20px 0 10px;
+  }
+  .countdown-unit{ display:flex; flex-direction:column; align-items:center; gap:6px; min-width:64px; }
+  .countdown-unit span{
+    font-family:'Fraunces', serif; font-weight:450; font-size:clamp(2rem, 5vw, 3rem); line-height:1;
+    background:rgba(239,233,225,0.05); border:1px solid rgba(239,233,225,0.12); border-radius:6px;
+    padding:14px 8px; width:100%; text-align:center;
+  }
+  .countdown-unit label{
+    font-family:'JetBrains Mono', monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase;
+    color:rgba(239,233,225,0.5);
+  }
+  @media (max-width:520px){
+    .countdown-timer{ gap:10px; }
+    .countdown-unit{ min-width:52px; }
+  }
+
+  /* ── Share button (WhatsApp), used in both live and countdown states ── */
+  .share-wrap{ margin-top:26px; }
+  .share-btn{
+    display:inline-flex; align-items:center; gap:9px; padding:12px 24px; border-radius:2px;
+    background:rgba(37,211,102,0.12); border:1px solid rgba(37,211,102,0.4); color:#4ce089;
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase;
+    text-decoration:none; transition:background 0.25s ease;
+  }
+  .share-btn:hover{ background:rgba(37,211,102,0.22); }
+  .share-icon{ width:15px; height:15px; fill:currentColor; flex-shrink:0; }
 
   /* Shown when no stream is currently configured/live */
   .no-live{
-    padding:100px 20px; max-width:480px; margin:0 auto;
+    padding:110px 20px; max-width:460px; margin:0 auto;
   }
-  .no-live-icon{ width:48px; height:48px; margin:0 auto 28px; opacity:0.5; }
-  .no-live h1{ margin-bottom:16px; }
-  .no-live p{ color:rgba(239,233,225,0.6); font-size:0.95rem; line-height:1.7; margin-bottom:32px; }
+  .no-live-icon-wrap{
+    width:72px; height:72px; border-radius:50%; margin:0 auto 32px;
+    background:rgba(239,233,225,0.06); border:1px solid rgba(239,233,225,0.14);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .no-live-icon{ width:28px; height:28px; opacity:0.65; }
+  .no-live h1{ margin-bottom:16px; font-style:normal; }
+  .no-live p{ color:rgba(239,233,225,0.55); font-size:0.95rem; line-height:1.75; margin-bottom:36px; }
   .no-live a.btn{
-    display:inline-block; padding:14px 28px; border:1px solid rgba(239,233,225,0.3); border-radius:2px;
-    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase;
-    text-decoration:none; transition:background 0.25s ease, color 0.25s ease;
+    display:inline-block; padding:14px 30px; border:1px solid rgba(239,233,225,0.3); border-radius:2px;
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
+    text-decoration:none; transition:background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
   }
-  .no-live a.btn:hover{ background:var(--paper); color:var(--ink); }
+  .no-live a.btn:hover{ background:var(--rose); color:var(--ink); border-color:var(--rose); }
 
   footer{
-    padding:30px 0; text-align:center; color:rgba(239,233,225,0.4);
-    font-family:'JetBrains Mono', monospace; font-size:0.68rem; letter-spacing:0.06em;
+    padding:34px 0; text-align:center; color:rgba(239,233,225,0.35);
+    font-family:'JetBrains Mono', monospace; font-size:0.68rem; letter-spacing:0.08em;
   }
 </style>
 </head>
@@ -126,12 +171,6 @@
   // ─────────────────────────────────────────────────────────
   const LIVE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXWeLFXN4Ldd16RWhhmuV-VUGRt7hK4kGvM9mZLzesoRD5mRBZKJnu61cRFfk38rDqo2-KeO3jaUja/pub?output=csv';
 
-  function withinWindow(start, end){
-    if(!start || !end) return true; // no window set — always show if a Stream ID exists
-    const now = new Date();
-    return now >= new Date(start) && now <= new Date(end);
-  }
-
   // Accepts a bare video ID, or a full YouTube link in any common
   // format (youtu.be/ID, youtube.com/watch?v=ID, youtube.com/embed/ID,
   // youtube.com/live/ID) — same forgiving approach used for Drive
@@ -153,12 +192,25 @@
     return trimmed; // already a bare ID (or unrecognized — pass through as-is)
   }
 
+  // Shared WhatsApp share button — used in both the countdown and
+  // live states, so people can invite others before or during.
+  function shareButtonHtml(names){
+    const pageUrl = window.location.href.split('?')[0].split('#')[0];
+    const message = encodeURIComponent(`Join us live${names ? " for " + names + "'s wedding" : ''}! Watch here: ${pageUrl}`);
+    return `<a href="https://wa.me/?text=${message}" target="_blank" rel="noopener" class="share-btn">
+      <svg viewBox="0 0 24 24" class="share-icon"><path d="M17.6 6.32A7.85 7.85 0 0012.05 4a7.94 7.94 0 00-6.9 11.9L4 20l4.2-1.1a7.9 7.9 0 003.83 1h.02a7.94 7.94 0 007.94-7.94 7.9 7.9 0 00-2.4-5.64zm-5.55 12.2h-.02a6.6 6.6 0 01-3.36-.92l-.24-.14-2.5.65.67-2.44-.16-.25a6.61 6.61 0 1112.3-3.5 6.55 6.55 0 01-6.7 6.6zm3.62-4.94c-.2-.1-1.17-.58-1.35-.64s-.32-.1-.45.1-.5.64-.62.77-.23.15-.43.05a5.4 5.4 0 01-1.6-.98 5.94 5.94 0 01-1.1-1.36c-.12-.2 0-.3.1-.4s.2-.23.3-.35.13-.2.2-.33a.36.36 0 000-.35c-.05-.1-.45-1.08-.62-1.48s-.33-.33-.45-.34h-.38a.74.74 0 00-.53.25 2.24 2.24 0 00-.7 1.67 3.9 3.9 0 00.82 2.06 8.9 8.9 0 003.4 3 10.2 10.2 0 001 .37 2.42 2.42 0 001.1.07 1.8 1.8 0 001.18-.83 1.46 1.46 0 00.1-.83c-.05-.08-.18-.13-.38-.22z"/></svg>
+      Invite Others to Watch
+    </a>`;
+  }
+
   function showNoLive(){
     document.getElementById('liveContent').innerHTML = `
       <div class="no-live">
-        <svg class="no-live-icon" viewBox="0 0 40 40" fill="none" stroke="rgba(239,233,225,0.6)" stroke-width="1.4">
-          <rect x="4" y="10" width="32" height="20" rx="2"/><path d="M16 17l9 3-9 3v-6z" fill="rgba(239,233,225,0.6)" stroke="none"/>
-        </svg>
+        <div class="no-live-icon-wrap">
+          <svg class="no-live-icon" viewBox="0 0 40 40" fill="none" stroke="rgba(239,233,225,0.75)" stroke-width="1.4">
+            <rect x="4" y="10" width="32" height="20" rx="2"/><path d="M16 17l9 3-9 3v-6z" fill="rgba(239,233,225,0.75)" stroke="none"/>
+          </svg>
+        </div>
         <h1>Nothing Live Right Now</h1>
         <p>There's no ceremony being streamed at the moment. Check back around the scheduled time, or explore recent work while you wait.</p>
         <a href="index.html" class="btn">Back to Homepage</a>
@@ -175,10 +227,51 @@
         <iframe src="https://www.youtube.com/embed/${streamId}?autoplay=1&mute=1" title="Live stream" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
       </div>
       <p class="live-note">Having trouble viewing? Try refreshing the page, or watch directly on <a href="https://youtube.com/watch?v=${streamId}" target="_blank" rel="noopener" style="color:var(--rose); text-decoration:underline;">YouTube</a>.</p>
+      <div class="share-wrap">${shareButtonHtml(names)}</div>
     `;
   }
 
+  let countdownTimer = null;
+
+  function showCountdown(startTime, names, venue){
+    document.getElementById('liveContent').innerHTML = `
+      <div class="live-badge countdown-badge"><span class="live-dot"></span>Starting Soon</div>
+      <h1>${names || 'The Ceremony'}</h1>
+      ${venue ? `<div class="live-venue">${venue}</div>` : ''}
+      <div class="countdown-timer">
+        <div class="countdown-unit"><span id="cdDays">00</span><label>Days</label></div>
+        <div class="countdown-unit"><span id="cdHours">00</span><label>Hours</label></div>
+        <div class="countdown-unit"><span id="cdMins">00</span><label>Min</label></div>
+        <div class="countdown-unit"><span id="cdSecs">00</span><label>Sec</label></div>
+      </div>
+      <p class="live-note">The stream will begin automatically here — no need to refresh the page.</p>
+      <div class="share-wrap">${shareButtonHtml(names)}</div>
+    `;
+
+    const target = new Date(startTime).getTime();
+    if(countdownTimer) clearInterval(countdownTimer);
+
+    function tick(){
+      const diff = target - Date.now();
+      if(diff <= 0){
+        clearInterval(countdownTimer);
+        loadLiveStream(); // re-evaluate — should now show the live player
+        return;
+      }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = String(val).padStart(2, '0'); };
+      set('cdDays', days); set('cdHours', hours); set('cdMins', mins); set('cdSecs', secs);
+    }
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+  }
+
   async function loadLiveStream(){
+    if(countdownTimer) clearInterval(countdownTimer);
+
     if(LIVE_SHEET_CSV_URL.startsWith('PASTE_YOUR')){
       showNoLive();
       return;
@@ -196,10 +289,21 @@
       }
       const [rawStreamId, names, venue, start, end] = row;
       const streamId = extractYouTubeId(rawStreamId);
-      if(streamId && withinWindow(start, end)){
-        showLive(streamId, names, venue);
-      } else {
+      if(!streamId){
         showNoLive();
+        return;
+      }
+
+      const now = new Date();
+      const startTime = start ? new Date(start) : null;
+      const endTime = end ? new Date(end) : null;
+
+      if(startTime && now < startTime){
+        showCountdown(start, names, venue); // before the scheduled start — show countdown
+      } else if(endTime && now > endTime){
+        showNoLive(); // past the scheduled end — stream has finished
+      } else {
+        showLive(streamId, names, venue); // no window set, or currently within it
       }
     } catch(err){
       console.error('Could not load live stream config:', err);
