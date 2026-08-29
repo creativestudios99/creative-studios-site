@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Your Gallery — Creative Studios</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#efe9e1; --paper-dim:#e6ded2; --ink:#241f26; --ink-soft:#4a4249;
@@ -26,7 +26,7 @@
     background:var(--ink); color:var(--paper); padding:22px 0;
   }
   .head-row{ display:flex; justify-content:space-between; align-items:center; }
-  .brand{ font-style:italic; font-size:1.15rem; display:flex; align-items:center; gap:9px; }
+  .brand{ display:flex; align-items:center; gap:9px; font-family:'Jost', sans-serif; font-weight:400; font-size:0.95rem; letter-spacing:0.16em; text-transform:uppercase; }
   .brand-mark{ width:20px; height:20px; flex-shrink:0; }
   .head-actions{ display:flex; align-items:center; gap:24px; font-family:'JetBrains Mono', monospace; font-size:0.75rem; letter-spacing:0.06em; }
   .head-actions a{ opacity:0.75; transition:opacity 0.2s ease; }
@@ -223,6 +223,19 @@
   }
   .lb-btn:hover{ background:rgba(239,233,225,0.2); }
   .lb-btn svg{ width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.8; }
+  .lb-rotate-wrap{ display:flex; align-items:center; gap:10px; }
+  .lb-rotate-slider{
+    width:90px; height:2px; -webkit-appearance:none; appearance:none;
+    background:rgba(239,233,225,0.25); border-radius:2px; outline:none; cursor:pointer;
+  }
+  .lb-rotate-slider::-webkit-slider-thumb{
+    -webkit-appearance:none; width:12px; height:12px; border-radius:50%;
+    background:var(--rose); cursor:pointer;
+  }
+  .lb-rotate-slider::-moz-range-thumb{
+    width:12px; height:12px; border-radius:50%; border:none; background:var(--rose); cursor:pointer;
+  }
+  @media (max-width:640px){ .lb-rotate-slider{ width:60px; } }
   .lb-btn svg.lb-icon-fill{ stroke:none; fill:currentColor; }
   .lb-btn.fav.active svg{ fill:var(--rose); stroke:var(--rose); }
   .lightbox-nav{
@@ -455,6 +468,12 @@
     <img id="lbImage" src="" alt="">
     <div class="lightbox-bar">
       <span class="lightbox-count" id="lbCount"></span>
+      <div class="lb-rotate-wrap">
+        <input type="range" id="lbRotateSlider" class="lb-rotate-slider" min="-45" max="45" value="0" step="1" aria-label="Fine-tune rotation">
+        <button class="lb-btn hoverable" id="lbRotateBtn" aria-label="Rotate 90 degrees">
+          <svg viewBox="0 0 24 24"><path d="M4 4v6h6M20.49 15a9 9 0 11-2.12-9.36L4 10"/></svg>
+        </button>
+      </div>
       <div class="lightbox-actions">
         <button class="lb-btn fav hoverable" id="lbFavBtn" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6.5 4c2 0 3.5 1.2 4.5 2.5C12 5.2 13.5 4 15.5 4c4 0 6 4 4 8-2.5 4.5-9.5 9-9.5 9z"/></svg></button>
         <a class="lb-btn hoverable" id="lbShareBtn" href="#" target="_blank" rel="noopener" aria-label="Share on WhatsApp"><svg viewBox="0 0 24 24" class="lb-icon-fill"><path d="M17.6 6.32A7.85 7.85 0 0012.05 4a7.94 7.94 0 00-6.9 11.9L4 20l4.2-1.1a7.9 7.9 0 003.83 1h.02a7.94 7.94 0 007.94-7.94 7.9 7.9 0 00-2.4-5.64zm-5.55 12.2h-.02a6.6 6.6 0 01-3.36-.92l-.24-.14-2.5.65.67-2.44-.16-.25a6.61 6.61 0 1112.3-3.5 6.55 6.55 0 01-6.7 6.6zm3.62-4.94c-.2-.1-1.17-.58-1.35-.64s-.32-.1-.45.1-.5.64-.62.77-.23.15-.43.05a5.4 5.4 0 01-1.6-.98 5.94 5.94 0 01-1.1-1.36c-.12-.2 0-.3.1-.4s.2-.23.3-.35.13-.2.2-.33a.36.36 0 000-.35c-.05-.1-.45-1.08-.62-1.48s-.33-.33-.45-.34h-.38a.74.74 0 00-.53.25 2.24 2.24 0 00-.7 1.67 3.9 3.9 0 00.82 2.06 8.9 8.9 0 003.4 3 10.2 10.2 0 001 .37 2.42 2.42 0 001.1.07 1.8 1.8 0 001.18-.83 1.46 1.46 0 00.1-.83c-.05-.08-.18-.13-.38-.22z"/></svg></a>
@@ -1234,6 +1253,8 @@
 
     let zoom = 1;
     let panX = 0, panY = 0;
+    let baseRotation = 0;  // set by the quick 90° rotate button
+    let fineRotation = 0;  // set by the fine-tune slider, -45 to 45
     let startPanX = 0, startPanY = 0;
     let startTouchX = 0, startTouchY = 0;
     let pinchStartDist = 0;
@@ -1242,14 +1263,17 @@
     let lastTapTime = 0;
 
     function applyTransform(){
-      lbImage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+      const rotation = baseRotation + fineRotation;
+      lbImage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom}) rotate(${rotation}deg)`;
     }
 
     function resetZoom(){
-      zoom = 1; panX = 0; panY = 0;
+      zoom = 1; panX = 0; panY = 0; baseRotation = 0; fineRotation = 0;
       lbImage.style.transition = 'transform 0.25s ease';
       applyTransform();
       setTimeout(() => { lbImage.style.transition = ''; }, 250);
+      const rotateSlider = document.getElementById('lbRotateSlider');
+      if(rotateSlider) rotateSlider.value = 0;
     }
     // Reset zoom every time a new photo loads, so you never
     // arrive at the next photo still zoomed in from the last one.
@@ -1258,6 +1282,31 @@
       origRenderLightbox();
       resetZoom();
     };
+
+    // Quick 90° rotate — for photos that are fully sideways
+    // (a common EXIF-orientation quirk), not just slightly tilted.
+    const rotateBtn = document.getElementById('lbRotateBtn');
+    if(rotateBtn){
+      rotateBtn.addEventListener('click', () => {
+        baseRotation = (baseRotation + 90) % 360;
+        lbImage.style.transition = 'transform 0.3s ease';
+        applyTransform();
+        setTimeout(() => { lbImage.style.transition = ''; }, 300);
+      });
+    }
+
+    // Fine-tune slider — for photos that are just slightly tilted,
+    // letting a client straighten it for their own viewing/download
+    // without needing any photo-editing software. Kept fully
+    // separate from the 90° base rotation, so adjusting one never
+    // disturbs the other.
+    const rotateSlider = document.getElementById('lbRotateSlider');
+    if(rotateSlider){
+      rotateSlider.addEventListener('input', () => {
+        fineRotation = Number(rotateSlider.value);
+        applyTransform();
+      });
+    }
 
     function touchDistance(touches){
       const dx = touches[0].clientX - touches[1].clientX;
