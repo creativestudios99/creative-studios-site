@@ -224,18 +224,6 @@
   .lb-btn:hover{ background:rgba(239,233,225,0.2); }
   .lb-btn svg{ width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.8; }
   .lb-rotate-wrap{ display:flex; align-items:center; gap:10px; }
-  .lb-rotate-slider{
-    width:90px; height:2px; -webkit-appearance:none; appearance:none;
-    background:rgba(239,233,225,0.25); border-radius:2px; outline:none; cursor:pointer;
-  }
-  .lb-rotate-slider::-webkit-slider-thumb{
-    -webkit-appearance:none; width:12px; height:12px; border-radius:50%;
-    background:var(--rose); cursor:pointer;
-  }
-  .lb-rotate-slider::-moz-range-thumb{
-    width:12px; height:12px; border-radius:50%; border:none; background:var(--rose); cursor:pointer;
-  }
-  @media (max-width:640px){ .lb-rotate-slider{ width:60px; } }
   .lb-btn svg.lb-icon-fill{ stroke:none; fill:currentColor; }
   .lb-btn.fav.active svg{ fill:var(--rose); stroke:var(--rose); }
   .lightbox-nav{
@@ -469,9 +457,11 @@
     <div class="lightbox-bar">
       <span class="lightbox-count" id="lbCount"></span>
       <div class="lb-rotate-wrap">
-        <input type="range" id="lbRotateSlider" class="lb-rotate-slider" min="-45" max="45" value="0" step="1" aria-label="Fine-tune rotation">
-        <button class="lb-btn hoverable" id="lbRotateBtn" aria-label="Rotate 90 degrees">
-          <svg viewBox="0 0 24 24"><path d="M4 4v6h6M20.49 15a9 9 0 11-2.12-9.36L4 10"/></svg>
+        <button class="lb-btn hoverable" id="lbRotateLeftBtn" aria-label="Rotate 90 degrees left">
+          <svg viewBox="0 0 24 24"><path d="M4 4v6h6M4 10a9 9 0 1116.36 5.66"/></svg>
+        </button>
+        <button class="lb-btn hoverable" id="lbRotateRightBtn" aria-label="Rotate 90 degrees right">
+          <svg viewBox="0 0 24 24"><path d="M20 4v6h-6M20 10A9 9 0 103.64 15.66"/></svg>
         </button>
       </div>
       <div class="lightbox-actions">
@@ -1253,8 +1243,7 @@
 
     let zoom = 1;
     let panX = 0, panY = 0;
-    let baseRotation = 0;  // set by the quick 90° rotate button
-    let fineRotation = 0;  // set by the fine-tune slider, -45 to 45
+    let rotation = 0; // degrees, in clean 90° steps — lets clients quickly correct a sideways photo
     let startPanX = 0, startPanY = 0;
     let startTouchX = 0, startTouchY = 0;
     let pinchStartDist = 0;
@@ -1263,17 +1252,14 @@
     let lastTapTime = 0;
 
     function applyTransform(){
-      const rotation = baseRotation + fineRotation;
       lbImage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom}) rotate(${rotation}deg)`;
     }
 
     function resetZoom(){
-      zoom = 1; panX = 0; panY = 0; baseRotation = 0; fineRotation = 0;
+      zoom = 1; panX = 0; panY = 0; rotation = 0;
       lbImage.style.transition = 'transform 0.25s ease';
       applyTransform();
       setTimeout(() => { lbImage.style.transition = ''; }, 250);
-      const rotateSlider = document.getElementById('lbRotateSlider');
-      if(rotateSlider) rotateSlider.value = 0;
     }
     // Reset zoom every time a new photo loads, so you never
     // arrive at the next photo still zoomed in from the last one.
@@ -1283,30 +1269,19 @@
       resetZoom();
     };
 
-    // Quick 90° rotate — for photos that are fully sideways
-    // (a common EXIF-orientation quirk), not just slightly tilted.
-    const rotateBtn = document.getElementById('lbRotateBtn');
-    if(rotateBtn){
-      rotateBtn.addEventListener('click', () => {
-        baseRotation = (baseRotation + 90) % 360;
-        lbImage.style.transition = 'transform 0.3s ease';
-        applyTransform();
-        setTimeout(() => { lbImage.style.transition = ''; }, 300);
-      });
+    // Simple 90°-in-either-direction rotate — for photos that are
+    // sideways or upside down (a common EXIF-orientation quirk),
+    // fixable in one click without any photo-editing software.
+    function rotateBy(deg){
+      rotation = (rotation + deg + 360) % 360;
+      lbImage.style.transition = 'transform 0.3s ease';
+      applyTransform();
+      setTimeout(() => { lbImage.style.transition = ''; }, 300);
     }
-
-    // Fine-tune slider — for photos that are just slightly tilted,
-    // letting a client straighten it for their own viewing/download
-    // without needing any photo-editing software. Kept fully
-    // separate from the 90° base rotation, so adjusting one never
-    // disturbs the other.
-    const rotateSlider = document.getElementById('lbRotateSlider');
-    if(rotateSlider){
-      rotateSlider.addEventListener('input', () => {
-        fineRotation = Number(rotateSlider.value);
-        applyTransform();
-      });
-    }
+    const rotateLeftBtn = document.getElementById('lbRotateLeftBtn');
+    const rotateRightBtn = document.getElementById('lbRotateRightBtn');
+    if(rotateLeftBtn) rotateLeftBtn.addEventListener('click', () => rotateBy(-90));
+    if(rotateRightBtn) rotateRightBtn.addEventListener('click', () => rotateBy(90));
 
     function touchDistance(touches){
       const dx = touches[0].clientX - touches[1].clientX;
