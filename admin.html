@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon-camera-32.png">
+<link rel="icon" type="image/png" sizes="512x512" href="favicon-camera-512.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Client Gallery Setup — Creative Studios</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#efe9e1; --paper-dim:#e6ded2; --ink:#241f26; --ink-soft:#4a4249;
@@ -38,7 +40,8 @@
 
   header{ background:var(--ink); color:var(--paper); padding:22px 0; }
   .head-row{ display:flex; justify-content:space-between; align-items:center; }
-  .brand{ font-style:italic; font-size:1.15rem; }
+  .brand{ display:flex; align-items:center; gap:9px; font-family:'Jost', sans-serif; font-weight:400; font-size:0.95rem; letter-spacing:0.16em; text-transform:uppercase; }
+  .brand-mark{ width:20px; height:20px; flex-shrink:0; }
   .head-row a{ color:rgba(239,233,225,0.75); text-decoration:none; font-family:'JetBrains Mono', monospace; font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase; }
   .head-row a:hover{ color:var(--rose); }
 
@@ -196,6 +199,141 @@
   .dash-row-actions .del:hover{ color:#f5b8b8; }
   .dash-empty{ padding:30px; text-align:center; color:#c9b8be; font-size:0.85rem; }
   .dash-loading{ padding:30px; text-align:center; color:#c9b8be; font-size:0.85rem; font-family:'JetBrains Mono', monospace; }
+
+  /* ═══════════ Coverage Scope Builder tab ═══════════ */
+
+  :root{
+    --bg:#efe9e1; --bg-panel:#e6ded2; --ink:#241f26; --ink-soft:#4a4249;
+    --line:#d8cdb8; --gold:#a98552; --gold-soft:#e8dcc4; --rose:#b9776b; --white:#FFFFFF;
+    --display:'Fraunces',serif; --body:'Work Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background:var(--bg); color:var(--ink); font-family:var(--body); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .qb-wrap{ max-width:1280px; margin:0 auto; padding:36px 32px 80px; }
+  .logo{ display:flex; align-items:center; gap:8px; font-family:'Jost', sans-serif; font-size:14px; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:4px; }
+  .logo svg{ width:20px; height:20px; flex-shrink:0; }
+  .logo em{ font-style:normal; color:var(--gold); }
+  .eyebrow{ font-family:var(--mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); margin-top:18px; }
+  h1{ font-family:var(--display); font-weight:400; font-size:clamp(26px,3vw,36px); margin:8px 0 30px; }
+
+  .layout{ display:grid; grid-template-columns:1fr 1fr; gap:36px; align-items:start; }
+  @media (max-width:980px){ .layout{ grid-template-columns:1fr; } }
+
+  .panel{ background:var(--white); border:1px solid var(--line); padding:32px; }
+  .panel h2{ font-family:var(--display); font-weight:400; font-size:18px; margin-bottom:22px; padding-bottom:14px; border-bottom:1px solid var(--line); }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .field{ margin-bottom:18px; }
+  .field label{
+    display:block; font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--ink-soft); margin-bottom:8px;
+  }
+  .field input, .field select{
+    width:100%; padding:11px 13px; border:1px solid var(--line); background:var(--bg);
+    font-family:var(--body); font-size:14px; color:var(--ink);
+  }
+  .field input:focus, .field select:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+
+  .section-label{
+    font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--gold); margin:26px 0 14px; display:flex; align-items:center; gap:10px;
+  }
+  .section-label::after{ content:""; flex:1; height:1px; background:var(--line); }
+
+  .occasion-card{ border:1px solid var(--line); margin-bottom:10px; }
+  .custom-add{ display:flex; gap:10px; margin-top:12px; }
+  .custom-add input{ flex:1; padding:11px 13px; border:1px solid var(--line); background:var(--bg); font-size:14px; }
+  .custom-add button{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.05em; padding:0 18px; border:1px solid var(--ink); background:var(--ink); color:var(--bg); cursor:pointer; }
+  .occasion-head{ display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; }
+  .occasion-head input[type=checkbox]{ width:16px; height:16px; accent-color:var(--gold); flex-shrink:0; }
+  .occasion-head .label{ font-size:14px; flex:1; }
+  .occasion-card.open{ border-color:var(--gold); background:var(--gold-soft); }
+  .occasion-body{ display:none; padding:0 16px 18px 44px; border-top:1px solid var(--line); padding-top:16px; }
+  .occasion-card.open .occasion-body{ display:block; }
+  .equip-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .equip-field{ text-align:center; border:1px solid var(--line); padding:10px 8px; background:var(--white); }
+  .equip-field .eq-label{ font-family:var(--mono); font-size:9px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-soft); margin-bottom:8px; }
+  .equip-stepper{ display:flex; align-items:center; justify-content:center; gap:10px; }
+  .equip-stepper button{ width:22px; height:22px; border:1px solid var(--line); background:var(--white); cursor:pointer; font-family:var(--mono); font-size:12px; }
+  .equip-stepper span{ font-family:var(--display); font-size:16px; min-width:16px; }
+
+  .addon-row{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:12px 0; border-bottom:1px solid var(--line);
+  }
+  .addon-row:last-child{ border-bottom:none; }
+  .addon-row .label{ font-size:14px; display:flex; align-items:center; gap:10px; }
+  .addon-row .price{ font-family:var(--mono); font-size:12px; color:var(--ink-soft); white-space:nowrap; }
+  .addon-row input[type=checkbox]{ width:16px; height:16px; accent-color:var(--gold); }
+  .addon-row .qty{
+    display:flex; align-items:center; gap:8px; margin-left:auto;
+  }
+  .addon-row .qty button{
+    width:24px; height:24px; border:1px solid var(--line); background:var(--white); cursor:pointer; font-family:var(--mono);
+  }
+  .addon-row .qty span{ font-family:var(--mono); font-size:12px; min-width:16px; text-align:center; }
+
+  /* --- quote preview --- */
+  .quote{
+    background:var(--ink);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    color:var(--bg); padding:56px 48px; position:sticky; top:24px;
+  }
+  .quote-top{ text-align:center; margin-bottom:44px; padding-bottom:0; border-bottom:none; }
+  .quote-top .logo{ display:flex; flex-direction:column; align-items:center; gap:14px; color:var(--bg); margin-bottom:6px; }
+  .quote-top .logo svg{ stroke: var(--bg); width:34px !important; height:34px !important; margin-right:0 !important; }
+  .quote-top .logo em{ color:var(--gold); font-style:normal; }
+  .quote-top .logo-text{ font-family:'Jost', sans-serif; font-size:18px; letter-spacing:0.14em; text-transform:uppercase; }
+  .quote-top .tagline-row{ display:flex; align-items:center; justify-content:center; gap:14px; margin-top:10px; }
+  .quote-top .tagline-row .line{ width:34px; height:1px; background:rgba(250,249,246,0.3); }
+  .quote-top .tagline-row .tagline{ font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); }
+  .quote-top .meta{ margin-top:22px; font-family:var(--mono); font-size:11px; color:#B7B4A9; }
+  .quote-for{ margin-bottom:34px; text-align:center; border-top:1px solid rgba(250,249,246,0.15); border-bottom:1px solid rgba(250,249,246,0.15); padding:28px 0; }
+  .quote-for .eyebrow{ color:#9E9B90; margin-bottom:8px; }
+  .quote-for h3{ font-family:var(--display); font-weight:400; font-size:30px; font-style:italic; }
+  .quote-for .details{ margin-top:14px; font-size:13px; color:#C7C4BA; line-height:2.2; }
+  .quote-for .detail-row{ display:flex; justify-content:center; gap:10px; }
+  .quote-for .dlabel{ min-width:80px; text-align:right; color:#8C8A80; font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.05em; }
+
+  .line-items{ margin-bottom:24px; }
+  .line-item{
+    display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(250,249,246,0.1);
+    font-size:14px;
+  }
+  .line-item .desc small{ display:block; color:#8C8A80; font-size:11px; margin-top:2px; }
+  .line-item .amt{ font-family:var(--mono); white-space:nowrap; padding-left:20px; }
+
+  .quote-total{
+    display:flex; justify-content:space-between; align-items:baseline; padding-top:20px; margin-top:10px;
+    border-top:1px solid rgba(250,249,246,0.25);
+  }
+  .quote-total .label{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#B7B4A9; }
+  .quote-total .amt{ font-family:var(--display); font-size:38px; color:var(--gold); }
+
+  .quote-note{ margin-top:32px; font-family:var(--display); font-style:italic; font-size:14px; color:#B7B4A9; line-height:1.9; text-align:center; }
+  .quote-contact{
+    margin-top:24px; padding-top:24px; border-top:1px solid rgba(250,249,246,0.15);
+    display:flex; gap:14px; justify-content:center; flex-wrap:wrap;
+    font-family:var(--mono); font-size:10px; letter-spacing:0.04em; color:#8C8A80; text-align:center;
+  }
+  .quote-contact span{ display:inline-flex; align-items:center; gap:5px; }
+  .quote-contact svg{ width:11px; height:11px; stroke:#8C8A80; fill:none; stroke-width:1.8; flex-shrink:0; }
+
+  .actions{ display:flex; gap:12px; margin-top:32px; }
+  .btn{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    padding:13px 22px; border:1px solid var(--gold); color:var(--gold); cursor:pointer; background:transparent;
+    flex:1; text-align:center;
+  }
+  .btn.filled{ background:var(--gold); color:var(--ink); }
+
+  @media print{
+    .panel.left-panel, .actions, header .eyebrow, h1{ display:none; }
+    .layout{ display:block; }
+    .quote{ position:static; }
+    body{ background:white; }
+  }
+
 </style>
 </head>
 <body>
@@ -230,7 +368,7 @@
 
 <header>
   <div class="wrap head-row">
-    <div class="brand">Creative Studios</div>
+    <div class="brand"><svg class="brand-mark" viewBox="168 293 726 881" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"><path d="M 433.4 323 L 408.8 342 L 385.6 361.4 L 363.6 381.3 L 342.9 401.8 L 323.4 422.9 L 305.2 444.6 L 288.3 467 L 272.7 490.2 L 258.4 514.3 L 245.4 539.2 L 233.6 565 L 223.2 591.7 L 214.2 619.3 L 207 647.4 L 201.5 675.9 L 198.1 704.7 L 197 733.4 L 198.1 762.1 L 201.9 790.4 L 208.4 818.1 L 217.7 845.1 L 229.9 870.9 L 244.8 895 L 262.3 916.9 L 282.4 936.2 L 305 952.5 L 329.7 965.7 L 356.1 975.8 L 383.8 982.8 L 412.4 986.7 L 441.4 987.6 L 470.7 985.8 L 499.8 981.7 L 528.5 975.5 L 556.4 967.7 L 583.3 958.5 L 609 948.5 L 633.2 937.8 L 655.8 926.9"/><path d="M 576.6 420.3 L 560.6 428.2 L 545.8 437 L 532.1 446.6 L 519.4 456.9 L 507.7 468 L 496.9 479.8 L 486.9 492.1 L 477.6 505.1 L 468.9 518.5 L 460.9 532.4 L 453.4 546.7 L 446.4 561.4 L 439.9 576.4 L 434.1 591.7 L 429.1 607.3 L 424.9 623.1 L 421.6 639.1 L 419.3 655.4 L 418.1 671.8 L 418 688.3 L 419.3 704.9 L 421.8 721.4 L 425.7 737.5 L 430.9 753.1 L 437.5 767.7 L 445.5 781.3 L 454.9 793.6 L 465.8 804.2 L 478.1 813.1 L 492 819.9 L 507.3 824.5 L 523.6 827.1 L 540.6 827.7 L 557.8 826.5 L 574.9 823.8 L 591.4 819.6 L 606.9 814.1 L 621.1 807.4 L 633.4 799.8"/><path d="M 534.9 1144.4 L 557.7 1142.6 L 579.9 1138.4 L 601.4 1131.9 L 622.2 1123.5 L 642.4 1113.2 L 662 1101.4 L 680.8 1088.2 L 699 1073.7 L 716.5 1058.4 L 733.3 1042.2 L 749.3 1025.5 L 764.6 1008.2 L 779.1 990.4 L 792.7 972 L 805.4 953 L 817.1 933.5 L 827.7 913.5 L 837.3 892.8 L 845.7 871.6 L 852.8 849.7 L 858.7 827.3 L 863.1 804.4 L 865.6 781.3 L 865.8 758.4 L 863.4 735.9 L 858 714.2 L 849.7 693.7 L 838.6 674.7 L 824.7 657.7 L 808.3 643.1 L 789.5 631.3 L 768.6 622.1 L 746.2 615.4 L 722.8 611.2 L 698.8 609.2 L 674.7 609.4 L 651.1 611.4 L 628.3 614.9 L 606.8 619.8"/><circle cx="620.1" cy="709.8" r="91" fill="none" stroke="currentColor" stroke-width="10"/><circle cx="620.1" cy="709.8" r="71" fill="none" stroke="currentColor" stroke-width="6"/><circle cx="620.1" cy="709.8" r="46" fill="currentColor"/></g></svg>Creative Studios</div>
     <a href="index.html">&larr; Back to Homepage</a>
   </div>
 </header>
@@ -263,6 +401,7 @@
         <button class="dash-tab active" data-tab="clients">Clients</button>
         <button class="dash-tab" data-tab="featured">Featured Weddings</button>
         <button class="dash-tab" data-tab="live">Live Stream</button>
+        <button class="dash-tab" data-tab="scope">Coverage Scope</button>
       </div>
 
       <!-- CLIENTS PANEL -->
@@ -328,6 +467,84 @@
             <span class="dash-msg" id="liveFormMsg"></span>
           </div>
         </div>
+      </div>
+
+      <div class="dash-panel" id="panelScope">
+<div class="qb-wrap">
+  <div class="layout">
+    <!-- LEFT: inputs -->
+    <div class="panel left-panel">
+      <h2>Client &amp; Event Details</h2>
+      <div class="grid2">
+        <div class="field"><label>Client Name(s)</label><input type="text" id="clientName" value="Priya &amp; Dev" placeholder="e.g. Priya &amp; Dev"></div>
+        <div class="field"><label>Occasion</label>
+          <select id="occasion">
+            <option>Wedding</option>
+            <option>Elopement</option>
+            <option>Engagement Session</option>
+            <option>Destination Wedding</option>
+            <option>Anniversary / Vow Renewal</option>
+          </select>
+        </div>
+        <div class="field"><label>Venue</label><input type="text" id="venue" value="Taj Lake Palace, Udaipur" placeholder="e.g. Taj Lake Palace, Udaipur"></div>
+        <div class="field"><label>Event Date</label><input type="date" id="eventDate" value="2026-11-14"></div>
+        <div class="field"><label>Client WhatsApp Number</label><input type="text" id="clientPhone" placeholder="e.g. 91XXXXXXXXXX (with country code)"></div>
+      </div>
+
+      <div class="section-label">Occasions Covered</div>
+      <div id="occasions"></div>
+      <div class="custom-add">
+        <input type="text" id="customOccasionInput" placeholder="Add a custom occasion...">
+        <button id="addOccasionBtn">Add</button>
+      </div>
+      <div class="custom-add" style="margin-top:8px;">
+        <input type="text" id="customEquipInput" placeholder="Add a custom equipment type (e.g. Photobooth)...">
+        <button id="addEquipBtn">Add</button>
+      </div>
+
+      <div class="section-label">Add-ons</div>
+      <div id="addons"></div>
+    </div>
+
+    <!-- RIGHT: live quote -->
+    <div class="quote" id="quotePreview">
+      <div class="quote-top">
+        <div class="logo"><svg viewBox="168 293 726 981" fill="none" stroke="currentColor" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"><path d="M 433.4 323 L 408.8 342 L 385.6 361.4 L 363.6 381.3 L 342.9 401.8 L 323.4 422.9 L 305.2 444.6 L 288.3 467 L 272.7 490.2 L 258.4 514.3 L 245.4 539.2 L 233.6 565 L 223.2 591.7 L 214.2 619.3 L 207 647.4 L 201.5 675.9 L 198.1 704.7 L 197 733.4 L 198.1 762.1 L 201.9 790.4 L 208.4 818.1 L 217.7 845.1 L 229.9 870.9 L 244.8 895 L 262.3 916.9 L 282.4 936.2 L 305 952.5 L 329.7 965.7 L 356.1 975.8 L 383.8 982.8 L 412.4 986.7 L 441.4 987.6 L 470.7 985.8 L 499.8 981.7 L 528.5 975.5 L 556.4 967.7 L 583.3 958.5 L 609 948.5 L 633.2 937.8 L 655.8 926.9"/><path d="M 576.6 420.3 L 560.6 428.2 L 545.8 437 L 532.1 446.6 L 519.4 456.9 L 507.7 468 L 496.9 479.8 L 486.9 492.1 L 477.6 505.1 L 468.9 518.5 L 460.9 532.4 L 453.4 546.7 L 446.4 561.4 L 439.9 576.4 L 434.1 591.7 L 429.1 607.3 L 424.9 623.1 L 421.6 639.1 L 419.3 655.4 L 418.1 671.8 L 418 688.3 L 419.3 704.9 L 421.8 721.4 L 425.7 737.5 L 430.9 753.1 L 437.5 767.7 L 445.5 781.3 L 454.9 793.6 L 465.8 804.2 L 478.1 813.1 L 492 819.9 L 507.3 824.5 L 523.6 827.1 L 540.6 827.7 L 557.8 826.5 L 574.9 823.8 L 591.4 819.6 L 606.9 814.1 L 621.1 807.4 L 633.4 799.8"/><path d="M 663.6 999.3 L 679.6 991.4 L 694.4 982.6 L 708.1 973 L 720.8 962.7 L 732.5 951.6 L 743.3 939.8 L 753.3 927.5 L 762.6 914.5 L 771.3 901.1 L 779.3 887.2 L 786.8 872.9 L 793.8 858.2 L 800.3 843.2 L 806.1 827.9 L 811.1 812.3 L 815.3 796.5 L 818.6 780.5 L 820.9 764.2 L 822.1 747.8 L 822.2 731.3 L 820.9 714.7 L 818.4 698.2 L 814.5 682.1 L 809.3 666.5 L 802.7 651.9 L 794.7 638.3 L 785.3 626 L 774.4 615.4 L 762.1 606.5 L 748.2 599.7 L 732.9 595.1 L 716.6 592.5 L 699.6 591.9 L 682.4 593.1 L 665.3 595.8 L 648.8 600 L 633.3 605.5 L 619.1 612.2 L 606.8 619.8"/><circle cx="620.1" cy="709.8" r="91"/><circle cx="620.1" cy="709.8" r="71"/><circle cx="620.1" cy="709.8" r="46" fill="currentColor" stroke="none"/></svg><span class="logo-text">Creative <em>Studios</em></span></div>
+        <div class="tagline-row"><div class="line"></div><div class="tagline">Photo &amp; Film</div><div class="line"></div></div>
+        <div class="meta" id="quoteDate">Coverage Scope — July 2026</div>
+      </div>
+      <div class="quote-for">
+        <div class="eyebrow">Prepared For</div>
+        <h3 id="pClientName">Priya &amp; Dev</h3>
+        <div class="details">
+          <div class="detail-row"><span class="dlabel">Occasion:&nbsp;</span><span id="pOccasion">Wedding</span></div>
+          <div class="detail-row"><span class="dlabel">Venue:&nbsp;</span><span id="pVenue">Taj Lake Palace, Udaipur</span></div>
+          <div class="detail-row"><span class="dlabel">Date:&nbsp;</span><span id="pDate">14 Nov 2026</span></div>
+        </div>
+      </div>
+
+      <div class="line-items" id="lineItems"></div>
+
+      <div class="quote-total">
+        <div class="label">Scope Summary</div>
+        <div class="amt" id="totalAmt" style="font-size:20px;">0 Occasions</div>
+      </div>
+
+      <div class="quote-note">This outlines the scope of coverage for your day. A formal quote with pricing follows once the details are confirmed.</div>
+      <div class="quote-contact">
+        <span><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>polamreddysiva9@gmail.com</span>
+        <span><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7 12.8 12.8 0 00.7 2.8 2 2 0 01-.5 2.1L8 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.5 12.8 12.8 0 002.8.7 2 2 0 011.7 2z"/></svg>+91 99497 06000</span>
+        <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>creativestudios.in</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn filled" id="whatsappBtn">Send via WhatsApp</button>
+        <button class="btn" id="downloadPdfBtn">Download PDF</button>
+        <button class="btn" onclick="location.reload()">Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
       </div>
     </div>
   </div>
@@ -432,7 +649,7 @@
     document.getElementById('dashSignedIn').style.display = 'none';
   });
 
-  const TAB_PANEL_MAP = { clients: 'panelClients', featured: 'panelFeatured', live: 'panelLive' };
+  const TAB_PANEL_MAP = { clients: 'panelClients', featured: 'panelFeatured', live: 'panelLive', scope: 'panelScope' };
   document.querySelectorAll('.dash-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
@@ -765,6 +982,307 @@
       msg.textContent = 'Failed: ' + err.message; msg.className = 'dash-msg err';
     }
   });
+
+  // ═══════════ Coverage Scope Builder tab ═══════════
+
+  // PLACEHOLDER PRICING — replace these with your real rates.
+  // Occasions: Indian weddings typically span several distinct
+  // functions, not just one day — this lets you check off exactly
+  // which ones this quote covers, matching how your gallery's own
+  // occasion filters already work (Marriage, Reception, Nalugu, etc).
+  let occasions = [
+    { id:'haldi', name:'Haldi', price:15000 },
+    { id:'mehendi', name:'Mehendi', price:15000 },
+    { id:'sangeet', name:'Sangeet', price:20000 },
+    { id:'nalugu', name:'Nalugu', price:12000 },
+    { id:'wedding', name:'Wedding / Marriage Ceremony', price:35000 },
+    { id:'reception', name:'Reception', price:25000 },
+    { id:'engagement', name:'Engagement', price:20000 },
+  ];
+
+  // Equipment & team — manually set exactly how many of each you're
+  // bringing, priced per unit for the full coverage.
+  let equipment = [
+    { id:'cameras', name:'Photographers' },
+    { id:'videocams', name:'Videographers' },
+    { id:'drones', name:'Aerial Cinematography' },
+    { id:'ledwalls', name:'LED Video Wall' },
+    { id:'livestream', name:'Live Streaming' },
+  ];
+
+  const addons = [
+    { id:'extrahour', name:'Extra hour of coverage', price:5000, hasQty:true },
+    { id:'secondphotog', name:'Additional second photographer', price:15000, hasQty:false },
+    { id:'video', name:'Videography / highlight film', price:25000, hasQty:false },
+    { id:'drone', name:'Drone coverage', price:8000, hasQty:false },
+    { id:'album', name:'Hand-bound heirloom album', price:12000, hasQty:false },
+    { id:'prints', name:'Fine-art print set (10 prints)', price:6000, hasQty:false },
+    { id:'rush', name:'Rush delivery (7 days)', price:10000, hasQty:false },
+    { id:'extendhost', name:'Extended gallery hosting (+12mo)', price:4000, hasQty:false },
+  ];
+
+  let state = { occasionsSelected:{}, occasionEquip:{}, addonQty:{} };
+  occasions.forEach(o => {
+    state.occasionsSelected[o.id] = false;
+    state.occasionEquip[o.id] = {};
+    equipment.forEach(e => state.occasionEquip[o.id][e.id] = 0);
+  });
+  addons.forEach(a => state.addonQty[a.id] = 0);
+  // Sensible defaults so the preview isn't empty on first load
+  state.occasionsSelected['wedding'] = true;
+  state.occasionEquip['wedding']['cameras'] = 2;
+  state.occasionEquip['wedding']['videocams'] = 1;
+
+  function renderOccasions(){
+    const el = document.getElementById('occasions');
+    el.innerHTML = occasions.map(o => {
+      const isOpen = state.occasionsSelected[o.id];
+      return `
+      <div class="occasion-card ${isOpen ? 'open' : ''}" data-id="${o.id}">
+        <label class="occasion-head">
+          <input type="checkbox" ${isOpen ? 'checked' : ''}>
+          <div class="label">${o.name}</div>
+        </label>
+        <div class="occasion-body">
+          <div class="equip-grid">
+            ${equipment.map(eq => `
+              <div class="equip-field">
+                <div class="eq-label">${eq.name}</div>
+                <div class="equip-stepper">
+                  <button data-occ="${o.id}" data-eq="${eq.id}" data-dir="-1">−</button>
+                  <span id="eqty-${o.id}-${eq.id}">${state.occasionEquip[o.id][eq.id]}</span>
+                  <button data-occ="${o.id}" data-eq="${eq.id}" data-dir="1">+</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+    }).join('');
+
+    // Clicking the checkbox/label toggles whether this occasion is
+    // included at all, which also shows/hides its equipment fields.
+    el.querySelectorAll('.occasion-head').forEach(head => {
+      head.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = head.closest('.occasion-card').dataset.id;
+        state.occasionsSelected[id] = !state.occasionsSelected[id];
+        renderOccasions(); update();
+      });
+    });
+
+    // The +/- steppers inside each occasion's equipment grid
+    el.querySelectorAll('.equip-stepper button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // don't also toggle the occasion checkbox
+        const occId = btn.dataset.occ;
+        const eqId = btn.dataset.eq;
+        const dir = parseInt(btn.dataset.dir);
+        state.occasionEquip[occId][eqId] = Math.max(0, state.occasionEquip[occId][eqId] + dir);
+        renderOccasions(); update();
+      });
+    });
+  }
+
+  // Lets you add an occasion beyond the preset list (Haldi, Mehendi,
+  // etc.) — useful for anything specific to a particular wedding
+  // that doesn't fit the standard options.
+  document.getElementById('addOccasionBtn').addEventListener('click', () => {
+    const input = document.getElementById('customOccasionInput');
+    const name = input.value.trim();
+    if(!name) return;
+
+    const id = 'custom_' + Date.now(); // guaranteed-unique id
+    occasions.push({ id, name });
+    state.occasionsSelected[id] = true; // auto-select so it's immediately visible
+    state.occasionEquip[id] = {};
+    equipment.forEach(eq => state.occasionEquip[id][eq.id] = 0);
+
+    input.value = '';
+    renderOccasions(); update();
+  });
+  document.getElementById('customOccasionInput').addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') document.getElementById('addOccasionBtn').click();
+  });
+
+  // Lets you add an equipment type beyond the preset list (Photographers,
+  // Videographers, Aerial Cinematography, LED Video Wall, Live Streaming)
+  // — appears as a
+  // new field in every occasion's equipment grid, including ones
+  // already added.
+  document.getElementById('addEquipBtn').addEventListener('click', () => {
+    const input = document.getElementById('customEquipInput');
+    const name = input.value.trim();
+    if(!name) return;
+
+    const id = 'custom_' + Date.now();
+    equipment.push({ id, name });
+    // Every existing occasion needs a 0 entry for this new equipment
+    // type, or its stepper would reference an undefined value.
+    occasions.forEach(o => { state.occasionEquip[o.id][id] = 0; });
+
+    input.value = '';
+    renderOccasions(); update();
+  });
+  document.getElementById('customEquipInput').addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') document.getElementById('addEquipBtn').click();
+  });
+
+  function renderAddons(){
+    const el = document.getElementById('addons');
+    el.innerHTML = addons.map(a => `
+      <div class="addon-row">
+        <label class="label">
+          <input type="checkbox" data-id="${a.id}" ${state.addonQty[a.id] > 0 ? 'checked' : ''}>
+          ${a.name}
+        </label>
+        ${a.hasQty ? `<div class="qty">
+          <button data-id="${a.id}" data-dir="-1">−</button>
+          <span id="qty-${a.id}">${state.addonQty[a.id]}</span>
+          <button data-id="${a.id}" data-dir="1">+</button>
+        </div>` : ''}
+      </div>
+    `).join('');
+
+    el.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      cb.addEventListener('change', ()=>{
+        const id = cb.dataset.id;
+        const addon = addons.find(a=>a.id===id);
+        state.addonQty[id] = cb.checked ? (addon.hasQty ? Math.max(1,state.addonQty[id]) : 1) : 0;
+        renderAddons(); update();
+      });
+    });
+    el.querySelectorAll('.qty button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.dataset.id;
+        const dir = parseInt(btn.dataset.dir);
+        state.addonQty[id] = Math.max(0, state.addonQty[id] + dir);
+        renderAddons(); update();
+      });
+    });
+  }
+
+  function fmtDate(str){
+    if(!str) return '—';
+    const d = new Date(str + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { day:'numeric', month:'short', year:'numeric' });
+  }
+
+  function update(){
+    document.getElementById('pClientName').textContent = document.getElementById('clientName').value || '—';
+    document.getElementById('pOccasion').textContent = document.getElementById('occasion').value;
+    document.getElementById('pVenue').textContent = document.getElementById('venue').value || '—';
+    document.getElementById('pDate').textContent = fmtDate(document.getElementById('eventDate').value);
+
+    const today = new Date();
+    document.getElementById('quoteDate').textContent = 'Coverage Scope — ' + today.toLocaleDateString('en-US',{month:'long', year:'numeric'});
+
+    let items = [];
+    let occasionCount = 0;
+
+    occasions.forEach(o => {
+      if(state.occasionsSelected[o.id]){
+        const eqParts = equipment
+          .filter(eq => state.occasionEquip[o.id][eq.id] > 0)
+          .map(eq => `${eq.name} ×${state.occasionEquip[o.id][eq.id]}`);
+        items.push({ desc: o.name, sub: eqParts.length ? eqParts.join(' · ') : 'Occasion coverage' });
+        occasionCount++;
+      }
+    });
+
+    addons.forEach(a=>{
+      const qty = state.addonQty[a.id];
+      if(qty > 0){
+        items.push({ desc: a.name + (qty > 1 ? ` ×${qty}` : ''), sub:'' });
+      }
+    });
+
+    document.getElementById('lineItems').innerHTML = items.map(i => `
+      <div class="line-item">
+        <div class="desc">${i.desc}${i.sub ? `<small>${i.sub}</small>` : ''}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('totalAmt').textContent = `${occasionCount} Occasion${occasionCount !== 1 ? 's' : ''}`;
+  }
+
+  ['clientName','occasion','venue','eventDate','clientPhone'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', update);
+    document.getElementById(id).addEventListener('change', update);
+  });
+
+  // Builds a nicely formatted text version of the current quote and
+  // opens it in WhatsApp, ready to send with one tap. If a client
+  // phone number was entered, it opens a chat with them directly;
+  // otherwise it opens WhatsApp's own contact picker so you can
+  // choose who to send it to.
+  // "Download PDF" — uses the browser's own print-to-PDF rendering
+  // (perfectly accurate to what's on screen, unlike third-party PDF
+  // libraries that can mangle custom fonts), but sets a smart,
+  // sensible filename first, since most browsers suggest the page
+  // title as the default filename when "Save as PDF" is chosen.
+  document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+    const name = document.getElementById('clientName').value.trim() || 'Client';
+    const safeName = name.replace(/\s*&\s*/g, '-').replace(/[^a-zA-Z0-9-]/g, '').replace(/-+/g, '-');
+    const originalTitle = document.title;
+
+    document.title = `${safeName}-Coverage-Scope`;
+    window.print();
+
+    // Restore the real page title once the print dialog closes,
+    // so the browser tab itself doesn't stay showing the filename.
+    window.addEventListener('afterprint', function restoreTitle(){
+      document.title = originalTitle;
+      window.removeEventListener('afterprint', restoreTitle);
+    });
+  });
+
+  document.getElementById('whatsappBtn').addEventListener('click', () => {
+    const name = document.getElementById('clientName').value || 'there';
+    const occasion = document.getElementById('occasion').value;
+    const venue = document.getElementById('venue').value || '—';
+    const date = fmtDate(document.getElementById('eventDate').value);
+    const phone = document.getElementById('clientPhone').value.trim().replace(/[^0-9]/g, '');
+
+    let lines = [];
+    lines.push(`*Creative Studios — Coverage Scope*`);
+    lines.push(``);
+    lines.push(`Hi ${name}, here's the coverage scope for your ${occasion.toLowerCase()}:`);
+    lines.push(``);
+    lines.push(`📍 ${venue}`);
+    lines.push(`📅 ${date}`);
+    lines.push(``);
+
+    occasions.forEach(o => {
+      if (state.occasionsSelected[o.id]) {
+        lines.push(`*${o.name}*`);
+        equipment.forEach(eq => {
+          const qty = state.occasionEquip[o.id][eq.id];
+          if (qty > 0) lines.push(`  + ${eq.name} ×${qty}`);
+        });
+      }
+    });
+
+    addons.forEach(a => {
+      const qty = state.addonQty[a.id];
+      if (qty > 0) {
+        lines.push(`+ ${a.name}${qty > 1 ? ` ×${qty}` : ''}`);
+      }
+    });
+
+    lines.push(``);
+    lines.push(`This outlines the scope of coverage for your day. A formal quote with pricing follows once the details are confirmed.`);
+
+    const message = encodeURIComponent(lines.join('\n'));
+    const url = phone ? `https://wa.me/${phone}?text=${message}` : `https://wa.me/?text=${message}`;
+    window.open(url, '_blank');
+  });
+
+  renderOccasions();
+  renderAddons();
+  update();
+
 
   initDashboard();
 </script>
