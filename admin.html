@@ -203,6 +203,8 @@
   .dash-loading{ padding:30px; text-align:center; color:#c9b8be; font-size:0.85rem; font-family:'JetBrains Mono', monospace; }
 
   /* ═══════════ Coverage Scope Builder tab ═══════════ */
+</style>
+<style id="scopeStyles">
   /* New variables this tab needs, merged into the single :root
      above rather than redefining it — a previous merge attempt
      created a second, conflicting :root block here that silently
@@ -359,7 +361,7 @@
     border-top:1px solid var(--line);
   }
   .quote-total .label{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); }
-  .quote-total .amt{ font-family:var(--display); font-size:24px; color:var(--accent); }
+  .quote-total .amt{ font-family:var(--display); font-size:24px; color:var(--gold); }
 
   .quote-closing{ justify-content:space-between; padding-top:64px; padding-bottom:44px; }
   .closing-heading{ font-family:var(--display); font-weight:400; font-style:italic; font-size:28px; margin-top:auto; }
@@ -401,7 +403,7 @@
     #panelScope{ display:block !important; }
     .qb-wrap{ padding:0; margin:0; max-width:none; }
     .layout{ display:block; }
-    .quote{ position:static; width:100%; box-shadow:none; }
+    .quote-doc{ position:static; width:100%; box-shadow:none; }
   }
 
 </style>
@@ -1312,25 +1314,51 @@
   // choose who to send it to.
   // "Download PDF" — uses the browser's own print-to-PDF rendering.
   // An earlier version used a third-party library (html2pdf.js) for
-  // a genuine one-click download, but that approach turned out to be
-  // unreliable in practice (likely a CORS restriction from the
-  // Google Fonts used on this page, or the canvas capture failing on
-  // this layout's CSS) and couldn't be fully tested without a real
-  // browser. This native approach has zero external dependencies and
-  // cannot fail the same way — the tradeoff is choosing "Save as
-  // PDF" in the print dialog, one extra step, but it reliably works.
+  // "Download PDF" — opens the quote in a brand new, completely
+  // clean browser tab containing ONLY the quote content, then prints
+  // from there. This is a genuinely different, simpler approach than
+  // trying to print the Dashboard page itself: since the new tab
+  // never contains any sign-in gates, tabs, or other panels in the
+  // first place, there's nothing that can leak through — no CSS
+  // hiding rules to get right or accidentally miss.
   document.getElementById('downloadPdfBtn').addEventListener('click', () => {
     const name = document.getElementById('clientName').value.trim() || 'Client';
     const safeName = name.replace(/\s*&\s*/g, '-').replace(/[^a-zA-Z0-9-]/g, '').replace(/-+/g, '-');
-    const originalTitle = document.title;
 
-    document.title = `${safeName}-Coverage-Scope`;
-    window.print();
+    const quoteHTML = document.getElementById('quotePreview').outerHTML;
+    // Pull in the same fonts and the exact CSS custom properties
+    // (colors) this document actually needs, so it renders correctly
+    // in total isolation from the Dashboard's own stylesheet.
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>${safeName}-Coverage-Scope</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#efe9e1; --ink:#241f26; --ink-soft:#4a4249; --rose:#b9776b; --gold:#a98552;
+    --gold-soft:#e8dcc4; --white:#FFFFFF; --bg:#efe9e1; --line: rgba(36,31,38,0.14);
+    --display:'Fraunces',serif; --body:'Work Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background:white; font-family:var(--body); }
+  ${document.getElementById('scopeStyles').textContent}
+  .quote-doc{ position:static; width:100%; max-width:700px; margin:0 auto; box-shadow:none; }
+  @media print{ body{ margin:0; } }
+</style>
+</head><body>${quoteHTML}</body></html>`);
+    printWindow.document.close();
 
-    window.addEventListener('afterprint', function restoreTitle(){
-      document.title = originalTitle;
-      window.removeEventListener('afterprint', restoreTitle);
-    });
+    // Give the new tab a moment to load its fonts before printing,
+    // otherwise it can print with fallback fonts even though the
+    // real ones would have loaded a beat later.
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+      }, 400);
+    };
   });
 
   document.getElementById('whatsappBtn').addEventListener('click', () => {
