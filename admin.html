@@ -382,16 +382,26 @@
   .btn.filled{ background:var(--gold); color:var(--ink); }
 
   @media print{
-    /* Hide absolutely everything by default, rather than trying to
-       list every element that shouldn't print (which is exactly
-       what caused real content — the sign-in gate, dashboard header,
-       other tabs — to leak into printed documents before). */
-    body *{ visibility:hidden; }
-    /* Then explicitly re-show ONLY the actual quote/scope document
-       and everything inside it. */
-    .quote, .quote *{ visibility:visible; }
-    .quote{ position:absolute; top:0; left:0; width:100%; }
-    body{ background:white; }
+    /* Explicit list of every Dashboard chrome element to hide —
+       more verbose than a blanket rule, but far more predictable:
+       a blanket "hide everything, unhide one thing" approach can
+       fail silently in complex nested/sticky/grid layouts, which is
+       likely what just happened. Naming each element directly here
+       is easier to verify and debug if something's still wrong. */
+    header, .banner, .intro, .dash-status, .dash-tabs,
+    #panelClients, #panelFeatured, #panelLive,
+    .panel.left-panel, .custom-add, .actions,
+    #pageGate, #dashSignedOut, footer{ display:none !important; }
+
+    body, html{ background:white !important; margin:0; padding:0; }
+    #pageContent{ display:block !important; }
+    .wrap.dash{ padding:0; margin:0; max-width:none; }
+    .dash-card{ padding:0; margin:0; background:none; border:none; box-shadow:none; }
+    #dashSignedIn{ display:block !important; }
+    #panelScope{ display:block !important; }
+    .qb-wrap{ padding:0; margin:0; max-width:none; }
+    .layout{ display:block; }
+    .quote{ position:static; width:100%; box-shadow:none; }
   }
 
 </style>
