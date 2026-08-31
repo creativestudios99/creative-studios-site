@@ -341,26 +341,15 @@
   .cover-meta{ margin-top:20px; font-family:var(--mono); font-size:10px; color:#8C8A80; letter-spacing:0.05em; }
   .dlabel{ min-width:80px; text-align:right; color:#8C8A80; font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.05em; }
 
-  .quote-content{ background-color:var(--paper); color:var(--ink); }
+  .quote-content{ background-color:var(--ink); color:var(--bg); }
   .content-eyebrow{ font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); }
-  .content-heading{ margin-top:8px; margin-bottom:32px; font-family:var(--display); font-weight:400; font-size:26px; padding-bottom:20px; border-bottom:1px solid var(--line); }
-
-  .occasion-section{ margin-bottom:28px; }
-  .occasion-section .occ-name{ font-family:var(--display); font-size:18px; font-style:italic; color:var(--ink); margin-bottom:10px; }
-  .occasion-section ul{ margin:0; padding-left:0; list-style:none; }
-  .occasion-section li{
-    display:flex; justify-content:space-between; padding:8px 0 8px 18px; position:relative;
-    font-size:13px; color:var(--ink-soft); border-bottom:1px solid var(--line);
-  }
-  .occasion-section li::before{ content:"—"; position:absolute; left:0; color:var(--gold); }
-  .occasion-section li .eq-qty{ font-family:var(--mono); font-size:11px; color:#9E9B90; }
-  .occasion-section .no-equip{ font-size:12px; font-style:italic; color:#9E9B90; padding-left:18px; }
+  .content-heading{ margin-top:8px; margin-bottom:32px; font-family:var(--display); font-weight:400; font-size:26px; font-style:italic; padding-bottom:20px; border-bottom:1px solid rgba(250,249,246,0.15); }
 
   .quote-total{
     display:flex; justify-content:space-between; align-items:baseline; padding-top:20px; margin-top:24px;
-    border-top:1px solid var(--line);
+    border-top:1px solid rgba(250,249,246,0.25);
   }
-  .quote-total .label{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); }
+  .quote-total .label{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#B7B4A9; }
   .quote-total .amt{ font-family:var(--display); font-size:24px; color:var(--gold); }
 
   .quote-closing{ justify-content:space-between; padding-top:64px; padding-bottom:44px; }
