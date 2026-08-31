@@ -328,13 +328,20 @@
   .btn.filled{ background:var(--gold); color:var(--ink); }
 
   @media print{
-    .panel.left-panel, .actions, header .eyebrow, h1{ display:none; }
-    .layout{ display:block; }
-    .quote{ position:static; }
+    /* Hide absolutely everything by default, rather than trying to
+       list every element that shouldn't print (which is exactly
+       what caused real content — the sign-in gate, dashboard header,
+       other tabs — to leak into printed documents before). */
+    body *{ visibility:hidden; }
+    /* Then explicitly re-show ONLY the actual quote/scope document
+       and everything inside it. */
+    .quote, .quote *{ visibility:visible; }
+    .quote{ position:absolute; top:0; left:0; width:100%; }
     body{ background:white; }
   }
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -477,7 +484,7 @@
       <h2>Client &amp; Event Details</h2>
       <div class="grid2">
         <div class="field"><label>Client Name(s)</label><input type="text" id="clientName" value="Priya &amp; Dev" placeholder="e.g. Priya &amp; Dev"></div>
-        <div class="field"><label>Occasion</label>
+        <div class="field"><label>Event Type</label>
           <select id="occasion">
             <option>Wedding</option>
             <option>Elopement</option>
@@ -517,7 +524,7 @@
         <div class="eyebrow">Prepared For</div>
         <h3 id="pClientName">Priya &amp; Dev</h3>
         <div class="details">
-          <div class="detail-row"><span class="dlabel">Occasion:&nbsp;</span><span id="pOccasion">Wedding</span></div>
+          <div class="detail-row"><span class="dlabel">Event Type:&nbsp;</span><span id="pOccasion">Wedding</span></div>
           <div class="detail-row"><span class="dlabel">Venue:&nbsp;</span><span id="pVenue">Taj Lake Palace, Udaipur</span></div>
           <div class="detail-row"><span class="dlabel">Date:&nbsp;</span><span id="pDate">14 Nov 2026</span></div>
         </div>
@@ -1217,24 +1224,32 @@
   // phone number was entered, it opens a chat with them directly;
   // otherwise it opens WhatsApp's own contact picker so you can
   // choose who to send it to.
-  // "Download PDF" — uses the browser's own print-to-PDF rendering
-  // (perfectly accurate to what's on screen, unlike third-party PDF
-  // libraries that can mangle custom fonts), but sets a smart,
-  // sensible filename first, since most browsers suggest the page
-  // title as the default filename when "Save as PDF" is chosen.
+  // "Download PDF" — generates and downloads an actual PDF file
+  // directly, no print dialog involved. Only the quote panel itself
+  // is captured, not the surrounding Dashboard chrome.
   document.getElementById('downloadPdfBtn').addEventListener('click', () => {
     const name = document.getElementById('clientName').value.trim() || 'Client';
     const safeName = name.replace(/\s*&\s*/g, '-').replace(/[^a-zA-Z0-9-]/g, '').replace(/-+/g, '-');
-    const originalTitle = document.title;
+    const btn = document.getElementById('downloadPdfBtn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
 
-    document.title = `${safeName}-Coverage-Scope`;
-    window.print();
-
-    // Restore the real page title once the print dialog closes,
-    // so the browser tab itself doesn't stay showing the filename.
-    window.addEventListener('afterprint', function restoreTitle(){
-      document.title = originalTitle;
-      window.removeEventListener('afterprint', restoreTitle);
+    const quoteEl = document.querySelector('.quote');
+    html2pdf().set({
+      margin: 0,
+      filename: `${safeName}-Coverage-Scope.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, backgroundColor: '#1c171d' },
+      jsPDF: { unit: 'px', format: [quoteEl.offsetWidth, quoteEl.offsetHeight], orientation: 'portrait' }
+    }).from(quoteEl).save().then(() => {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }).catch((err) => {
+      console.error('PDF generation failed:', err);
+      btn.textContent = originalText;
+      btn.disabled = false;
+      alert('Could not generate the PDF. Please try again.');
     });
   });
 
