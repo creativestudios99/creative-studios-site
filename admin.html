@@ -268,19 +268,20 @@
   .quote-for .detail-row{ display:flex; justify-content:center; gap:10px; }
   .quote-for .dlabel{ min-width:80px; text-align:right; color:#8C8A80; font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.05em; }
 
-  /* New — premium numbered occasion blocks with real equipment lists,
-     matching the process-step styling from the brochure PDF */
-  .occ-block{ display:flex; gap:22px; padding:26px 0; border-bottom:1px solid rgba(250,249,246,0.12); text-align:left; }
+  /* Premium occasion blocks with real equipment lists, matching the
+     process-step styling from the brochure PDF */
+  .occ-block{ display:flex; gap:20px; padding:26px 0; border-bottom:1px solid rgba(250,249,246,0.12); text-align:left; align-items:flex-start; }
   .occ-block:first-child{ padding-top:0; }
-  .occ-number{ font-family:var(--display); font-style:italic; font-size:22px; color:var(--gold); min-width:34px; flex-shrink:0; }
+  .occ-marker{ width:7px; height:7px; background:var(--gold); transform:rotate(45deg); flex-shrink:0; margin-top:11px; }
   .occ-content{ flex:1; }
-  .occ-name{ font-family:var(--display); font-size:19px; color:var(--bg); margin-bottom:10px; }
+  .occ-name{ font-family:var(--display); font-size:19px; color:var(--bg); margin-bottom:12px; }
   .occ-equip-list{ list-style:none; padding:0; margin:0; }
   .occ-equip-list li{
+    display:flex; align-items:center; gap:10px;
     font-family:var(--mono); font-size:12px; letter-spacing:0.03em; color:#C7C4BA;
-    padding:5px 0 5px 18px; position:relative;
+    padding:6px 0;
   }
-  .occ-equip-list li::before{ content:"—"; position:absolute; left:0; color:var(--gold); }
+  .occ-equip-list li svg{ width:14px; height:14px; stroke:var(--gold); fill:none; stroke-width:1.6; flex-shrink:0; }
   .occ-no-equip{ font-family:var(--mono); font-size:12px; color:#8C8A80; font-style:italic; }
   .addons-summary{ margin-top:8px; padding-top:22px; text-align:left; }
   .addons-label{ font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
@@ -396,6 +397,7 @@
   }
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -1077,11 +1079,11 @@
   // Equipment & team — manually set exactly how many of each you're
   // bringing, priced per unit for the full coverage.
   let equipment = [
-    { id:'cameras', name:'Photographers' },
-    { id:'videocams', name:'Videographers' },
-    { id:'drones', name:'Aerial Cinematography' },
-    { id:'ledwalls', name:'LED Video Wall' },
-    { id:'livestream', name:'Live Streaming' },
+    { id:'cameras', name:'Photographers', icon:'camera' },
+    { id:'videocams', name:'Videographers', icon:'video' },
+    { id:'drones', name:'Aerial Cinematography', icon:'drone' },
+    { id:'ledwalls', name:'LED Video Wall', icon:'screen' },
+    { id:'livestream', name:'Live Streaming', icon:'broadcast' },
   ];
 
   const addons = [
@@ -1252,6 +1254,17 @@
     const today = new Date();
     document.getElementById('quoteDate').textContent = 'Coverage Scope — ' + today.toLocaleDateString('en-US',{month:'long', year:'numeric'});
 
+    // Small, minimal line icons for each equipment type — same thin-
+    // stroke style as the rest of the site, adding visual texture to
+    // an otherwise text-only list.
+    const ICONS = {
+      camera: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+      video: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="1"/><path d="M15 10l6-3v10l-6-3z"/></svg>',
+      drone: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M4 4l5 5M20 4l-5 5M4 20l5-5M20 20l-5-5"/><circle cx="4" cy="4" r="1.6"/><circle cx="20" cy="4" r="1.6"/><circle cx="4" cy="20" r="1.6"/><circle cx="20" cy="20" r="1.6"/></svg>',
+      screen: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="12" rx="1"/><path d="M8 21h8M12 17v4"/></svg>',
+      broadcast: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M7.8 7.8a6 6 0 000 8.4M16.2 7.8a6 6 0 010 8.4M4.9 4.9a10 10 0 000 14.2M19.1 4.9a10 10 0 010 14.2"/></svg>',
+    };
+
     let occasionBlocks = [];
     let occasionCount = 0;
 
@@ -1259,7 +1272,7 @@
       if(state.occasionsSelected[o.id]){
         const eqList = equipment
           .filter(eq => state.occasionEquip[o.id][eq.id] > 0)
-          .map(eq => `${state.occasionEquip[o.id][eq.id]} × ${eq.name}`);
+          .map(eq => ({ icon: ICONS[eq.icon] || '', text: `${state.occasionEquip[o.id][eq.id]} × ${eq.name}` }));
         occasionBlocks.push({ name: o.name, eqList });
         occasionCount++;
       }
@@ -1273,18 +1286,18 @@
       }
     });
 
-    document.getElementById('lineItems').innerHTML = occasionBlocks.map((o, idx) => `
+    document.getElementById('lineItems').innerHTML = occasionBlocks.map((o) => `
       <div class="occ-block">
-        <div class="occ-number">${String(idx + 1).padStart(2, '0')}</div>
+        <div class="occ-marker"></div>
         <div class="occ-content">
           <div class="occ-name">${o.name}</div>
-          ${o.eqList.length ? `<ul class="occ-equip-list">${o.eqList.map(e => `<li>${e}</li>`).join('')}</ul>` : `<div class="occ-no-equip">Occasion coverage</div>`}
+          ${o.eqList.length ? `<ul class="occ-equip-list">${o.eqList.map(e => `<li>${e.icon}<span>${e.text}</span></li>`).join('')}</ul>` : `<div class="occ-no-equip">Occasion coverage</div>`}
         </div>
       </div>
     `).join('') + (addonList.length ? `
       <div class="addons-summary">
         <div class="addons-label">Additional Services</div>
-        <ul class="occ-equip-list">${addonList.map(a => `<li>${a}</li>`).join('')}</ul>
+        <ul class="occ-equip-list">${addonList.map(a => `<li><span>${a}</span></li>`).join('')}</ul>
       </div>
     ` : '');
 
@@ -1301,53 +1314,141 @@
   // phone number was entered, it opens a chat with them directly;
   // otherwise it opens WhatsApp's own contact picker so you can
   // choose who to send it to.
-  // "Download PDF" — uses the browser's own print-to-PDF rendering.
-  // An earlier version used a third-party library (html2pdf.js) for
-  // "Download PDF" — opens the quote in a brand new, completely
-  // clean browser tab containing ONLY the quote content, then prints
-  // from there. This is a genuinely different, simpler approach than
-  // trying to print the Dashboard page itself: since the new tab
-  // never contains any sign-in gates, tabs, or other panels in the
-  // first place, there's nothing that can leak through — no CSS
-  // hiding rules to get right or accidentally miss.
+  // "Download PDF" — builds an actual PDF file directly using jsPDF,
+  // drawing each page's background, text, and layout by hand rather
+  // than trying to screenshot the page's HTML/CSS. This is the more
+  // reliable technique: an earlier attempt used html2pdf.js (which
+  // screenshots the page via html2canvas) and failed in practice,
+  // likely due to the custom Google Fonts or CSS on this page
+  // tripping up the canvas capture. Drawing directly avoids that
+  // whole category of failure, at the cost of not being able to use
+  // the exact same custom fonts or the hand-drawn logo icon — this
+  // uses jsPDF's built-in fonts and text-only branding instead.
   document.getElementById('downloadPdfBtn').addEventListener('click', () => {
-    const name = document.getElementById('clientName').value.trim() || 'Client';
-    const safeName = name.replace(/\s*&\s*/g, '-').replace(/[^a-zA-Z0-9-]/g, '').replace(/-+/g, '-');
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageW = 210, pageH = 297;
+    const INK = [36, 31, 38];
+    const CREAM = [239, 233, 225];
+    const GOLD = [169, 133, 82];
+    const GOLD_LIGHT = [199, 196, 186];
+    const MUTED = [140, 138, 128];
 
-    const quoteHTML = document.getElementById('quotePreview').outerHTML;
-    // Pull in the same fonts and the exact CSS custom properties
-    // (colors) this document actually needs, so it renders correctly
-    // in total isolation from the Dashboard's own stylesheet.
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`<!DOCTYPE html>
-<html><head>
-<meta charset="UTF-8">
-<title>${safeName}-Coverage-Scope</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --paper:#efe9e1; --ink:#241f26; --ink-soft:#4a4249; --rose:#b9776b; --gold:#a98552;
-    --gold-soft:#e8dcc4; --white:#FFFFFF; --bg:#efe9e1; --line: rgba(36,31,38,0.14);
-    --display:'Fraunces',serif; --body:'Work Sans',sans-serif; --mono:'JetBrains Mono',monospace;
-  }
-  *{ margin:0; padding:0; box-sizing:border-box; }
-  body{ background:white; font-family:var(--body); }
-  ${document.getElementById('scopeStyles').textContent}
-  .quote-doc{ position:static; width:100%; max-width:700px; margin:0 auto; box-shadow:none; }
-  @media print{ body{ margin:0; } }
-</style>
-</head><body>${quoteHTML}</body></html>`);
-    printWindow.document.close();
+    const clientName = document.getElementById('clientName').value.trim() || 'Client';
+    const eventType = document.getElementById('occasion').value;
+    const venue = document.getElementById('venue').value || '—';
+    const date = fmtDate(document.getElementById('eventDate').value);
 
-    // Give the new tab a moment to load its fonts before printing,
-    // otherwise it can print with fallback fonts even though the
-    // real ones would have loaded a beat later.
-    printWindow.onload = () => {
-      setTimeout(() => {
-        printWindow.print();
-      }, 400);
-    };
+    function darkPage(){
+      doc.setFillColor(...INK);
+      doc.rect(0, 0, pageW, pageH, 'F');
+    }
+
+    // ===== PAGE 1 — Cover =====
+    darkPage();
+    doc.setTextColor(...CREAM);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(17);
+    doc.text('CREATIVE STUDIOS', pageW/2, 55, { align:'center' });
+    doc.setFontSize(9);
+    doc.setTextColor(...GOLD);
+    doc.text('PHOTO  &  FILM', pageW/2, 63, { align:'center' });
+
+    doc.setFontSize(9);
+    doc.text('COVERAGE SCOPE', pageW/2, 100, { align:'center' });
+    doc.setFont('times', 'italic');
+    doc.setFontSize(30);
+    doc.setTextColor(...CREAM);
+    doc.text(clientName, pageW/2, 115, { align:'center' });
+
+    doc.setFont('times', 'italic');
+    doc.setFontSize(11);
+    doc.setTextColor(...GOLD_LIGHT);
+    const quoteLines = doc.splitTextToSize('"Every gallery is a little piece of your story. We just get to preserve it."', 130);
+    doc.text(quoteLines, pageW/2, 132, { align:'center' });
+
+    let detY = 165;
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...GOLD_LIGHT);
+    doc.text(`EVENT TYPE:  ${eventType}`, pageW/2, detY, { align:'center' }); detY += 7;
+    doc.text(`VENUE:  ${venue}`, pageW/2, detY, { align:'center' }); detY += 7;
+    doc.text(`DATE:  ${date}`, pageW/2, detY, { align:'center' });
+
+    // ===== PAGE 2 — Coverage Breakdown =====
+    doc.addPage();
+    darkPage();
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...GOLD);
+    doc.text("WHAT'S COVERED", 20, 25);
+    doc.setFont('times', 'italic');
+    doc.setFontSize(19);
+    doc.setTextColor(...CREAM);
+    doc.text('Coverage Breakdown', 20, 34);
+    doc.setDrawColor(...MUTED);
+    doc.line(20, 40, pageW - 20, 40);
+
+    let y = 52;
+    let occasionCount = 0;
+    occasions.forEach(o => {
+      if(state.occasionsSelected[o.id]){
+        occasionCount++;
+        doc.setFont('times', 'normal');
+        doc.setFontSize(13);
+        doc.setTextColor(...CREAM);
+        doc.text(o.name, 26, y);
+        y += 7;
+        const eqLines = equipment
+          .filter(eq => state.occasionEquip[o.id][eq.id] > 0)
+          .map(eq => `—  ${state.occasionEquip[o.id][eq.id]} × ${eq.name}`);
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...GOLD_LIGHT);
+        if(eqLines.length){
+          eqLines.forEach(line => { doc.text(line, 29, y); y += 6; });
+        } else {
+          doc.setFont('times', 'italic');
+          doc.text('Occasion coverage', 29, y); y += 6;
+        }
+        y += 8;
+        if(y > pageH - 30){ doc.addPage(); darkPage(); y = 30; }
+      }
+    });
+
+    doc.setDrawColor(...MUTED);
+    doc.line(20, y + 4, pageW - 20, y + 4);
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    doc.text('SCOPE SUMMARY', 20, y + 14);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(13);
+    doc.setTextColor(...GOLD);
+    doc.text(`${occasionCount} Occasion${occasionCount !== 1 ? 's' : ''}`, pageW - 20, y + 14, { align:'right' });
+
+    // ===== PAGE 3 — Closing / Contact =====
+    doc.addPage();
+    darkPage();
+    doc.setFont('times', 'italic');
+    doc.setFontSize(21);
+    doc.setTextColor(...CREAM);
+    doc.text("Let's Bring This to Life", pageW/2, 110, { align:'center' });
+
+    doc.setFont('times', 'italic');
+    doc.setFontSize(10);
+    doc.setTextColor(...GOLD_LIGHT);
+    const noteLines = doc.splitTextToSize('This outlines the scope of coverage for your day. A formal quote with pricing follows once the details are confirmed.', 120);
+    doc.text(noteLines, pageW/2, 122, { align:'center' });
+
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...MUTED);
+    doc.text('polamreddysiva9@gmail.com   ·   +91 99497 06000   ·   creativestudios.in', pageW/2, 150, { align:'center' });
+    doc.text('© 2026 CREATIVE STUDIOS', pageW/2, 160, { align:'center' });
+
+    const safeName = clientName.replace(/\s*&\s*/g, '-').replace(/[^a-zA-Z0-9-]/g, '').replace(/-+/g, '-');
+    doc.save(`${safeName}-Coverage-Scope.pdf`);
   });
 
   document.getElementById('whatsappBtn').addEventListener('click', () => {
