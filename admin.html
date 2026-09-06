@@ -1443,57 +1443,78 @@ window.registerCSFonts = function(doc){
     doc.text(`VENUE:  ${venue}`, marginL, detY); detY += 7;
     doc.text(`DATE:  ${date}`, marginL, detY);
 
-    // ===== PAGE 2 — Coverage Breakdown =====
+    // ===== PAGE 2 — Coverage Breakdown (two-column) =====
     doc.addPage();
     darkPage();
+    const colL = 20;              // left column — occasion names
+    const colR = 105;             // right column — equipment lines
+    const contentR = pageW - 20;  // right edge of the content area
+
     doc.setFont('Jost', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(...GOLD);
-    doc.text("WHAT'S COVERED", pageW/2, 25, { align:'center' });
+    doc.text("WHAT'S COVERED", colL, 25);
     doc.setFont('Fraunces', 'italic');
     doc.setFontSize(19);
     doc.setTextColor(...CREAM);
-    doc.text('Coverage Breakdown', pageW/2, 34, { align:'center' });
+    doc.text('Coverage Breakdown', colL, 34);
     doc.setDrawColor(...MUTED);
-    doc.line(40, 40, pageW - 40, 40);
+    doc.setLineWidth(0.3);
+    doc.line(colL, 40, contentR, 40);
 
-    let y = 55;
+    let y = 54;
     let occasionCount = 0;
     occasions.forEach(o => {
       if(state.occasionsSelected[o.id]){
         occasionCount++;
-        doc.setFont('Fraunces', 'normal');
-        doc.setFontSize(13);
-        doc.setTextColor(...CREAM);
-        doc.text(o.name, pageW/2, y, { align:'center' });
-        y += 8;
         const eqLines = equipment
           .filter(eq => state.occasionEquip[o.id][eq.id] > 0)
           .map(eq => `${state.occasionEquip[o.id][eq.id]} × ${eq.name}`);
+
+        // Occasion name on the left, its equipment aligned on the
+        // right — both starting at the same baseline so each row
+        // reads as one connected unit across the page width.
+        doc.setFont('Fraunces', 'normal');
+        doc.setFontSize(12);
+        doc.setTextColor(...CREAM);
+        doc.text(o.name, colL, y);
+
         doc.setFont('Jost', 'normal');
         doc.setFontSize(9);
         doc.setTextColor(...GOLD_LIGHT);
         if(eqLines.length){
-          eqLines.forEach(line => { doc.text(line, pageW/2, y, { align:'center' }); y += 6; });
+          eqLines.forEach((line, i) => { doc.text(line, colR, y + (i * 5.5)); });
         } else {
           doc.setFont('Fraunces', 'italic');
-          doc.text('Occasion coverage', pageW/2, y, { align:'center' }); y += 6;
+          doc.text('Occasion coverage', colR, y);
         }
+
+        // The row's height is whichever column is taller, so rows
+        // never overlap regardless of how much equipment is listed.
+        const rowHeight = Math.max(1, eqLines.length) * 5.5;
+        y += rowHeight + 6;
+
+        // Subtle divider between rows
+        doc.setDrawColor(...MUTED);
+        doc.setLineWidth(0.15);
+        doc.line(colL, y - 2, contentR, y - 2);
         y += 8;
-        if(y > pageH - 30){ doc.addPage(); darkPage(); y = 30; }
+
+        if(y > pageH - 40){ doc.addPage(); darkPage(); y = 30; }
       }
     });
 
     doc.setDrawColor(...MUTED);
-    doc.line(40, y + 4, pageW - 40, y + 4);
+    doc.setLineWidth(0.3);
+    doc.line(colL, y + 2, contentR, y + 2);
     doc.setFont('Jost', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...MUTED);
-    doc.text('SCOPE SUMMARY', pageW/2, y + 16, { align:'center' });
+    doc.text('SCOPE SUMMARY', colL, y + 12);
     doc.setFont('Fraunces', 'normal');
     doc.setFontSize(13);
     doc.setTextColor(...GOLD);
-    doc.text(`${occasionCount} Occasion${occasionCount !== 1 ? 's' : ''}`, pageW/2, y + 26, { align:'center' });
+    doc.text(`${occasionCount} Occasion${occasionCount !== 1 ? 's' : ''}`, contentR, y + 12, { align:'right' });
 
     // ===== PAGE 3 — Closing / Contact =====
     doc.addPage();
