@@ -255,7 +255,7 @@
   }
   .section-label::after{ content:""; flex:1; height:1px; background:var(--line); }
 
-  .occasion-card{ border:1px solid var(--line); margin-bottom:10px; }
+  .occasion-card{ border:1px solid rgba(36,31,38,0.25); background:var(--white); margin-bottom:10px; }
   .custom-add{ display:flex; gap:10px; margin-top:12px; }
   .custom-add input{ flex:1; padding:11px 13px; border:1px solid var(--line); background:var(--bg); font-size:14px; }
   .custom-add button{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.05em; padding:0 18px; border:1px solid var(--ink); background:var(--ink); color:var(--bg); cursor:pointer; }
@@ -299,15 +299,16 @@
   .occ-no-equip{ font-family:var(--mono); font-size:12px; color:#8C8A80; font-style:italic; }
   .addons-summary{ margin-top:8px; padding-top:22px; text-align:left; }
   .addons-label{ font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
-  .occasion-head{ display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; }
+  .occasion-head{ display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; transition:background 0.2s ease; }
+  .occasion-head:hover{ background:rgba(36,31,38,0.04); }
   .occasion-head input[type=checkbox]{ width:16px; height:16px; accent-color:var(--gold); flex-shrink:0; }
-  .occasion-head .label{ font-size:14px; flex:1; }
+  .occasion-head .label{ font-size:14px; flex:1; color:var(--ink); font-weight:500; }
   .occasion-card.open{ border-color:var(--gold); background:var(--gold-soft); }
   .occasion-body{ display:none; padding:0 16px 18px 44px; border-top:1px solid var(--line); padding-top:16px; }
   .occasion-card.open .occasion-body{ display:block; }
   .equip-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .equip-field{ text-align:center; border:1px solid var(--line); padding:10px 8px; background:var(--white); }
-  .equip-field .eq-label{ font-family:var(--mono); font-size:9px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-soft); margin-bottom:8px; }
+  .equip-field .eq-label{ font-family:var(--mono); font-size:9px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink); margin-bottom:8px; }
   .equip-stepper{ display:flex; align-items:center; justify-content:center; gap:10px; }
   .equip-stepper button{ width:22px; height:22px; border:1px solid var(--line); background:var(--white); cursor:pointer; font-family:var(--mono); font-size:12px; }
   .equip-stepper span{ font-family:var(--display); font-size:16px; min-width:16px; }
@@ -1124,8 +1125,10 @@ window.registerCSFonts = function(doc){
     // a real singular, while "Aerial Cinematography" and "Live
     // Streaming" are uncountable and never change — so each is
     // specified explicitly rather than guessed with a rule.
-    { id:'cameras', name:'Photographers', one:'Photographer', icon:'camera' },
-    { id:'videocams', name:'Videographers', one:'Videographer', icon:'video' },
+    { id:'tradphoto', name:'Traditional Photographers', one:'Traditional Photographer', icon:'camera' },
+    { id:'candidphoto', name:'Candid Photographers', one:'Candid Photographer', icon:'candidcam' },
+    { id:'tradvideo', name:'Traditional Videographers', one:'Traditional Videographer', icon:'video' },
+    { id:'candidvideo', name:'Candid Videographers', one:'Candid Videographer', icon:'candidvid' },
     { id:'drones', name:'Aerial Cinematography', one:'Aerial Cinematography', icon:'drone' },
     { id:'ledwalls', name:'LED Video Walls', one:'LED Video Wall', icon:'screen' },
     { id:'livestream', name:'Live Streaming', one:'Live Streaming', icon:'broadcast' },
@@ -1157,8 +1160,9 @@ window.registerCSFonts = function(doc){
   addons.forEach(a => state.addonQty[a.id] = 0);
   // Sensible defaults so the preview isn't empty on first load
   state.occasionsSelected['wedding'] = true;
-  state.occasionEquip['wedding']['cameras'] = 2;
-  state.occasionEquip['wedding']['videocams'] = 1;
+  state.occasionEquip['wedding']['tradphoto'] = 2;
+  state.occasionEquip['wedding']['candidphoto'] = 1;
+  state.occasionEquip['wedding']['tradvideo'] = 1;
 
   function renderOccasions(){
     const el = document.getElementById('occasions');
@@ -1310,7 +1314,9 @@ window.registerCSFonts = function(doc){
     // an otherwise text-only list.
     const ICONS = {
       camera: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+      candidcam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/><path d="M18 4l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>',
       video: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="1"/><path d="M15 10l6-3v10l-6-3z"/></svg>',
+      candidvid: '<svg viewBox="0 0 24 24"><rect x="3" y="8" width="11" height="10" rx="1"/><path d="M14 11l6-3v10l-6-3z"/><path d="M17 2l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>',
       drone: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M4 4l5 5M20 4l-5 5M4 20l5-5M20 20l-5-5"/><circle cx="4" cy="4" r="1.6"/><circle cx="20" cy="4" r="1.6"/><circle cx="4" cy="20" r="1.6"/><circle cx="20" cy="20" r="1.6"/></svg>',
       screen: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="12" rx="1"/><path d="M8 21h8M12 17v4"/></svg>',
       broadcast: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M7.8 7.8a6 6 0 000 8.4M16.2 7.8a6 6 0 010 8.4M4.9 4.9a10 10 0 000 14.2M19.1 4.9a10 10 0 010 14.2"/></svg>',
@@ -1487,13 +1493,30 @@ window.registerCSFonts = function(doc){
     const contentR = pageW - 20;
 
     // Combine each occasion's equipment into one line, separated by
-    // middots — much more compact than one line per item.
+    // middots. Uses the shorter `pdfShort` label where one exists —
+    // the full names ("2 Traditional Photographers · 1 Candid
+    // Photographer · ...") would overflow the 170mm content width
+    // when several are combined on a single line.
+    const PDF_SHORT = {
+      tradphoto:   { one:'Traditional Photo',  many:'Traditional Photo' },
+      candidphoto: { one:'Candid Photo',       many:'Candid Photo' },
+      tradvideo:   { one:'Traditional Video',  many:'Traditional Video' },
+      candidvideo: { one:'Candid Video',       many:'Candid Video' },
+      drones:      { one:'Aerial',             many:'Aerial' },
+      ledwalls:    { one:'LED Wall',           many:'LED Walls' },
+      livestream:  { one:'Live Stream',        many:'Live Stream' },
+    };
     const rows = [];
     occasions.forEach(o => {
       if(state.occasionsSelected[o.id]){
         const parts = equipment
           .filter(eq => state.occasionEquip[o.id][eq.id] > 0)
-          .map(eq => `${state.occasionEquip[o.id][eq.id]} ${eqLabel(eq, state.occasionEquip[o.id][eq.id])}`);
+          .map(eq => {
+            const qty = state.occasionEquip[o.id][eq.id];
+            const short = PDF_SHORT[eq.id];
+            const label = short ? (qty === 1 ? short.one : short.many) : eqLabel(eq, qty);
+            return `${qty} ${label}`;
+          });
         rows.push({ name: o.name, coverage: parts.length ? parts.join('  ·  ') : 'Coverage included' });
       }
     });
@@ -1534,7 +1557,11 @@ window.registerCSFonts = function(doc){
       doc.setFont('Jost', 'normal');
       doc.setFontSize(10.5);
       doc.setTextColor(...GOLD_LIGHT);
-      doc.text(row.coverage, contentR, y, { align:'right' });
+      // Wrap if the coverage line is unusually long (e.g. every
+      // equipment type selected at once), so it can never run off
+      // the page edge. Normally this stays on one line.
+      const covLines = doc.splitTextToSize(row.coverage, 118);
+      doc.text(covLines, contentR, y, { align:'right' });
 
       // Ruled divider beneath each row
       doc.setDrawColor(...MUTED);
