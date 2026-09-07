@@ -1382,6 +1382,7 @@ window.registerCSFonts = function(doc){
   // the exact same custom fonts or the hand-drawn logo icon — this
   // uses jsPDF's built-in fonts and text-only branding instead.
   document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+   try {
     // jsPDF's UMD build has historically exported itself differently
     // depending on version/build — sometimes window.jspdf.jsPDF,
     // sometimes window.jsPDF directly. Checking both defensively
@@ -1585,6 +1586,12 @@ window.registerCSFonts = function(doc){
     // ===== PAGE 3 — Closing / Contact =====
     doc.addPage();
     darkPage();
+    // Left margin for this page's content. This used to be defined
+    // on page 1, but page 1 was rewritten to a centered layout that
+    // no longer needs it — leaving these references broken, which
+    // silently crashed the whole download. Defined here now, where
+    // it's actually used.
+    const marginL = 25;
     doc.setFont('Fraunces', 'italic');
     doc.setFontSize(32);
     doc.setTextColor(...CREAM);
@@ -1628,6 +1635,13 @@ window.registerCSFonts = function(doc){
     link.click();
     document.body.removeChild(link);
     setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+   } catch(err) {
+     // Surface the real error instead of failing silently — without
+     // this, any problem inside this handler just does nothing at
+     // all when the button is clicked, with no clue why.
+     console.error('PDF generation failed:', err);
+     alert('Could not generate the PDF.\n\nError: ' + (err && err.message ? err.message : err) + '\n\nPlease share this message so it can be fixed.');
+   }
   });
 
   document.getElementById('whatsappBtn').addEventListener('click', () => {
