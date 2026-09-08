@@ -331,6 +331,72 @@
 
   /* --- quote preview --- */
   .quote-doc{ position:sticky; top:24px; }
+
+  /* ── Device preview frames ──
+     Lets the admin see how the estimate looks inside a laptop or
+     phone screen, as a presentation mockup. The PDF itself is fixed
+     A4 and identical everywhere — this is purely for visualising how
+     it appears when a client opens it on their own device. */
+  .preview-column{ position:sticky; top:24px; }
+  .device-toggle{ display:flex; gap:8px; margin-bottom:14px; }
+  .device-btn{
+    font-family:var(--mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+    padding:8px 14px; border:1px solid rgba(36,31,38,0.2); background:transparent;
+    color:rgba(36,31,38,0.7); cursor:pointer; transition:all 0.2s ease;
+  }
+  .device-btn:hover{ border-color:var(--gold); color:var(--gold); }
+  .device-btn.active{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+
+  .device-stage{ display:flex; justify-content:center; }
+  .device-stage .quote-doc{ position:static; }
+
+  /* Laptop frame — screen bezel plus a base/stand beneath it */
+  .device-stage.laptop{ padding:0 0 26px; }
+  .device-stage.laptop .quote-doc{
+    width:520px; transform-origin:top center;
+    border:12px solid #2c2c2e; border-bottom-width:14px; border-radius:10px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.28);
+    overflow-y:auto; max-height:400px;
+  }
+  .device-stage.laptop::after{
+    content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    width:600px; height:12px; background:#2c2c2e; border-radius:0 0 8px 8px;
+  }
+
+  /* Phone frame — narrow bezel with rounded corners */
+  .device-stage.phone .quote-doc{
+    width:280px;
+    border:11px solid #2c2c2e; border-radius:30px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.28);
+    overflow-y:auto; max-height:560px;
+  }
+
+  /* Tablet frame — between phone and laptop */
+  .device-stage.tablet .quote-doc{
+    width:400px;
+    border:14px solid #2c2c2e; border-radius:18px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.28);
+    overflow-y:auto; max-height:540px;
+  }
+
+  /* Custom — width driven by the slider, set inline via JS */
+  .device-stage.custom .quote-doc{
+    border:10px solid #2c2c2e; border-radius:14px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.28);
+    overflow-y:auto; max-height:560px;
+  }
+
+  .device-custom{
+    display:none; align-items:center; gap:12px; margin-bottom:14px;
+    font-family:var(--mono); font-size:10px; letter-spacing:0.06em;
+    text-transform:uppercase; color:rgba(36,31,38,0.7);
+  }
+  .device-custom.show{ display:flex; }
+  .device-custom input[type=range]{ flex:1; max-width:220px; accent-color:var(--gold); }
+  .device-custom span{ min-width:52px; }
+
+  .device-stage.laptop, .device-stage.phone,
+  .device-stage.tablet, .device-stage.custom{ position:relative; }
   .quote-page{
     width:100%; aspect-ratio:210/297; /* true A4 proportions */
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
@@ -611,6 +677,20 @@ window.registerCSFonts = function(doc){
     </div>
 
     <!-- RIGHT: live quote — three real pages, matching the brochure's structure -->
+    <div class="preview-column">
+      <div class="device-toggle">
+        <button type="button" class="device-btn active" data-device="page">Full Size</button>
+        <button type="button" class="device-btn" data-device="laptop">Laptop</button>
+        <button type="button" class="device-btn" data-device="tablet">Tablet</button>
+        <button type="button" class="device-btn" data-device="phone">Phone</button>
+        <button type="button" class="device-btn" data-device="custom">Custom</button>
+      </div>
+      <div class="device-custom" id="deviceCustom">
+        <label for="deviceWidth">Width</label>
+        <input type="range" id="deviceWidth" min="240" max="900" value="480" step="10">
+        <span id="deviceWidthVal">480px</span>
+      </div>
+      <div class="device-stage" id="deviceStage">
     <div class="quote-doc" id="quotePreview">
 
       <!-- PAGE 1 — Cover -->
@@ -653,6 +733,9 @@ window.registerCSFonts = function(doc){
         <div class="closing-footer">&copy; 2026 Creative Studios</div>
       </div>
     </div>
+
+      </div><!-- /#deviceStage -->
+    </div><!-- /.preview-column -->
 
     <!-- Action buttons live OUTSIDE the printable document itself -->
     <div class="actions">
@@ -1381,6 +1464,49 @@ window.registerCSFonts = function(doc){
   // whole category of failure, at the cost of not being able to use
   // the exact same custom fonts or the hand-drawn logo icon — this
   // uses jsPDF's built-in fonts and text-only branding instead.
+  // Device preview toggle — swaps the preview between full size and
+  // various device frames so the admin can see how the estimate
+  // looks on a client's screen before sending it. "Custom" reveals
+  // a slider for any width between 240px and 900px.
+  const DEVICE_MODES = ['laptop', 'tablet', 'phone', 'custom'];
+  const deviceStage = document.getElementById('deviceStage');
+  const deviceCustom = document.getElementById('deviceCustom');
+  const deviceWidth = document.getElementById('deviceWidth');
+  const deviceWidthVal = document.getElementById('deviceWidthVal');
+
+  function applyCustomWidth(){
+    if(!deviceStage || !deviceWidth) return;
+    const doc = deviceStage.querySelector('.quote-doc');
+    if(!doc) return;
+    if(deviceStage.classList.contains('custom')){
+      doc.style.width = deviceWidth.value + 'px';
+    } else {
+      // Clear the inline width so the CSS class sizes take over
+      doc.style.width = '';
+    }
+  }
+
+  document.querySelectorAll('.device-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if(!deviceStage) return;
+      document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      DEVICE_MODES.forEach(m => deviceStage.classList.remove(m));
+
+      const mode = btn.dataset.device;
+      if(DEVICE_MODES.includes(mode)) deviceStage.classList.add(mode);
+      if(deviceCustom) deviceCustom.classList.toggle('show', mode === 'custom');
+      applyCustomWidth();
+    });
+  });
+
+  if(deviceWidth){
+    deviceWidth.addEventListener('input', () => {
+      if(deviceWidthVal) deviceWidthVal.textContent = deviceWidth.value + 'px';
+      applyCustomWidth();
+    });
+  }
+
   document.getElementById('downloadPdfBtn').addEventListener('click', () => {
    try {
     // jsPDF's UMD build has historically exported itself differently
