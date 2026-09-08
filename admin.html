@@ -1551,69 +1551,11 @@ window.registerCSFonts = function(doc){
     const date = fmtDate(document.getElementById('eventDate').value);
 
     function darkPage(){
-      // jsPDF has no native gradient or radial-glow support, so both
-      // effects are built by drawing many thin bands of gradually
-      // shifting colour. 120 bands is enough that the steps aren't
-      // visible at print resolution.
-
-      // 1. Vertical gradient base — lighter at the top, deepening
-      //    toward the bottom, which gives the page depth rather than
-      //    reading as a flat block of colour.
-      const TOP    = [50, 43, 51];
-      const BOTTOM = [28, 24, 29];
-      const BANDS  = 120;
-      const bandH  = (pageH + 4) / BANDS;
-      for(let i = 0; i < BANDS; i++){
-        const t = i / (BANDS - 1);
-        doc.setFillColor(
-          Math.round(TOP[0] + (BOTTOM[0] - TOP[0]) * t),
-          Math.round(TOP[1] + (BOTTOM[1] - TOP[1]) * t),
-          Math.round(TOP[2] + (BOTTOM[2] - TOP[2]) * t)
-        );
-        // 0.3mm of overlap between bands so no seam lines show
-        doc.rect(-2, -2 + (i * bandH), pageW + 4, bandH + 0.3, 'F');
-      }
-
-      // 2. Soft corner glows — concentric circles fading outward,
-      //    warm gold at the top-right and rose at the bottom-left.
-      //    Drawn from the outside in so the brightest core lands on
-      //    top, and kept subtle enough not to compete with the text.
-      //    Each ring blends against the gradient colour at its own
-      //    height — blending against a single fixed colour would
-      //    make the top-right glow read as a dark smudge, since the
-      //    gradient is much lighter up there.
-      function gradientAt(y){
-        const t = Math.max(0, Math.min(1, (y + 2) / (pageH + 4)));
-        return [
-          TOP[0] + (BOTTOM[0] - TOP[0]) * t,
-          TOP[1] + (BOTTOM[1] - TOP[1]) * t,
-          TOP[2] + (BOTTOM[2] - TOP[2]) * t,
-        ];
-      }
-      function glow(cx, cy, maxR, rgb, peak){
-        const RINGS = 26;
-        for(let i = RINGS; i >= 1; i--){
-          const t = i / RINGS;              // 1 = outermost
-          const r = maxR * t;
-          const strength = peak * (1 - t);  // fades toward the edge
-          const base = gradientAt(cy);
-          doc.setFillColor(
-            Math.round(base[0] + (rgb[0] - base[0]) * strength),
-            Math.round(base[1] + (rgb[1] - base[1]) * strength),
-            Math.round(base[2] + (rgb[2] - base[2]) * strength)
-          );
-          doc.circle(cx, cy, r, 'F');
-        }
-      }
-      glow(pageW + 10, -10, 105, [169, 133, 82], 0.30);   // gold, top-right
-      glow(-14, pageH + 14, 88, [185, 119, 107], 0.22);   // rose, bottom-left
-
-      // 3. Inset gold frame — drawn on every page so the whole
-      //    document shares one consistent treatment rather than the
-      //    cover looking like a different design to the rest.
-      doc.setDrawColor(...GOLD);
-      doc.setLineWidth(0.4);
-      doc.rect(17, 17, pageW - 34, pageH - 34, 'S');
+      // Plain solid dark fill — no gradient, glows or frame. Slight
+      // overdraw past the page edges guards against any white sliver
+      // at the border from rounding quirks in PDF viewers.
+      doc.setFillColor(...INK);
+      doc.rect(-2, -2, pageW + 4, pageH + 4, 'F');
     }
 
     // ===== PAGE 1 — Cover (inset gold frame) =====
@@ -1635,7 +1577,7 @@ window.registerCSFonts = function(doc){
     }
 
     doc.setFont('Jost', 'normal');
-    doc.setFontSize(11);
+    doc.setFontSize(13);
     doc.setTextColor(...CREAM);
     doc.text('CREATIVE STUDIOS', centerX, 76, { align:'center' });
 
@@ -1645,13 +1587,13 @@ window.registerCSFonts = function(doc){
     doc.line(centerX - 15, 90, centerX + 15, 90);
 
     doc.setFont('Jost', 'normal');
-    doc.setFontSize(9);
+    doc.setFontSize(11);
     doc.setTextColor(...GOLD);
     doc.text('PREPARED FOR', centerX, 122, { align:'center' });
 
     // The couple's name — the centrepiece of the page
     doc.setFont('Fraunces', 'italic');
-    doc.setFontSize(36);
+    doc.setFontSize(40);
     doc.setTextColor(...CREAM);
     const nameLines = doc.splitTextToSize(clientName, pageW - 70);
     doc.text(nameLines, centerX, 140, { align:'center' });
@@ -1660,7 +1602,7 @@ window.registerCSFonts = function(doc){
     const nameBottom = 140 + ((nameLines.length - 1) * 14);
     let detY = nameBottom + 30;
     doc.setFont('Jost', 'normal');
-    doc.setFontSize(10);
+    doc.setFontSize(12);
     doc.setTextColor(...GOLD_LIGHT);
     doc.text(`${eventType.toUpperCase()}  ·  ${date.toUpperCase()}`, centerX, detY, { align:'center' });
     detY += 9;
@@ -1720,11 +1662,11 @@ window.registerCSFonts = function(doc){
     const occasionCount = rows.length;
 
     doc.setFont('Jost', 'normal');
-    doc.setFontSize(9);
+    doc.setFontSize(11);
     doc.setTextColor(...GOLD);
     doc.text('YOUR CELEBRATION', colL, 26);
     doc.setFont('Fraunces', 'italic');
-    doc.setFontSize(28);
+    doc.setFontSize(30);
     doc.setTextColor(...CREAM);
     doc.text('The Journey', colL, 38);
 
@@ -1739,20 +1681,27 @@ window.registerCSFonts = function(doc){
     // carries.
     const trackTop = 60;
     const trackBottom = 244;
-    const EQ_LINE_H = 6.5;
-    const NAME_OFFSET = 10;          // first equipment line sits below the name
-    const ROW_PAD = 12;              // breathing room below the tallest row
+    const EQ_LINE_H = 7.5;           // equipment lines are now 13pt
+    const NAME_OFFSET = 12;          // first equipment line sits below the name
+    const ROW_PAD = 14;              // breathing room below the tallest row
 
     const rowHeights = rows.map(r => NAME_OFFSET + (r.coverage.length * EQ_LINE_H));
     const tallestRow = Math.max(...rowHeights, 0);
     const minStep = tallestRow + ROW_PAD;
 
-    // Spread markers to fill the track if there's room, but never
-    // tighter than the tallest row needs.
-    const idealStep = rows.length > 1
-      ? (trackBottom - trackTop) / (rows.length - 1)
+    // Spread markers evenly across the track. The step is whatever
+    // divides the available height between them, clamped so two
+    // occasions aren't marooned at opposite ends of the page and so
+    // rows never overlap each other.
+    const MAX_STEP = 62;
+    const lastH = rowHeights.length ? rowHeights[rowHeights.length - 1] : 0;
+    const available = trackBottom - trackTop - lastH;
+    const evenStep = rows.length > 1 ? available / (rows.length - 1) : 0;
+    // Never tighter than the tallest row (rows would overlap), never
+    // wider than MAX_STEP (looks marooned).
+    const step = rows.length > 1
+      ? Math.min(MAX_STEP, Math.max(minStep, evenStep))
       : 0;
-    const step = rows.length > 1 ? Math.max(minStep, Math.min(52, idealStep)) : 0;
 
     // Markers are placed at an even step. A very full scope can still
     // exceed one page, so track which page each row lands on and draw
@@ -1797,17 +1746,17 @@ window.registerCSFonts = function(doc){
         doc.setTextColor(...CREAM);
         if(isWedding){
           doc.setFont('Fraunces', 'italic');
-          doc.setFontSize(19);
+          doc.setFontSize(21);
         } else {
           doc.setFont('Fraunces', 'normal');
-          doc.setFontSize(16);
+          doc.setFontSize(18);
         }
         doc.text(row.name, textX, y + 1.5);
 
         // Equipment stacked one per line beneath the occasion name,
         // rather than run together on a single long line.
         doc.setFont('Jost', 'normal');
-        doc.setFontSize(11.5);
+        doc.setFontSize(13);
         doc.setTextColor(...GOLD_LIGHT);
         row.coverage.forEach((line, i) => {
           doc.text(line, textX, y + NAME_OFFSET + (i * EQ_LINE_H));
@@ -1817,7 +1766,7 @@ window.registerCSFonts = function(doc){
 
     // Footer summary
     doc.setFont('Jost', 'normal');
-    doc.setFontSize(10);
+    doc.setFontSize(12);
     doc.setTextColor(...GOLD_LIGHT);
     doc.text(`${occasionCount} OCCASION${occasionCount !== 1 ? 'S' : ''}  ·  CREATIVE STUDIOS`, colL, 268);
 
@@ -1829,41 +1778,41 @@ window.registerCSFonts = function(doc){
     // no longer needs it — leaving these references broken, which
     // silently crashed the whole download. Defined here now, where
     // it's actually used.
-    const marginL = 25;
+    const marginL = 28;   // matches page 2's colL so all pages align
     doc.setFont('Fraunces', 'italic');
-    doc.setFontSize(32);
+    doc.setFontSize(34);
     doc.setTextColor(...CREAM);
     const closingLines = doc.splitTextToSize("Let's Bring This to Life", pageW - marginL - 30);
     doc.text(closingLines, marginL, 110);
 
     doc.setFont('Fraunces', 'italic');
-    doc.setFontSize(11);
+    doc.setFontSize(13);
     doc.setTextColor(...GOLD_LIGHT);
     const noteLines = doc.splitTextToSize('This outlines the scope of coverage for your day. A formal quote with pricing follows once the details are confirmed.', 140);
-    doc.text(noteLines, marginL, 110 + (closingLines.length * 13) + 12);
+    doc.text(noteLines, marginL, 108 + (closingLines.length * 14) + 14);
 
     // Data retention terms — set smaller and in the muted tone so it
     // reads as a formal condition rather than part of the warm
     // closing message above it.
-    const termsY = 110 + (closingLines.length * 13) + 12 + (noteLines.length * 6) + 10;
+    const termsY = 108 + (closingLines.length * 14) + 14 + (noteLines.length * 7) + 12;
     doc.setFont('Jost', 'normal');
-    doc.setFontSize(8.5);
+    doc.setFontSize(12);
     doc.setTextColor(...MUTED);
     const termsLines = doc.splitTextToSize('All deliverables must be collected within one month of the delivery notification. Creative Studios accepts no responsibility for data retained beyond this period.', 140);
     doc.text(termsLines, marginL, termsY);
 
     doc.setDrawColor(...GOLD);
     doc.setLineWidth(0.4);
-    const contactY = termsY + (termsLines.length * 5) + 14;
+    const contactY = termsY + (termsLines.length * 6) + 16;
     doc.line(marginL, contactY, marginL + 45, contactY);
 
     doc.setFont('Jost', 'normal');
-    doc.setFontSize(8.5);
+    doc.setFontSize(12);
     doc.setTextColor(...MUTED);
-    doc.text('polamreddysiva9@gmail.com', marginL, contactY + 12);
-    doc.text('+91 99497 06000', marginL, contactY + 19);
-    doc.text('creativestudios.in', marginL, contactY + 26);
-    doc.text('© 2026 CREATIVE STUDIOS', marginL, contactY + 38);
+    doc.text('polamreddysiva9@gmail.com', marginL, contactY + 14);
+    doc.text('+91 99497 06000', marginL, contactY + 22);
+    doc.text('creativestudios.in', marginL, contactY + 30);
+    doc.text('© 2026 CREATIVE STUDIOS', marginL, contactY + 44);
 
     const safeName = clientName.replace(/\s*&\s*/g, '-').replace(/[^a-zA-Z0-9-]/g, '').replace(/-+/g, '-');
     const filename = `${safeName}-Coverage-Scope.pdf`;
