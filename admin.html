@@ -141,12 +141,13 @@
 
   .dash-tabs{ display:flex; gap:10px; margin-bottom:26px; }
   .dash-tab{
-    background:none; border:1px solid rgba(36,31,38,0.2); color:rgba(36,31,38,0.75);
+    background:var(--white); border:1px solid rgba(36,31,38,0.45); color:var(--ink);
     padding:10px 20px; border-radius:2px; font-family:'JetBrains Mono', monospace; font-size:0.72rem;
     letter-spacing:0.05em; text-transform:uppercase; cursor:pointer; transition:all 0.25s ease;
+    font-weight:500;
   }
   .dash-tab:hover{ border-color:var(--rose); color:var(--rose); }
-  .dash-tab.active{ background:var(--rose); border-color:var(--rose); color:var(--ink); }
+  .dash-tab.active{ background:var(--rose); border-color:var(--rose); color:var(--white); }
   .dash-panel{ display:none; }
   .dash-panel.active{ display:block; }
 
@@ -341,8 +342,8 @@
   .device-toggle{ display:flex; gap:8px; margin-bottom:14px; }
   .device-btn{
     font-family:var(--mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
-    padding:8px 14px; border:1px solid rgba(36,31,38,0.2); background:transparent;
-    color:rgba(36,31,38,0.7); cursor:pointer; transition:all 0.2s ease;
+    padding:8px 14px; border:1px solid rgba(36,31,38,0.45); background:var(--white);
+    color:var(--ink); cursor:pointer; transition:all 0.2s ease; font-weight:500;
   }
   .device-btn:hover{ border-color:var(--gold); color:var(--gold); }
   .device-btn.active{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
@@ -449,10 +450,13 @@
   .actions{ display:flex; gap:12px; margin-top:8px; }
   .btn{
     font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
-    padding:13px 22px; border:1px solid var(--gold); color:var(--gold); cursor:pointer; background:transparent;
-    flex:1; text-align:center;
+    padding:13px 22px; border:1px solid var(--gold); color:var(--ink); cursor:pointer;
+    background:var(--white); flex:1; text-align:center; font-weight:500;
+    transition:all 0.2s ease;
   }
-  .btn.filled{ background:var(--gold); color:var(--ink); }
+  .btn:hover{ background:var(--gold-soft); }
+  .btn.filled{ background:var(--gold); color:var(--white); border-color:var(--gold); }
+  .btn.filled:hover{ background:var(--ink); border-color:var(--ink); }
 
   @media print{
     /* Explicit list of every Dashboard chrome element to hide —
@@ -1608,29 +1612,21 @@ window.registerCSFonts = function(doc){
     doc.text(venue.toUpperCase(), centerX, detY, { align:'center' }); detY += 8;
     doc.text(date.toUpperCase(), centerX, detY, { align:'center' });
 
-    // ===== PAGE 2 — Coverage Breakdown (letterhead table) =====
-    // Table-style arrangement: occasion name on the left, its full
-    // coverage on ONE right-aligned line (rather than a stacked
-    // list), with a ruled divider under each row and small column
-    // headers above. Reads like a formal document rather than a
-    // slide, and keeps each occasion to a single visual line.
+    // ===== PAGE 2 — Coverage Breakdown (timeline) =====
+    // Presents the occasions as a journey through the celebration:
+    // a vertical gold line with a marker for each occasion, its
+    // equipment listed beneath. The wedding gets a larger marker and
+    // italic type to read as the centrepiece of the day.
     doc.addPage();
     darkPage();
-    // The content block (labels + quantity column) is 72mm wide.
-    // Centering it on the 210mm page gives balanced margins either
-    // side, rather than leaving all the empty space on the right.
-    // Content block spans most of the page width with balanced
-    // 28mm margins either side, so the page is properly filled
-    // rather than leaving large empty areas.
     const colL = 28;
     const contentR = pageW - 28;
-    const blockW = contentR - colL;
+    const lineX = colL + 6;          // the vertical timeline itself
+    const textX = colL + 20;         // occasion text sits right of it
 
-    // Combine each occasion's equipment into one line, separated by
-    // middots. Uses the shorter `pdfShort` label where one exists —
-    // the full names ("2 Traditional Photographers · 1 Candid
-    // Photographer · ...") would overflow the 170mm content width
-    // when several are combined on a single line.
+    // Shorter labels for the PDF — the full names ("2 Traditional
+    // Photographers · 1 Candid Photographer · ...") would overflow
+    // the line width when several are combined.
     const PDF_SHORT = {
       tradphoto:   { one:'Traditional Photo',  many:'Traditional Photo' },
       candidphoto: { one:'Candid Photo',       many:'Candid Photo' },
@@ -1640,119 +1636,85 @@ window.registerCSFonts = function(doc){
       ledwalls:    { one:'LED Wall',           many:'LED Walls' },
       livestream:  { one:'Live Stream',        many:'Live Stream' },
     };
-    // Each occasion's equipment becomes its OWN indented line beneath
-    // the occasion name, with the quantity after the label
-    // ("Traditional Photo   2") rather than before it.
+
+    // Gather the rows first so the timeline's height can be sized to
+    // the actual content before anything is drawn.
     const rows = [];
     occasions.forEach(o => {
       if(state.occasionsSelected[o.id]){
-        const items = equipment
+        const parts = equipment
           .filter(eq => state.occasionEquip[o.id][eq.id] > 0)
           .map(eq => {
             const qty = state.occasionEquip[o.id][eq.id];
             const short = PDF_SHORT[eq.id];
             const label = short ? (qty === 1 ? short.one : short.many) : eqLabel(eq, qty);
-            return { label, qty };
+            return `${qty} ${label}`;
           });
-        rows.push({ name: o.name, items });
+        rows.push({
+          id: o.id,
+          name: o.name,
+          coverage: parts.length ? parts.join('  ·  ') : 'Coverage included',
+        });
       }
     });
     const occasionCount = rows.length;
 
     doc.setFont('Jost', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(...GOLD);
-    doc.text("WHAT'S COVERED", colL + (blockW / 2), 25, { align:'center' });
-    doc.setFont('Fraunces', 'italic');
-    doc.setFontSize(30);
-    doc.setTextColor(...CREAM);
-    doc.text('Coverage Breakdown', colL + (blockW / 2), 34, { align:'center' });
-
-    // Column headers
-    doc.setFont('Jost', 'normal');
     doc.setFontSize(9);
-    doc.setTextColor(...MUTED);
-    doc.text('OCCASION', colL, 52);
-    doc.text('QTY', contentR, 52, { align:'right' });
-    doc.setDrawColor(...MUTED);
-    doc.setLineWidth(0.3);
-    doc.line(colL, 55, contentR, 55);
+    doc.setTextColor(...GOLD);
+    doc.text('YOUR CELEBRATION', colL, 26);
+    doc.setFont('Fraunces', 'italic');
+    doc.setFontSize(28);
+    doc.setTextColor(...CREAM);
+    doc.text('The Journey', colL, 38);
 
-    // Rows have variable height now (one line per equipment item),
-    // so total height is measured first and the gap between
-    // occasions is sized to fill the page without overflowing.
-    const tableTop = 55;
-    const tableBottom = 238;
-    const LINE_H = 8;                // height of one equipment line
-    const NAME_H = 12;               // space taken by the occasion name
-    const contentH = rows.reduce((s, r) => s + NAME_H + (Math.max(1, r.items.length) * LINE_H), 0);
-    // Slack is divided by the number of GAPS (one fewer than the
-    // number of rows), not by the row count. Dividing by the row
-    // count overshot by one gap's worth, pushing the last row a few
-    // millimetres past the bottom and triggering an unnecessary
-    // second page.
-    const slack = (tableBottom - tableTop - 12) - contentH;
-    const gapCount = Math.max(1, rows.length - 1);
-    const gap = Math.max(7, Math.min(18, rows.length > 1 ? slack / gapCount : 12));
+    // Distribute the occasions evenly down the page
+    const trackTop = 60;
+    const trackBottom = 240;
+    const step = rows.length > 1
+      ? Math.min(44, (trackBottom - trackTop) / (rows.length - 1))
+      : 0;
+    const lastY = trackTop + (step * Math.max(0, rows.length - 1));
 
-    let y = tableTop + 14;
+    // The connecting line, drawn first so the markers sit on top
+    if(rows.length > 1){
+      doc.setDrawColor(...GOLD);
+      doc.setLineWidth(0.3);
+      doc.line(lineX, trackTop, lineX, lastY);
+    }
+
     rows.forEach((row, idx) => {
-      // If this occasion's block won't fit in the remaining space,
-      // continue on a fresh page rather than running off the bottom.
-      const blockH = NAME_H + (Math.max(1, row.items.length) * LINE_H) + gap;
-      if(y + blockH > tableBottom){
-        doc.addPage();
-        darkPage();
-        y = 30;
-      }
+      const y = trackTop + (step * idx);
+      const isWedding = row.id === 'wedding';
+
+      // Marker — larger for the wedding, since it anchors the day
+      doc.setFillColor(...GOLD);
+      doc.circle(lineX, y, isWedding ? 2.6 : 1.7, 'F');
 
       // Occasion name
-      doc.setFont('Fraunces', 'normal');
-      doc.setFontSize(17);
       doc.setTextColor(...CREAM);
-      doc.text(row.name, colL, y);
-      y += NAME_H;
-
-      // Equipment, indented beneath the occasion with the quantity
-      // right-aligned so all the numbers line up in a column.
-      doc.setFont('Jost', 'normal');
-      doc.setFontSize(12);
-      doc.setTextColor(...GOLD_LIGHT);
-      if(row.items.length){
-        row.items.forEach(item => {
-          doc.text(item.label, colL + 8, y);
-          // Quantities sit in their own column just past the longest
-          // label, rather than pushed all the way to the page edge —
-          // keeps the number visually connected to what it counts.
-          doc.text(String(item.qty), contentR, y, { align:'right' });
-          y += LINE_H;
-        });
-      } else {
+      if(isWedding){
         doc.setFont('Fraunces', 'italic');
-        doc.setTextColor(...MUTED);
-        doc.text('Coverage included', colL + 8, y);
-        y += LINE_H;
+        doc.setFontSize(17);
+      } else {
+        doc.setFont('Fraunces', 'normal');
+        doc.setFontSize(14);
       }
+      doc.text(row.name, textX, y + 1.5);
 
-      // Divider between occasions (not after the last one)
-      if(idx < rows.length - 1){
-        doc.setDrawColor(...MUTED);
-        doc.setLineWidth(0.12);
-        doc.line(colL, y + (gap / 2) - 2, contentR, y + (gap / 2) - 2);
-        y += gap;
-      }
+      // Equipment beneath it
+      doc.setFont('Jost', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(isWedding ? GOLD_LIGHT[0] : MUTED[0], isWedding ? GOLD_LIGHT[1] : MUTED[1], isWedding ? GOLD_LIGHT[2] : MUTED[2]);
+      const covLines = doc.splitTextToSize(row.coverage, contentR - textX);
+      doc.text(covLines, textX, y + 9);
     });
 
-    // Summary anchored below the table
-    const summaryY = Math.max(y + 8, 250);
+    // Footer summary
     doc.setFont('Jost', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...MUTED);
-    doc.text('TOTAL SCOPE', colL, summaryY);
-    doc.setFont('Fraunces', 'italic');
-    doc.setFontSize(22);
-    doc.setTextColor(...GOLD);
-    doc.text(`${occasionCount} Occasion${occasionCount !== 1 ? 's' : ''}`, contentR, summaryY, { align:'right' });
+    doc.text(`${occasionCount} OCCASION${occasionCount !== 1 ? 'S' : ''}  ·  CREATIVE STUDIOS`, colL, 268);
 
     // ===== PAGE 3 — Closing / Contact =====
     doc.addPage();
