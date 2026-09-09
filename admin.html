@@ -308,6 +308,18 @@
   .occasion-body{ display:none; padding:0 16px 18px 44px; border-top:1px solid var(--line); padding-top:16px; }
   .occasion-card.open .occasion-body{ display:block; }
   .equip-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .occ-venue-field{ margin-bottom:16px; }
+  .occ-venue-field label{
+    display:block; font-family:var(--mono); font-size:9px; text-transform:uppercase;
+    letter-spacing:0.06em; color:var(--ink); margin-bottom:8px;
+  }
+  .occ-venue-hint{ text-transform:none; letter-spacing:0; color:var(--ink-soft); font-style:italic; }
+  .field-hint{ text-transform:none; letter-spacing:0; color:var(--ink-soft); font-style:italic; font-weight:400; }
+  .occ-venue-input{
+    width:100%; padding:10px 12px; border:1px solid rgba(36,31,38,0.25); background:var(--white);
+    color:var(--ink); font-family:var(--body); font-size:13px;
+  }
+  .occ-venue-input:focus{ outline:none; border-color:var(--gold); }
   .equip-field{ text-align:center; border:1px solid var(--line); padding:10px 8px; background:var(--white); }
   .equip-field .eq-label{ font-family:var(--mono); font-size:9px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink); margin-bottom:8px; }
   .equip-stepper{ display:flex; align-items:center; justify-content:center; gap:10px; }
@@ -669,7 +681,7 @@ window.registerCSFonts = function(doc){
             <option>Anniversary / Vow Renewal</option>
           </select>
         </div>
-        <div class="field"><label>Venue</label><input type="text" id="venue" value="Taj Lake Palace, Udaipur" placeholder="e.g. Taj Lake Palace, Udaipur"></div>
+        <div class="field"><label>Main Venue <span class="field-hint">(used unless an occasion below has its own)</span></label><input type="text" id="venue" value="Taj Lake Palace, Udaipur" placeholder="e.g. Taj Lake Palace, Udaipur"></div>
         <div class="field"><label>Event Date</label><input type="date" id="eventDate" value="2026-11-14"></div>
         <div class="field"><label>Client WhatsApp Number</label><input type="text" id="clientPhone" placeholder="e.g. 91XXXXXXXXXX (with country code)"></div>
       </div>
@@ -1255,6 +1267,12 @@ window.registerCSFonts = function(doc){
     equipment.forEach(e => state.occasionEquip[o.id][e.id] = 0);
   });
   addons.forEach(a => state.addonQty[a.id] = 0);
+  // Venue per occasion — Haldi at home, Wedding at a hotel, Reception
+  // at a banquet hall are commonly three different places, so a
+  // single event-wide venue field was misleading. Left blank, an
+  // occasion falls back to the main venue field.
+  state.occasionVenue = {};
+  occasions.forEach(o => { state.occasionVenue[o.id] = ''; });
   // Sensible defaults so the preview isn't empty on first load
   state.occasionsSelected['wedding'] = true;
   state.occasionEquip['wedding']['tradphoto'] = 2;
@@ -1272,6 +1290,10 @@ window.registerCSFonts = function(doc){
           <div class="label">${o.name}</div>
         </label>
         <div class="occasion-body">
+          <div class="occ-venue-field">
+            <label>Venue for ${o.name} <span class="occ-venue-hint">(leave blank to use the main venue above)</span></label>
+            <input type="text" class="occ-venue-input" data-occ="${o.id}" value="${state.occasionVenue[o.id]}" placeholder="e.g. Bride's residence">
+          </div>
           <div class="equip-grid">
             ${equipment.map(eq => `
               <div class="equip-field">
@@ -1288,6 +1310,15 @@ window.registerCSFonts = function(doc){
       </div>
     `;
     }).join('');
+
+    // Typing a per-occasion venue updates state and refreshes the
+    // live preview, same pattern as every other input on this form.
+    el.querySelectorAll('.occ-venue-input').forEach(input => {
+      input.addEventListener('input', () => {
+        state.occasionVenue[input.dataset.occ] = input.value;
+        update();
+      });
+    });
 
     // Clicking the checkbox/label toggles whether this occasion is
     // included at all, which also shows/hides its equipment fields.
@@ -1549,6 +1580,14 @@ window.registerCSFonts = function(doc){
     const eventType = document.getElementById('occasion').value;
     const venue = document.getElementById('venue').value || '—';
     const date = fmtDate(document.getElementById('eventDate').value);
+    // Checked before page 1 is drawn, so the cover can note when
+    // occasions happen at different places — computed once here
+    // rather than duplicating this check for both pages.
+    const hasMultipleVenues = occasions.some(o =>
+      state.occasionsSelected[o.id] &&
+      (state.occasionVenue[o.id] || '').trim() &&
+      (state.occasionVenue[o.id] || '').trim() !== venue
+    );
 
     function darkPage(){
       // Plain solid dark fill — no gradient, glows or frame. Slight
@@ -1609,6 +1648,18 @@ window.registerCSFonts = function(doc){
     const venueLines = doc.splitTextToSize(venue.toUpperCase(), pageW - 80);
     doc.text(venueLines, centerX, detY, { align:'center' });
 
+    // Only shown when at least one occasion genuinely has its own,
+    // different venue — most weddings are one location, and this
+    // would just be clutter in that far more common case.
+    if(hasMultipleVenues){
+      detY += (venueLines.length * 6) + 10;
+      doc.setFont('Fraunces', 'italic');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...MUTED);
+      const noteLines = doc.splitTextToSize('Some occasions take place at their own venue — see the itinerary that follows', pageW - 90);
+      doc.text(noteLines, centerX, detY, { align:'center' });
+    }
+
     // Closing rule near the base of the frame
     doc.setDrawColor(...GOLD);
     doc.setLineWidth(0.4);
@@ -1652,9 +1703,15 @@ window.registerCSFonts = function(doc){
             const label = short ? (qty === 1 ? short.one : short.many) : eqLabel(eq, qty);
             return `${qty} ${label}`;
           });
+        // Falls back to the main venue if this occasion doesn't have
+        // its own — Haldi at home, Wedding at a hotel, and Reception
+        // at a banquet hall are commonly three different places, so
+        // a single event-wide venue would have been misleading.
+        const occVenue = (state.occasionVenue[o.id] || '').trim() || venue;
         rows.push({
           id: o.id,
           name: o.name,
+          venue: occVenue,
           coverage: parts.length ? parts : ['Coverage included'],
         });
       }
@@ -1670,22 +1727,23 @@ window.registerCSFonts = function(doc){
     doc.setTextColor(...CREAM);
     doc.text('The Journey', colL, 38);
 
-    // Rows have variable height (one line per equipment item), which
-    // creates a problem for a timeline specifically: with a fixed gap
-    // between rows, the MARKER-to-marker distance ends up uneven
-    // (a 4-item occasion pushes the next marker much further down
-    // than a 1-item one), and that irregular rhythm along the line
-    // reads as a mistake. Instead, every marker is spaced by the
-    // same step — sized to clear the tallest row — so the timeline
-    // beats evenly regardless of how much equipment each occasion
-    // carries.
+    // Rows have variable height (one line per equipment item, plus
+    // one line for the venue), which creates a problem for a
+    // timeline specifically: with a fixed gap between rows, the
+    // MARKER-to-marker distance ends up uneven (a 4-item occasion
+    // pushes the next marker much further down than a 1-item one),
+    // and that irregular rhythm along the line reads as a mistake.
+    // Instead, every marker is spaced by the same step — sized to
+    // clear the tallest row — so the timeline beats evenly
+    // regardless of how much equipment each occasion carries.
     const trackTop = 60;
     const trackBottom = 244;
     const EQ_LINE_H = 7.5;           // equipment lines are now 13pt
-    const NAME_OFFSET = 12;          // first equipment line sits below the name
+    const VENUE_LINE_H = 7;          // the venue line beneath the name
+    const NAME_OFFSET = 12;          // first line sits below the name
     const ROW_PAD = 14;              // breathing room below the tallest row
 
-    const rowHeights = rows.map(r => NAME_OFFSET + (r.coverage.length * EQ_LINE_H));
+    const rowHeights = rows.map(r => NAME_OFFSET + VENUE_LINE_H + (r.coverage.length * EQ_LINE_H));
     const tallestRow = Math.max(...rowHeights, 0);
     const minStep = tallestRow + ROW_PAD;
 
@@ -1698,9 +1756,14 @@ window.registerCSFonts = function(doc){
     const available = trackBottom - trackTop - lastH;
     const evenStep = rows.length > 1 ? available / (rows.length - 1) : 0;
     // Never tighter than the tallest row (rows would overlap), never
-    // wider than MAX_STEP (looks marooned).
+    // wider than MAX_STEP (looks marooned) — but overlap prevention
+    // always wins if the two ever conflict. An occasion with every
+    // equipment type selected can need more room than MAX_STEP
+    // allows; capping below minStep in that case would let it
+    // visually collide with the next occasion, which is worse than
+    // slightly wider spacing.
     const step = rows.length > 1
-      ? Math.min(MAX_STEP, Math.max(minStep, evenStep))
+      ? Math.max(minStep, Math.min(MAX_STEP, evenStep))
       : 0;
 
     // Markers are placed at an even step. A very full scope can still
@@ -1753,13 +1816,21 @@ window.registerCSFonts = function(doc){
         }
         doc.text(row.name, textX, y + 1.5);
 
-        // Equipment stacked one per line beneath the occasion name,
-        // rather than run together on a single long line.
+        // Venue — small caps, gold, distinct from the equipment
+        // list below it so it reads as a location marker rather than
+        // another coverage detail.
+        doc.setFont('Jost', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...GOLD);
+        doc.text(row.venue.toUpperCase(), textX, y + NAME_OFFSET - 3);
+
+        // Equipment stacked one per line beneath the venue, rather
+        // than run together on a single long line.
         doc.setFont('Jost', 'normal');
         doc.setFontSize(13);
         doc.setTextColor(...GOLD_LIGHT);
         row.coverage.forEach((line, i) => {
-          doc.text(line, textX, y + NAME_OFFSET + (i * EQ_LINE_H));
+          doc.text(line, textX, y + NAME_OFFSET + VENUE_LINE_H + (i * EQ_LINE_H));
         });
       });
     }
@@ -1801,9 +1872,49 @@ window.registerCSFonts = function(doc){
     const termsLines = doc.splitTextToSize('All deliverables must be collected within one month of the delivery notification. Creative Studios accepts no responsibility for data retained beyond this period.', 140);
     doc.text(termsLines, marginL, termsY);
 
+    // Additional Services — selected add-ons were previously shown
+    // in the on-screen preview and WhatsApp message, but never
+    // actually appeared anywhere in the downloadable PDF itself.
+    // Only drawn when at least one add-on is selected, so this
+    // doesn't add empty space to the far more common case of none.
+    let afterTermsY = termsY + (termsLines.length * 6) + 12;
+    const addonList = [];
+    addons.forEach(a => {
+      const qty = state.addonQty[a.id];
+      if(qty > 0) addonList.push(a.name + (qty > 1 ? ` ×${qty}` : ''));
+    });
+
+    // If an unusually long name plus a full addon list would run the
+    // contact block off the bottom of the page, continue on a fresh
+    // page instead — checked against the worst realistic case (a
+    // 3-line name and all 8 add-ons), which genuinely does overflow
+    // without this.
+    const estimatedRemaining = 10 + (addonList.length * 7.5) + 6 + 4 + 44;
+    if(afterTermsY + estimatedRemaining > pageH - 15){
+      doc.addPage();
+      darkPage();
+      afterTermsY = 30;
+    }
+
+    if(addonList.length){
+      doc.setFont('Jost', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(...GOLD);
+      doc.text('ADDITIONAL SERVICES', marginL, afterTermsY);
+      afterTermsY += 10;
+      doc.setFont('Jost', 'normal');
+      doc.setFontSize(12);
+      doc.setTextColor(...GOLD_LIGHT);
+      addonList.forEach(line => {
+        doc.text(line, marginL, afterTermsY);
+        afterTermsY += 7.5;
+      });
+      afterTermsY += 6;
+    }
+
     doc.setDrawColor(...GOLD);
     doc.setLineWidth(0.4);
-    const contactY = termsY + (termsLines.length * 6) + 16;
+    const contactY = afterTermsY + 4;
     doc.line(marginL, contactY, marginL + 45, contactY);
 
     doc.setFont('Jost', 'normal');
