@@ -2000,6 +2000,11 @@ window.registerCSFonts = function(doc){
     doc.setTextColor(...CREAM);
     doc.text('Coverage Breakdown', colL, 38);
 
+    // Divider rule beneath the heading, matching the on-screen preview
+    doc.setDrawColor(...MUTED);
+    doc.setLineWidth(0.2);
+    doc.line(colL, 46, contentR, 46);
+
     // Rows have variable height (one line per equipment item, plus
     // one line for the venue), which creates a problem for a
     // timeline specifically: with a fixed gap between rows, the
@@ -2070,29 +2075,25 @@ window.registerCSFonts = function(doc){
         .filter(pl => pl.page === p);
       if(!onPage.length) continue;
 
-      // Connecting line spanning this page's markers
-      if(onPage.length > 1){
-        doc.setDrawColor(...GOLD);
-        doc.setLineWidth(0.3);
-        doc.line(lineX, onPage[0].y, lineX, onPage[onPage.length - 1].y);
-      }
+      // No connecting line between occasions — matches the on-screen
+      // preview, which uses standalone diamond markers rather than a
+      // vertical timeline joining them.
 
       onPage.forEach(({ y, row, h }) => {
-        const isWedding = row.id === 'wedding';
-
-        // Marker — larger for the wedding, since it anchors the day
+        // Diamond marker — a small square rotated 45°, matching the
+        // preview's .occ-marker exactly. jsPDF has no direct
+        // "rotated rect" primitive, so it's drawn as a 4-point
+        // polygon instead.
+        const dSize = 1.8;
         doc.setFillColor(...GOLD);
-        doc.circle(lineX, y, isWedding ? 2.6 : 1.7, 'F');
+        doc.triangle(lineX - dSize, y, lineX, y - dSize, lineX + dSize, y, 'F');
+        doc.triangle(lineX - dSize, y, lineX, y + dSize, lineX + dSize, y, 'F');
 
-        // Occasion name
+        // Occasion name — same treatment for every occasion, matching
+        // the preview (no special emphasis for "Wedding" specifically)
         doc.setTextColor(...CREAM);
-        if(isWedding){
-          doc.setFont('Fraunces', 'italic');
-          doc.setFontSize(21);
-        } else {
-          doc.setFont('Fraunces', 'normal');
-          doc.setFontSize(18);
-        }
+        doc.setFont('Fraunces', 'normal');
+        doc.setFontSize(18);
         doc.text(row.name, textX, y + 1.5);
 
         // Venue — small caps, gold, distinct from the equipment
@@ -2115,6 +2116,18 @@ window.registerCSFonts = function(doc){
         if(p === totalPages - 1){
           lastContentEndY = y + NAME_OFFSET + VENUE_LINE_H + (row.coverage.length * EQ_LINE_H);
         }
+
+        // Divider beneath this occasion, matching each .occ-block's
+        // own border-bottom in the preview. Positioned using the
+        // row's own content height as a floor — with only one
+        // occasion, `step` is 0 (no next marker to space toward),
+        // which would otherwise draw the line right through the
+        // text instead of beneath it.
+        const rowContentH = NAME_OFFSET + VENUE_LINE_H + (row.coverage.length * EQ_LINE_H);
+        const dividerY = y + Math.max(step / 2, rowContentH + 6);
+        doc.setDrawColor(...MUTED);
+        doc.setLineWidth(0.15);
+        doc.line(colL, dividerY, contentR, dividerY);
       });
     }
 
@@ -2124,6 +2137,9 @@ window.registerCSFonts = function(doc){
     // from a very full page, and never higher than the old fixed
     // position so a heavy scope doesn't get pushed off the page.
     const footerY = Math.min(260, Math.max(lastContentEndY + 20, trackTop + 40));
+    doc.setDrawColor(...MUTED);
+    doc.setLineWidth(0.2);
+    doc.line(colL, footerY - 10, contentR, footerY - 10);
     doc.setFont('Fraunces', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...MUTED);
