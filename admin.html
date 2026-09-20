@@ -179,6 +179,45 @@
   .dash-msg.err{ color:var(--rose); }
 
   .dash-table-wrap{ overflow-x:auto; border-radius:4px; overflow:hidden; }
+
+  /* Search bar above the client/featured tables */
+  .dash-search{
+    width:100%; padding:12px 16px; margin-bottom:14px; border-radius:4px;
+    border:1px solid #4a3d42; background:#2f2731; color:#f3e3d3;
+    font-family:'JetBrains Mono', monospace; font-size:0.8rem;
+  }
+  .dash-search:focus{ outline:none; border-color:var(--rose); }
+
+  /* Status badges — colour alone never carries the meaning; each
+     also has distinct text, so it reads fine without relying on
+     colour perception. */
+  .status-badge{
+    display:inline-block; padding:4px 10px; border-radius:12px;
+    font-family:'JetBrains Mono', monospace; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.04em;
+  }
+  .status-active{ background:rgba(122,178,122,0.18); color:#9fd39f; }
+  .status-expiring{ background:rgba(212,165,84,0.2); color:#e0b45c; }
+  .status-expired{ background:rgba(200,100,100,0.18); color:#e29a9a; }
+  .status-unknown{ background:rgba(150,150,150,0.15); color:#a8a4a0; }
+
+  /* Folder ID stays tucked away behind a small toggle rather than
+     its own always-visible column — it's only ever needed for
+     troubleshooting, not day-to-day use. */
+  .folder-toggle{
+    background:none; border:1px solid #4a3d42; color:#c9a8b0; border-radius:3px;
+    padding:3px 9px; font-family:'JetBrains Mono', monospace; font-size:0.68rem; cursor:pointer;
+    max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .folder-toggle:hover{ border-color:var(--rose); color:var(--rose); }
+
+  /* Delete as a small icon rather than a text link — less visually
+     competing with "Edit", and the trash icon itself signals a
+     destructive action before the person even reads anything. */
+  .dash-row-actions .del{
+    background:none; border:none; color:var(--rose); cursor:pointer;
+    display:inline-flex; align-items:center; padding:4px; border-radius:3px;
+  }
+  .dash-row-actions .del:hover{ background:rgba(200,100,100,0.15); text-decoration:none; }
   .dash-table{ width:100%; border-collapse:collapse; min-width:640px; }
   .dash-table th, .dash-table td{
     text-align:left; padding:13px 14px; font-size:0.85rem;
@@ -199,7 +238,6 @@
     font-size:0.68rem; letter-spacing:0.04em; text-transform:uppercase; font-weight:700; color:#e0a8a0;
   }
   .dash-row-actions button:hover{ color:#f0c9a8; text-decoration:underline; }
-  .dash-row-actions .del{ color:#e8a0a0; }
   .dash-row-actions .del:hover{ color:#f5b8b8; }
   .dash-empty{ padding:30px; text-align:center; color:#c9b8be; font-size:0.85rem; }
   .dash-loading{ padding:30px; text-align:center; color:#c9b8be; font-size:0.85rem; font-family:'JetBrains Mono', monospace; }
@@ -233,6 +271,44 @@
     .dash-tabs{ flex-wrap:wrap; gap:8px; }
     .wrap{ padding:0 18px; }
     .qb-wrap{ padding:24px 16px 60px; }
+
+    /* Data tables become a stack of labeled cards rather than a
+       horizontally-scrolling table — on a real device this table
+       was cut off after only 2 of 6 columns, with no visible cue
+       that more content existed off-screen. */
+    .dash-table{ min-width:0; }
+    .dash-table thead{ display:none; }
+    .dash-table, .dash-table tbody, .dash-table tr, .dash-table td{
+      display:block; width:100%;
+    }
+    .dash-table tr{
+      margin-bottom:12px; border:1px solid #4a3d42; border-radius:6px;
+      overflow:hidden; padding:4px 0;
+    }
+    .dash-table tbody tr:nth-child(even){ background:#2f2731; }
+    .dash-table td{
+      border-bottom:none; padding:8px 16px; display:flex;
+      justify-content:space-between; align-items:center; gap:12px; text-align:right;
+    }
+    /* The label that a column header normally provided, now shown
+       inline before each value via the data-label attribute set in
+       the row-rendering JS. */
+    .dash-table td[data-label]:not([data-label=""])::before{
+      content: attr(data-label); font-family:'JetBrains Mono', monospace;
+      font-size:0.66rem; text-transform:uppercase; letter-spacing:0.04em;
+      color:#a89aa0; text-align:left; flex-shrink:0;
+    }
+    .dash-table td[data-label=""]{ justify-content:flex-end; padding-top:12px; }
+    .folder-toggle{ max-width:none; }
+
+    /* Device preview buttons: 5 buttons in one row were cramped
+       (small text, touch targets under the 44px minimum). Letting
+       them wrap onto two rows with more padding is more comfortable
+       to tap accurately than keeping everything on one tight line. */
+    .device-toggle{ flex-wrap:wrap; }
+    .device-btn{ padding:12px 14px; font-size:11px; flex:1 1 auto; text-align:center; }
+
+    .reorder-btn{ width:34px; height:34px; font-size:11px; }
   }
 
   .panel{ background:var(--white); border:1px solid var(--line); padding:32px; }
@@ -300,10 +376,22 @@
   .occ-no-equip{ font-family:var(--mono); font-size:12px; color:#8C8A80; font-style:italic; }
   .addons-summary{ margin-top:8px; padding-top:22px; text-align:left; }
   .addons-label{ font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
-  .occasion-head{ display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; transition:background 0.2s ease; }
+  .occasion-head{ display:flex; align-items:center; gap:8px; padding:14px 16px; transition:background 0.2s ease; }
   .occasion-head:hover{ background:rgba(36,31,38,0.04); }
+  .occasion-head-main{ display:flex; align-items:center; gap:12px; flex:1; cursor:pointer; min-width:0; }
   .occasion-head input[type=checkbox]{ width:16px; height:16px; accent-color:var(--gold); flex-shrink:0; }
   .occasion-head .label{ font-size:14px; flex:1; color:var(--ink); font-weight:500; }
+
+  /* Reorder controls — lets the admin change the sequence occasions
+     appear in (the form, the PDF timeline, everything reads from
+     the same underlying order), including custom-added ones. */
+  .occasion-reorder{ display:flex; gap:2px; flex-shrink:0; }
+  .reorder-btn{
+    width:26px; height:26px; border:1px solid rgba(36,31,38,0.3); background:var(--white);
+    color:var(--ink); cursor:pointer; font-size:9px; border-radius:3px; transition:all 0.15s ease;
+  }
+  .reorder-btn:hover:not(:disabled){ border-color:var(--gold); color:var(--gold); background:rgba(169,133,82,0.08); }
+  .reorder-btn:disabled{ opacity:0.25; cursor:default; }
   .occasion-card.open{ border-color:var(--gold); background:var(--gold-soft); }
   .occasion-body{ display:none; padding:0 16px 18px 44px; border-top:1px solid var(--line); padding-top:16px; }
   .occasion-card.open .occasion-body{ display:block; }
@@ -947,6 +1035,24 @@ window.registerCSFonts = function(doc){
     }
   }
 
+  // Returns a small status badge based on how close the passcode's
+  // expiry date is — computed from data already on hand, no new
+  // field needed. Lets the admin spot at a glance which clients need
+  // a renewal instead of reading every date by eye.
+  function clientStatusBadge(expiry){
+    if(!expiry) return `<span class="status-badge status-unknown">—</span>`;
+    // Matches fmtDate's parsing pattern elsewhere in this file —
+    // appending a time avoids a bare "YYYY-MM-DD" string being
+    // interpreted as UTC midnight, which can silently shift the
+    // date by a day depending on the browser's local timezone.
+    const expiryDate = new Date(expiry + 'T00:00:00');
+    if(isNaN(expiryDate.getTime())) return `<span class="status-badge status-unknown">—</span>`;
+    const daysLeft = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
+    if(daysLeft < 0) return `<span class="status-badge status-expired">Expired</span>`;
+    if(daysLeft <= 7) return `<span class="status-badge status-expiring">Expiring soon</span>`;
+    return `<span class="status-badge status-active">Active</span>`;
+  }
+
   function renderClientsTable(){
     const container = document.getElementById('clientsTableContainer');
     if(clientsRows.length === 0){
@@ -954,22 +1060,54 @@ window.registerCSFonts = function(doc){
       return;
     }
     const rowsHtml = clientsRows.map(r => {
-      const [name, email, folder, passcode] = r.values;
-      return `<tr>
-        <td>${name || '—'}</td>
-        <td>${email || '—'}</td>
-        <td>${folder || '—'}</td>
-        <td>${passcode || '—'}</td>
-        <td><div class="dash-row-actions">
+      const [name, email, folder, passcode, expiry] = r.values;
+      return `<tr data-search="${(name||'').toLowerCase()} ${(email||'').toLowerCase()}">
+        <td data-label="Name">${name || '—'}</td>
+        <td data-label="Email">${email || '—'}</td>
+        <td data-label="Status">${clientStatusBadge(expiry)}</td>
+        <td data-label="Folder" class="folder-cell">
+          <button class="folder-toggle" data-folder="${folder || ''}" title="Show folder ID">ID</button>
+        </td>
+        <td data-label="Passcode">${passcode || '—'}</td>
+        <td data-label=""><div class="dash-row-actions">
           <button class="edit" data-row="${r.rowNumber}">Edit</button>
-          <button class="del" data-row="${r.rowNumber}">Delete</button>
+          <button class="del" data-row="${r.rowNumber}" title="Delete client">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+          </button>
         </div></td>
       </tr>`;
     }).join('');
-    container.innerHTML = `<table class="dash-table">
-      <thead><tr><th>Name</th><th>Email</th><th>Folder ID</th><th>Passcode</th><th></th></tr></thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>`;
+    container.innerHTML = `
+      <input type="text" class="dash-search" id="clientSearchInput" placeholder="Search by name or email...">
+      <table class="dash-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Folder</th><th>Passcode</th><th></th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>`;
+
+    // Live filtering — pure client-side, nothing re-fetched from the
+    // Sheet, since everything needed is already loaded.
+    document.getElementById('clientSearchInput').addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      container.querySelectorAll('tbody tr').forEach(tr => {
+        tr.style.display = tr.dataset.search.includes(q) ? '' : 'none';
+      });
+    });
+
+    // The raw Drive folder ID is only ever needed for troubleshooting,
+    // so it's tucked behind a small toggle rather than shown as its
+    // own full-width column all the time.
+    container.querySelectorAll('.folder-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const isShown = btn.dataset.shown === '1';
+        if(isShown){
+          btn.textContent = 'ID';
+          btn.dataset.shown = '0';
+        } else {
+          btn.textContent = btn.dataset.folder || '—';
+          btn.dataset.shown = '1';
+        }
+      });
+    });
 
     container.querySelectorAll('.edit').forEach(btn => {
       btn.addEventListener('click', () => startEditClient(parseInt(btn.dataset.row, 10)));
@@ -1069,21 +1207,32 @@ window.registerCSFonts = function(doc){
     }
     const rowsHtml = featuredRows.map(r => {
       const [names, venue, photoId, order] = r.values;
-      return `<tr>
-        <td>${names || '—'}</td>
-        <td>${venue || '—'}</td>
-        <td>${photoId || '—'}</td>
-        <td>${order || '—'}</td>
-        <td><div class="dash-row-actions">
+      return `<tr data-search="${(names||'').toLowerCase()} ${(venue||'').toLowerCase()}">
+        <td data-label="Names">${names || '—'}</td>
+        <td data-label="Venue">${venue || '—'}</td>
+        <td data-label="Photo IDs">${photoId || '—'}</td>
+        <td data-label="Order">${order || '—'}</td>
+        <td data-label=""><div class="dash-row-actions">
           <button class="edit" data-row="${r.rowNumber}">Edit</button>
-          <button class="del" data-row="${r.rowNumber}">Delete</button>
+          <button class="del" data-row="${r.rowNumber}" title="Delete">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+          </button>
         </div></td>
       </tr>`;
     }).join('');
-    container.innerHTML = `<table class="dash-table">
+    container.innerHTML = `
+      <input type="text" class="dash-search" id="featuredSearchInput" placeholder="Search by names or venue...">
+      <table class="dash-table">
       <thead><tr><th>Names</th><th>Venue</th><th>Photo IDs</th><th>Order</th><th></th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>`;
+
+    document.getElementById('featuredSearchInput').addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      container.querySelectorAll('tbody tr').forEach(tr => {
+        tr.style.display = tr.dataset.search.includes(q) ? '' : 'none';
+      });
+    });
 
     container.querySelectorAll('.edit').forEach(btn => {
       btn.addEventListener('click', () => startEditFeatured(parseInt(btn.dataset.row, 10)));
@@ -1218,6 +1367,7 @@ window.registerCSFonts = function(doc){
   // occasion filters already work (Marriage, Reception, Nalugu, etc).
   let occasions = [
     { id:'engagement', name:'Engagement' },
+    { id:'pasupu', name:'Pasupu' },
     { id:'songshoot', name:'Song Shoot' },
     { id:'haldi', name:'Haldi' },
     { id:'mehendi', name:'Mehendi' },
@@ -1282,14 +1432,20 @@ window.registerCSFonts = function(doc){
 
   function renderOccasions(){
     const el = document.getElementById('occasions');
-    el.innerHTML = occasions.map(o => {
+    el.innerHTML = occasions.map((o, idx) => {
       const isOpen = state.occasionsSelected[o.id];
       return `
       <div class="occasion-card ${isOpen ? 'open' : ''}" data-id="${o.id}">
-        <label class="occasion-head">
-          <input type="checkbox" ${isOpen ? 'checked' : ''}>
-          <div class="label">${o.name}</div>
-        </label>
+        <div class="occasion-head">
+          <label class="occasion-head-main">
+            <input type="checkbox" ${isOpen ? 'checked' : ''}>
+            <div class="label">${o.name}</div>
+          </label>
+          <div class="occasion-reorder">
+            <button type="button" class="reorder-btn" data-dir="up" data-id="${o.id}" title="Move up" ${idx === 0 ? 'disabled' : ''}>▲</button>
+            <button type="button" class="reorder-btn" data-dir="down" data-id="${o.id}" title="Move down" ${idx === occasions.length - 1 ? 'disabled' : ''}>▼</button>
+          </div>
+        </div>
         <div class="occasion-body">
           <div class="occ-venue-field">
             <label>Venue for ${o.name} <span class="occ-venue-hint">(leave blank to use the main venue above)</span></label>
@@ -1325,9 +1481,30 @@ window.registerCSFonts = function(doc){
     // included at all, which also shows/hides its equipment fields.
     el.querySelectorAll('.occasion-head').forEach(head => {
       head.addEventListener('click', (e) => {
+        // Clicks on the reorder arrows have their own handler below —
+        // without this guard, moving an occasion up/down would also
+        // toggle it selected/deselected as an unwanted side effect.
+        if(e.target.closest('.occasion-reorder')) return;
         e.preventDefault();
         const id = head.closest('.occasion-card').dataset.id;
         state.occasionsSelected[id] = !state.occasionsSelected[id];
+        renderOccasions(); update();
+      });
+    });
+
+    // Reordering — moves the occasion one position earlier or later
+    // in the array, which every other part of the tool (the form,
+    // the PDF timeline, the WhatsApp message) already reads from
+    // directly, so nothing else needs updating to pick up the change.
+    el.querySelectorAll('.reorder-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const idx = occasions.findIndex(o => o.id === id);
+        if(idx === -1) return;
+        const swapWith = btn.dataset.dir === 'up' ? idx - 1 : idx + 1;
+        if(swapWith < 0 || swapWith >= occasions.length) return;
+        [occasions[idx], occasions[swapWith]] = [occasions[swapWith], occasions[idx]];
         renderOccasions(); update();
       });
     });
@@ -1622,7 +1799,7 @@ window.registerCSFonts = function(doc){
       }
     }
 
-    doc.setFont('Jost', 'normal');
+    doc.setFont('Fraunces', 'normal');
     doc.setFontSize(13);
     doc.setTextColor(...CREAM);
     doc.text('CREATIVE STUDIOS', centerX, 76 + yShift, { align:'center' });
@@ -1632,7 +1809,7 @@ window.registerCSFonts = function(doc){
     doc.setLineWidth(0.4);
     doc.line(centerX - 15, 90 + yShift, centerX + 15, 90 + yShift);
 
-    doc.setFont('Jost', 'normal');
+    doc.setFont('Fraunces', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(...GOLD);
     doc.text('PREPARED FOR', centerX, 122 + yShift, { align:'center' });
@@ -1647,7 +1824,7 @@ window.registerCSFonts = function(doc){
     // Event details, positioned to account for a wrapped name
     const nameBottom = 140 + yShift + ((nameLines.length - 1) * 14);
     let detY = nameBottom + 30;
-    doc.setFont('Jost', 'normal');
+    doc.setFont('Fraunces', 'normal');
     doc.setFontSize(12);
     doc.setTextColor(...GOLD_LIGHT);
     doc.text(`${eventType.toUpperCase()}  ·  ${date.toUpperCase()}`, centerX, detY, { align:'center' });
@@ -1730,7 +1907,7 @@ window.registerCSFonts = function(doc){
     });
     const occasionCount = rows.length;
 
-    doc.setFont('Jost', 'normal');
+    doc.setFont('Fraunces', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(...GOLD);
     doc.text('YOUR CELEBRATION', colL, 26);
@@ -1837,14 +2014,14 @@ window.registerCSFonts = function(doc){
         // Venue — small caps, gold, distinct from the equipment
         // list below it so it reads as a location marker rather than
         // another coverage detail.
-        doc.setFont('Jost', 'normal');
+        doc.setFont('Fraunces', 'normal');
         doc.setFontSize(9.5);
         doc.setTextColor(...GOLD);
         doc.text(row.venue.toUpperCase(), textX, y + NAME_OFFSET - 3);
 
         // Equipment stacked one per line beneath the venue, rather
         // than run together on a single long line.
-        doc.setFont('Jost', 'normal');
+        doc.setFont('Fraunces', 'normal');
         doc.setFontSize(13);
         doc.setTextColor(...GOLD_LIGHT);
         row.coverage.forEach((line, i) => {
@@ -1863,7 +2040,7 @@ window.registerCSFonts = function(doc){
     // from a very full page, and never higher than the old fixed
     // position so a heavy scope doesn't get pushed off the page.
     const footerY = Math.min(268, Math.max(lastContentEndY + 20, trackTop + 40));
-    doc.setFont('Jost', 'normal');
+    doc.setFont('Fraunces', 'normal');
     doc.setFontSize(12);
     doc.setTextColor(...GOLD_LIGHT);
     doc.text(`${occasionCount} OCCASION${occasionCount !== 1 ? 'S' : ''}  ·  CREATIVE STUDIOS`, colL, footerY);
@@ -1893,7 +2070,7 @@ window.registerCSFonts = function(doc){
     // reads as a formal condition rather than part of the warm
     // closing message above it.
     const termsY = 108 + (closingLines.length * 14) + 14 + (noteLines.length * 7) + 12;
-    doc.setFont('Jost', 'normal');
+    doc.setFont('Fraunces', 'normal');
     doc.setFontSize(12);
     doc.setTextColor(...MUTED);
     const termsLines = doc.splitTextToSize('All deliverables must be collected within one month of the delivery notification. Creative Studios accepts no responsibility for data retained beyond this period.', 140);
@@ -1924,12 +2101,12 @@ window.registerCSFonts = function(doc){
     }
 
     if(addonList.length){
-      doc.setFont('Jost', 'normal');
+      doc.setFont('Fraunces', 'normal');
       doc.setFontSize(11);
       doc.setTextColor(...GOLD);
       doc.text('ADDITIONAL SERVICES', marginL, afterTermsY);
       afterTermsY += 10;
-      doc.setFont('Jost', 'normal');
+      doc.setFont('Fraunces', 'normal');
       doc.setFontSize(12);
       doc.setTextColor(...GOLD_LIGHT);
       addonList.forEach(line => {
@@ -1944,7 +2121,7 @@ window.registerCSFonts = function(doc){
     const contactY = afterTermsY + 4;
     doc.line(marginL, contactY, marginL + 45, contactY);
 
-    doc.setFont('Jost', 'normal');
+    doc.setFont('Fraunces', 'normal');
     doc.setFontSize(12);
     doc.setTextColor(...MUTED);
     doc.text('polamreddysiva9@gmail.com', marginL, contactY + 14);
