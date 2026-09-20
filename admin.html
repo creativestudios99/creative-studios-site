@@ -364,6 +364,15 @@
   .occ-block{ display:flex; gap:20px; padding:26px 0; border-bottom:1px solid rgba(250,249,246,0.12); text-align:left; align-items:flex-start; }
   .occ-block:first-child{ padding-top:0; }
   .occ-marker{ width:7px; height:7px; background:var(--gold); transform:rotate(45deg); flex-shrink:0; margin-top:11px; }
+  .occ-marker-lg{ width:11px; height:11px; }
+  .occ-venue{
+    font-family:var(--mono); font-size:10px; letter-spacing:0.05em; color:var(--gold);
+    margin:2px 0 8px;
+  }
+  .cover-note{
+    margin-top:16px; font-family:var(--display); font-style:italic; font-size:11px;
+    color:var(--ink-soft); text-align:center; max-width:320px;
+  }
   .occ-content{ flex:1; }
   .occ-name{ font-family:var(--display); font-size:19px; color:var(--bg); margin-bottom:12px; }
   .occ-equip-list{ list-style:none; padding:0; margin:0; }
@@ -820,10 +829,11 @@ window.registerCSFonts = function(doc){
           <div class="detail-row"><span class="dlabel">Venue:&nbsp;</span><span id="pVenue">Taj Lake Palace, Udaipur</span></div>
           <div class="detail-row"><span class="dlabel">Date:&nbsp;</span><span id="pDate">14 Nov 2026</span></div>
         </div>
+        <div class="cover-note" id="pMultiVenueNote"></div>
         <div class="cover-meta" id="quoteDate">Coverage Scope — July 2026</div>
       </div>
 
-      <!-- PAGE 2 — Occasions, each with its own equipment list -->
+      <!-- PAGE 2 — Occasions, each with its own venue and equipment -->
       <div class="quote-page quote-content">
         <div class="content-eyebrow">What's Covered</div>
         <h2 class="content-heading">Coverage Breakdown</h2>
@@ -839,6 +849,7 @@ window.registerCSFonts = function(doc){
         <div class="closing-heading">Let's Bring This to Life</div>
         <div class="quote-note">This outlines the scope of coverage for your day. A formal quote with pricing follows once the details are confirmed.</div>
         <div class="quote-terms">All deliverables must be collected within one month of the delivery notification. Creative Studios accepts no responsibility for data retained beyond this period.</div>
+        <div class="addons-summary" id="addonsSummary"></div>
         <div class="quote-contact">
           <span><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>polamreddysiva9@gmail.com</span>
           <span><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7 12.8 12.8 0 00.7 2.8 2 2 0 01-.5 2.1L8 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.5 12.8 12.8 0 002.8.7 2 2 0 011.7 2z"/></svg>+91 99497 06000</span>
@@ -1607,13 +1618,28 @@ window.registerCSFonts = function(doc){
   }
 
   function update(){
-    document.getElementById('pClientName').textContent = document.getElementById('clientName').value || '—';
-    document.getElementById('pOccasion').textContent = document.getElementById('occasion').value;
-    document.getElementById('pVenue').textContent = document.getElementById('venue').value || '—';
-    document.getElementById('pDate').textContent = fmtDate(document.getElementById('eventDate').value);
+    const clientName = document.getElementById('clientName').value || '—';
+    const eventType = document.getElementById('occasion').value;
+    const rawVenue = document.getElementById('venue').value || '—';
+    const dateStr = fmtDate(document.getElementById('eventDate').value);
+
+    document.getElementById('pClientName').textContent = clientName;
+    document.getElementById('pOccasion').textContent = eventType;
+    document.getElementById('pVenue').textContent = rawVenue;
+    document.getElementById('pDate').textContent = dateStr;
 
     const today = new Date();
     document.getElementById('quoteDate').textContent = 'Coverage Scope — ' + today.toLocaleDateString('en-US',{month:'long', year:'numeric'});
+
+    // Kept from the per-occasion venue feature — only shown when at
+    // least one occasion genuinely has its own, different venue.
+    const hasMultipleVenues = occasions.some(o =>
+      state.occasionsSelected[o.id] &&
+      (state.occasionVenue[o.id] || '').trim() &&
+      (state.occasionVenue[o.id] || '').trim() !== rawVenue
+    );
+    document.getElementById('pMultiVenueNote').textContent = hasMultipleVenues
+      ? 'Some occasions take place at their own venue — see the breakdown that follows' : '';
 
     // Small, minimal line icons for each equipment type — same thin-
     // stroke style as the rest of the site, adding visual texture to
@@ -1636,16 +1662,11 @@ window.registerCSFonts = function(doc){
         const eqList = equipment
           .filter(eq => state.occasionEquip[o.id][eq.id] > 0)
           .map(eq => ({ icon: ICONS[eq.icon] || '', text: `${state.occasionEquip[o.id][eq.id]} × ${eqLabel(eq, state.occasionEquip[o.id][eq.id])}` }));
-        occasionBlocks.push({ name: o.name, eqList });
+        // Falls back to the main venue if this occasion doesn't have
+        // its own — matches the PDF's per-occasion venue logic exactly.
+        const occVenue = (state.occasionVenue[o.id] || '').trim() || rawVenue;
+        occasionBlocks.push({ name: o.name, venue: occVenue, eqList });
         occasionCount++;
-      }
-    });
-
-    let addonList = [];
-    addons.forEach(a=>{
-      const qty = state.addonQty[a.id];
-      if(qty > 0){
-        addonList.push(a.name + (qty > 1 ? ` ×${qty}` : ''));
       }
     });
 
@@ -1654,17 +1675,27 @@ window.registerCSFonts = function(doc){
         <div class="occ-marker"></div>
         <div class="occ-content">
           <div class="occ-name">${o.name}</div>
+          <div class="occ-venue">${o.venue}</div>
           ${o.eqList.length ? `<ul class="occ-equip-list">${o.eqList.map(e => `<li>${e.icon}<span>${e.text}</span></li>`).join('')}</ul>` : `<div class="occ-no-equip">Occasion coverage</div>`}
         </div>
       </div>
-    `).join('') + (addonList.length ? `
-      <div class="addons-summary">
-        <div class="addons-label">Additional Services</div>
-        <ul class="occ-equip-list">${addonList.map(a => `<li><span>${a}</span></li>`).join('')}</ul>
-      </div>
-    ` : '');
+    `).join('');
 
     document.getElementById('totalAmt').textContent = `${occasionCount} Occasion${occasionCount !== 1 ? 's' : ''}`;
+
+    // Additional Services now lives on page 3 (closing), matching
+    // where it actually appears in the PDF — it previously sat
+    // beneath the occasions list on page 2, which isn't where the
+    // real PDF puts it.
+    let addonList = [];
+    addons.forEach(a=>{
+      const qty = state.addonQty[a.id];
+      if(qty > 0) addonList.push(a.name + (qty > 1 ? ` ×${qty}` : ''));
+    });
+    document.getElementById('addonsSummary').innerHTML = addonList.length ? `
+      <div class="addons-label">Additional Services</div>
+      <ul class="occ-equip-list">${addonList.map(a => `<li><span>${a}</span></li>`).join('')}</ul>
+    ` : '';
   }
 
   ['clientName','occasion','venue','eventDate','clientPhone'].forEach(id=>{
@@ -1812,7 +1843,7 @@ window.registerCSFonts = function(doc){
     doc.setFont('Fraunces', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(...GOLD);
-    doc.text('PREPARED FOR', centerX, 122 + yShift, { align:'center' });
+    doc.text('COVERAGE SCOPE', centerX, 122 + yShift, { align:'center' });
 
     // The couple's name — the centrepiece of the page
     doc.setFont('Fraunces', 'italic');
@@ -1821,38 +1852,58 @@ window.registerCSFonts = function(doc){
     const nameLines = doc.splitTextToSize(clientName, pageW - 70);
     doc.text(nameLines, centerX, 140 + yShift, { align:'center' });
 
-    // Event details, positioned to account for a wrapped name
+    // The closing quote, matching the on-screen preview's cover copy
     const nameBottom = 140 + yShift + ((nameLines.length - 1) * 14);
-    let detY = nameBottom + 30;
-    doc.setFont('Fraunces', 'normal');
-    doc.setFontSize(12);
+    let detY = nameBottom + 22;
+    doc.setFont('Fraunces', 'italic');
+    doc.setFontSize(11.5);
     doc.setTextColor(...GOLD_LIGHT);
-    doc.text(`${eventType.toUpperCase()}  ·  ${date.toUpperCase()}`, centerX, detY, { align:'center' });
+    const quoteLines = doc.splitTextToSize('"Every gallery is a little piece of your story. We just get to preserve it."', pageW - 90);
+    doc.text(quoteLines, centerX, detY, { align:'center' });
+    detY += (quoteLines.length * 6) + 16;
+
+    // Event Type / Venue / Date, each its own labeled row — matches
+    // the on-screen preview's format exactly.
+    doc.setFont('Fraunces', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(...MUTED);
+    doc.text('EVENT TYPE:', centerX - 2, detY, { align:'right' });
+    doc.setTextColor(...CREAM);
+    doc.text(eventType, centerX + 2, detY, { align:'left' });
     detY += 9;
-    const venueLines = doc.splitTextToSize(venue.toUpperCase(), pageW - 80);
-    doc.text(venueLines, centerX, detY, { align:'center' });
+    doc.setTextColor(...MUTED);
+    doc.text('VENUE:', centerX - 2, detY, { align:'right' });
+    doc.setTextColor(...CREAM);
+    const venueLines = doc.splitTextToSize(venue, pageW - 100);
+    doc.text(venueLines, centerX + 2, detY, { align:'left' });
+    detY += venueLines.length * 7;
+    doc.setTextColor(...MUTED);
+    doc.text('DATE:', centerX - 2, detY, { align:'right' });
+    doc.setTextColor(...CREAM);
+    doc.text(date, centerX + 2, detY, { align:'left' });
+    detY += 9;
 
     // Only shown when at least one occasion genuinely has its own,
     // different venue — most weddings are one location, and this
     // would just be clutter in that far more common case.
     if(hasMultipleVenues){
-      detY += (venueLines.length * 6) + 10;
+      detY += 10;
       doc.setFont('Fraunces', 'italic');
       doc.setFontSize(9.5);
       doc.setTextColor(...MUTED);
-      const noteLines = doc.splitTextToSize('Some occasions take place at their own venue — see the itinerary that follows', pageW - 90);
+      const noteLines = doc.splitTextToSize('Some occasions take place at their own venue — see the breakdown that follows', pageW - 90);
       doc.text(noteLines, centerX, detY, { align:'center' });
       detY += noteLines.length * 6;
-    } else {
-      detY += venueLines.length * 6;
     }
 
-    // Closing rule — positioned relative to where the content
-    // actually ends, not a fixed value.
-    const closingRuleY = detY + 24;
-    doc.setDrawColor(...GOLD);
-    doc.setLineWidth(0.4);
-    doc.line(centerX - 15, closingRuleY, centerX + 15, closingRuleY);
+    // Footer, matching the on-screen preview's "Coverage Scope — [Month Year]"
+    detY += 20;
+    doc.setFont('Fraunces', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    const now = new Date();
+    const monthYear = now.toLocaleDateString('en-US', { month:'long', year:'numeric' });
+    doc.text(`Coverage Scope — ${monthYear}`, centerX, detY, { align:'center' });
 
     // ===== PAGE 2 — Coverage Breakdown (timeline) =====
     // Presents the occasions as a journey through the celebration:
@@ -1910,11 +1961,11 @@ window.registerCSFonts = function(doc){
     doc.setFont('Fraunces', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(...GOLD);
-    doc.text('YOUR CELEBRATION', colL, 26);
+    doc.text("WHAT'S COVERED", colL, 26);
     doc.setFont('Fraunces', 'italic');
     doc.setFontSize(30);
     doc.setTextColor(...CREAM);
-    doc.text('The Journey', colL, 38);
+    doc.text('Coverage Breakdown', colL, 38);
 
     // Rows have variable height (one line per equipment item, plus
     // one line for the venue), which creates a problem for a
@@ -2039,11 +2090,15 @@ window.registerCSFonts = function(doc){
     // value. Capped so it never sits so low it looks disconnected
     // from a very full page, and never higher than the old fixed
     // position so a heavy scope doesn't get pushed off the page.
-    const footerY = Math.min(268, Math.max(lastContentEndY + 20, trackTop + 40));
+    const footerY = Math.min(260, Math.max(lastContentEndY + 20, trackTop + 40));
     doc.setFont('Fraunces', 'normal');
-    doc.setFontSize(12);
+    doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    doc.text('SCOPE SUMMARY', colL, footerY);
+    doc.setFont('Fraunces', 'italic');
+    doc.setFontSize(18);
     doc.setTextColor(...GOLD_LIGHT);
-    doc.text(`${occasionCount} OCCASION${occasionCount !== 1 ? 'S' : ''}  ·  CREATIVE STUDIOS`, colL, footerY);
+    doc.text(`${occasionCount} Occasion${occasionCount !== 1 ? 's' : ''}`, colL, footerY + 9);
 
     // ===== PAGE 3 — Closing / Contact =====
     doc.addPage();
