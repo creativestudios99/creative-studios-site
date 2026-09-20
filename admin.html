@@ -1830,15 +1830,41 @@ window.registerCSFonts = function(doc){
       }
     }
 
+    // Two-tone wordmark — "CREATIVE" in cream, "STUDIOS" in gold —
+    // matching the on-screen preview exactly. jsPDF can't colour
+    // part of a single text() call, so this is drawn as two calls
+    // measured against each other to stay correctly centred as one
+    // unit regardless of how wide either word renders.
     doc.setFont('Fraunces', 'normal');
     doc.setFontSize(13);
+    const wordmarkGap = 3;
+    const creativeW = doc.getTextWidth('CREATIVE');
+    const studiosW = doc.getTextWidth('STUDIOS');
+    const wordmarkTotalW = creativeW + wordmarkGap + studiosW;
+    const wordmarkStartX = centerX - (wordmarkTotalW / 2);
     doc.setTextColor(...CREAM);
-    doc.text('CREATIVE STUDIOS', centerX, 76 + yShift, { align:'center' });
+    doc.text('CREATIVE', wordmarkStartX, 76 + yShift, { align:'left' });
+    doc.setTextColor(...GOLD);
+    doc.text('STUDIOS', wordmarkStartX + creativeW + wordmarkGap, 76 + yShift, { align:'left' });
 
-    // Short gold rule beneath the wordmark
+    // Tagline row — "— PHOTO & FILM —" flanked by short rules,
+    // matching the on-screen preview. Previously missing from the
+    // PDF entirely.
+    doc.setFont('Fraunces', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...GOLD);
+    const taglineText = 'PHOTO  &  FILM';
+    const taglineW = doc.getTextWidth(taglineText);
+    doc.text(taglineText, centerX, 84 + yShift, { align:'center' });
+    doc.setDrawColor(...GOLD);
+    doc.setLineWidth(0.3);
+    doc.line(centerX - (taglineW / 2) - 20, 83 + yShift, centerX - (taglineW / 2) - 6, 83 + yShift);
+    doc.line(centerX + (taglineW / 2) + 6, 83 + yShift, centerX + (taglineW / 2) + 20, 83 + yShift);
+
+    // Short gold rule beneath the wordmark/tagline block
     doc.setDrawColor(...GOLD);
     doc.setLineWidth(0.4);
-    doc.line(centerX - 15, 90 + yShift, centerX + 15, 90 + yShift);
+    doc.line(centerX - 15, 96 + yShift, centerX + 15, 96 + yShift);
 
     doc.setFont('Fraunces', 'normal');
     doc.setFontSize(11);
@@ -1861,6 +1887,13 @@ window.registerCSFonts = function(doc){
     const quoteLines = doc.splitTextToSize('"Every gallery is a little piece of your story. We just get to preserve it."', pageW - 90);
     doc.text(quoteLines, centerX, detY, { align:'center' });
     detY += (quoteLines.length * 6) + 16;
+
+    // Horizontal divider rule, matching the on-screen preview —
+    // previously missing from the PDF entirely.
+    doc.setDrawColor(...MUTED);
+    doc.setLineWidth(0.2);
+    doc.line(centerX - 45, detY, centerX + 45, detY);
+    detY += 14;
 
     // Event Type / Venue / Date, each its own labeled row — matches
     // the on-screen preview's format exactly.
