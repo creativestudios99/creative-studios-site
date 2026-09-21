@@ -578,6 +578,10 @@
     .quote-doc{ position:static; width:100%; box-shadow:none; }
   }
 
+
+  .sel-admin-intro{ color:var(--ink-soft); font-size:0.9rem; line-height:1.5; margin:4px 0 14px; max-width:640px; }
+  .sel-admin-sub{ font-size:0.72rem; color:#a89aa0; margin-top:3px; }
+  .sel-admin-note{ display:block; max-width:320px; white-space:pre-wrap; line-height:1.45; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
@@ -670,6 +674,7 @@ window.registerCSFonts = function(doc){
 
       <div class="dash-tabs">
         <button class="dash-tab active" data-tab="clients">Client Gallery</button>
+        <button class="dash-tab" data-tab="selections">Album Selections</button>
         <button class="dash-tab" data-tab="featured">Featured Weddings</button>
         <button class="dash-tab" data-tab="live">Live Stream</button>
         <button class="dash-tab" data-tab="scope">Estimation</button>
@@ -700,6 +705,22 @@ window.registerCSFonts = function(doc){
       </div>
 
       <!-- FEATURED WEDDINGS PANEL -->
+      <!-- ALBUM SELECTIONS PANEL — photos clients picked for their
+           album from their gallery, one row per client (latest wins). -->
+      <div class="dash-panel" id="panelSelections">
+        <div class="dash-form">
+          <h3>Album selections from clients</h3>
+          <p class="sel-admin-intro">When a client sends their album picks from their gallery, they show up here and you get an email. Use "Copy filenames" to paste the exact list for your album designer.</p>
+          <div class="dash-form-actions">
+            <button class="dash-btn" id="selectionsRefreshBtn">Refresh</button>
+            <span class="dash-msg" id="selectionsMsg"></span>
+          </div>
+        </div>
+        <div class="dash-table-wrap">
+          <div id="selectionsTableContainer"><div class="dash-loading">Loading album selections&hellip;</div></div>
+        </div>
+      </div>
+
       <div class="dash-panel" id="panelFeatured">
         <div class="dash-form">
           <h3 id="featuredFormTitle">Add a Featured Wedding</h3>
@@ -937,6 +958,7 @@ window.registerCSFonts = function(doc){
 
     loadClientsTable();
     loadFeaturedTable();
+    loadSelectionsTable();
     loadLiveConfig();
   }
 
@@ -949,7 +971,7 @@ window.registerCSFonts = function(doc){
     document.getElementById('dashSignedIn').style.display = 'none';
   });
 
-  const TAB_PANEL_MAP = { clients: 'panelClients', featured: 'panelFeatured', live: 'panelLive', scope: 'panelScope' };
+  const TAB_PANEL_MAP = { clients: 'panelClients', selections: 'panelSelections', featured: 'panelFeatured', live: 'panelLive', scope: 'panelScope' };
   document.querySelectorAll('.dash-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
@@ -1171,6 +1193,68 @@ window.registerCSFonts = function(doc){
       alert('Could not delete: ' + err.message);
     }
   }
+
+
+  // ── Album Selections panel ──
+  // Reads the AlbumSelections tab the gallery's backend writes to.
+  // Columns: SubmittedAt, Client, FolderId, Count, Breakdown, Note,
+  // Filenames, FileIds.
+  let selectionRows = [];
+  function escHtml(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+  async function loadSelectionsTable(){
+    const container = document.getElementById('selectionsTableContainer');
+    container.innerHTML = '<div class="dash-loading">Loading album selections&hellip;</div>';
+    try{
+      const values = await sheetsGetValues(CLIENTS_SPREADSHEET_ID, 'AlbumSelections');
+      selectionRows = values.filter(r => r && r[2]).map(r => ({
+        submittedAt: r[0] || '', client: r[1] || '', folderId: r[2] || '', count: r[3] || '0',
+        breakdown: r[4] || '', note: r[5] || '', filenames: r[6] || ''
+      }));
+      selectionRows.sort((a, b) => (Date.parse(b.submittedAt) || 0) - (Date.parse(a.submittedAt) || 0));
+      renderSelectionsTable();
+    } catch(err){
+      // The tab only exists once the first client sends picks, so a
+      // missing-range error just means "nothing yet", not a failure.
+      if(/Unable to parse range|not found/i.test(err.message || '')){
+        selectionRows = []; renderSelectionsTable();
+      } else {
+        container.innerHTML = '<div class="dash-empty">Couldn\'t load album selections: ' + escHtml(err.message) + '</div>';
+      }
+    }
+  }
+  function renderSelectionsTable(){
+    const container = document.getElementById('selectionsTableContainer');
+    if(!selectionRows.length){
+      container.innerHTML = '<div class="dash-empty">No album selections yet. They\'ll appear here as soon as a client sends their picks from their gallery.</div>';
+      return;
+    }
+    const rowsHtml = selectionRows.map((r, i) => `<tr>
+      <td data-label="Client">${escHtml(r.client)}</td>
+      <td data-label="Photos"><strong>${escHtml(r.count)}</strong>${r.breakdown ? `<div class="sel-admin-sub">${escHtml(r.breakdown)}</div>` : ''}</td>
+      <td data-label="Sent">${escHtml(r.submittedAt)}</td>
+      <td data-label="Note">${r.note ? `<span class="sel-admin-note">${escHtml(r.note)}</span>` : '—'}</td>
+      <td data-label=""><div class="dash-row-actions"><button class="edit" data-copy="${i}">Copy filenames</button></div></td>
+    </tr>`).join('');
+    container.innerHTML = `<table class="dash-table">
+      <thead><tr><th>Client</th><th>Photos</th><th>Sent</th><th>Note</th><th></th></tr></thead>
+      <tbody>${rowsHtml}</tbody></table>`;
+    container.querySelectorAll('[data-copy]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const r = selectionRows[parseInt(btn.dataset.copy, 10)];
+        const list = r.filenames.split(',').map(s => s.trim()).filter(Boolean).join('\n');
+        try{
+          await navigator.clipboard.writeText(list);
+          btn.textContent = 'Copied ' + r.count;
+        } catch(e){
+          window.prompt('Copy the filenames below:', list);
+        }
+        setTimeout(() => { btn.textContent = 'Copy filenames'; }, 2000);
+      });
+    });
+  }
+  document.getElementById('selectionsRefreshBtn').addEventListener('click', loadSelectionsTable);
 
   // ── Featured Weddings panel ──
   async function loadFeaturedTable(){
