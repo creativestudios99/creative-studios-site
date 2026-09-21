@@ -379,6 +379,87 @@
   @media (max-width:600px){ .gc-link{ font-size:0.8rem; padding:10px 16px; } }
 
   footer{ background:var(--ink); color:rgba(239,233,225,0.6); padding:36px 0; text-align:center; font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.06em; }
+
+  /* Photo count inside each filter chip */
+  .chip-count{ opacity:0.55; margin-left:4px; font-variant-numeric:tabular-nums; }
+  .filter-btn.active .chip-count{ opacity:0.8; }
+
+  /* Back-to-top — long galleries can run to hundreds of photos on a
+     phone, and scrolling all the way back up to change the filter or
+     reach the download buttons is tedious without it. */
+  .back-to-top{
+    position:fixed; right:20px; bottom:calc(20px + env(safe-area-inset-bottom, 0px)); z-index:800;
+    width:48px; height:48px; border-radius:50%; border:1px solid var(--line);
+    background:var(--paper); color:var(--ink); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 24px rgba(36,31,38,0.18);
+    opacity:0; pointer-events:none; transform:translateY(10px);
+    transition:opacity 0.25s ease, transform 0.25s ease;
+  }
+  .back-to-top.show{ opacity:1; pointer-events:auto; transform:none; }
+  .back-to-top:focus-visible, .filter-btn:focus-visible{ outline:2px solid var(--gold, #a98552); outline-offset:3px; }
+  .back-to-top svg{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; }
+
+  /* Respect the device's reduce-motion setting — the gallery had no
+     handling for it, so fades, slides and the slideshow's zoom ran
+     regardless of the viewer's accessibility preference. */
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:0.01ms !important; animation-iteration-count:1 !important;
+      transition-duration:0.01ms !important; scroll-behavior:auto !important;
+    }
+  }
+
+  /* ── Album selection ── */
+  .sel-bar{
+    position:fixed; left:50%; bottom:calc(16px + env(safe-area-inset-bottom, 0px)); z-index:850;
+    transform:translate(-50%, 140%); transition:transform 0.35s ease;
+    width:min(640px, calc(100% - 24px));
+    background:var(--ink); color:var(--paper); border-radius:14px;
+    box-shadow:0 18px 50px rgba(36,31,38,0.35);
+    display:flex; align-items:center; gap:12px; padding:12px 12px 12px 20px;
+  }
+  .sel-bar.show{ transform:translate(-50%, 0); }
+  .sel-text{ flex:1; min-width:0; line-height:1.35; }
+  .sel-count{ font-family:'Fraunces', serif; font-size:1.15rem; }
+  .sel-status{ font-size:0.78rem; color:rgba(239,233,225,0.65); }
+  .sel-status.changed{ color:#e0b45c; }
+  .sel-btn{
+    border:1px solid rgba(239,233,225,0.3); background:transparent; color:var(--paper);
+    padding:0 16px; min-height:44px; border-radius:10px; cursor:pointer; font:inherit; font-size:0.85rem; white-space:nowrap;
+  }
+  .sel-btn.primary{ background:var(--gold); border-color:var(--gold); color:#1c171d; font-weight:600; }
+  .sel-btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  body.sel-bar-visible .back-to-top{ bottom:calc(96px + env(safe-area-inset-bottom, 0px)); }
+  @media (max-width:520px){
+    .sel-bar{ flex-wrap:wrap; padding:14px; }
+    .sel-text{ flex-basis:100%; }
+    .sel-btn{ flex:1; }
+  }
+
+  .sel-modal{ position:fixed; inset:0; z-index:1200; background:rgba(20,17,21,0.6); display:none; align-items:flex-end; justify-content:center; }
+  .sel-modal.open{ display:flex; }
+  .sel-sheet{
+    background:var(--paper); color:var(--ink); width:min(520px, 100%); border-radius:18px 18px 0 0;
+    padding:28px 24px calc(24px + env(safe-area-inset-bottom, 0px)); max-height:90vh; overflow:auto;
+  }
+  @media (min-width:600px){ .sel-modal{ align-items:center; } .sel-sheet{ border-radius:18px; } }
+  .sel-sheet h3{ font-size:1.6rem; margin-bottom:6px; }
+  .sel-sheet p{ color:var(--ink-soft); font-size:0.95rem; line-height:1.55; }
+  .sel-breakdown{ margin:16px 0; display:flex; flex-wrap:wrap; gap:8px; }
+  .sel-breakdown span{ border:1px solid var(--line); border-radius:20px; padding:5px 12px; font-size:0.82rem; }
+  .sel-sheet label{ display:block; font-size:0.85rem; margin:18px 0 6px; color:var(--ink-soft); }
+  .sel-sheet textarea{
+    width:100%; min-height:90px; border:1px solid rgba(36,31,38,0.25); border-radius:10px; padding:12px;
+    font:inherit; font-size:1rem; background:#fff; color:var(--ink); resize:vertical;
+  }
+  .sel-sheet textarea:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .sel-actions{ display:flex; gap:10px; margin-top:20px; }
+  .sel-actions .sel-btn{ flex:1; color:var(--ink); border-color:rgba(36,31,38,0.3); }
+  .sel-actions .sel-btn.primary{ color:#1c171d; }
+  .sel-actions .sel-btn:disabled{ opacity:0.6; cursor:default; }
+  .sel-msg{ margin-top:14px; font-size:0.9rem; }
+  .sel-msg.error{ color:#9c3b3b; }
 </style>
 </head>
 <body>
@@ -902,14 +983,29 @@
   // PART 4 — Shared favorites store (works for both real
   // Drive file IDs and the demo gallery's placeholder IDs)
   // ─────────────────────────────────────────────────────────
-  const favKey = 'cs_favorites';
-  function getFavs(){ return JSON.parse(localStorage.getItem(favKey) || '[]'); }
+  // Scoped to this gallery's folder so two clients viewing their
+  // galleries on the same device (a couple and a parent sharing a
+  // family tablet, say) never see each other's selections. Previously
+  // one shared key held every client's favorites together.
+  const favKey = 'cs_favorites_' + (directFolderId || 'demo');
+  try{
+    // One-time carry-over of selections saved under the old shared
+    // key, so nobody loses the favorites they'd already picked.
+    const legacy = localStorage.getItem('cs_favorites');
+    if(legacy && !localStorage.getItem(favKey)) localStorage.setItem(favKey, legacy);
+    if(legacy) localStorage.removeItem('cs_favorites');
+  } catch(e){}
+  function getFavs(){
+    try{ return JSON.parse(localStorage.getItem(favKey) || '[]'); }
+    catch(e){ return []; }
+  }
   function setFavs(list){ localStorage.setItem(favKey, JSON.stringify(list)); }
   function toggleFav(id){
     let favs = getFavs();
     if(favs.includes(id)){ favs = favs.filter(f => f !== id); } else { favs.push(id); }
     setFavs(favs);
     updateDownloadFavsButton();
+    updateFavChipCount();
     return favs.includes(id);
   }
 
@@ -917,7 +1013,17 @@
   // button — only counts favorites that are actually real photos in
   // THIS couple's gallery (a guest's favorites are stored per-browser,
   // so this avoids showing a stale count from a different gallery).
+  // Counts only favorites that exist in this gallery's loaded photos.
+  function updateFavChipCount(){
+    const el = document.getElementById('favChipCount');
+    if(!el) return;
+    const favs = getFavs();
+    const ids = new Set((typeof realFiles !== 'undefined' ? realFiles : []).map(f => f.id));
+    el.textContent = favs.filter(id => ids.has(id)).length;
+  }
+
   function updateDownloadFavsButton(){
+    if(typeof updateSelectionBar === 'function') updateSelectionBar();
     const btn = document.getElementById('downloadFavsBtn');
     if(!btn || !realFiles.length) return;
     const favs = getFavs();
@@ -1023,12 +1129,17 @@
     const filtersEl = document.getElementById('realFilters');
     const occasions = [...new Set(realFiles.map(f => f.occasion))].filter(o => o && o !== 'General');
 
-    let html = `<button class="filter-btn hoverable" data-realfilter="all">All Photos</button>`;
+    // Each chip shows how many photos it holds, so clients can see
+    // at a glance how the gallery is organised and how many they've
+    // picked as favorites (useful when choosing album photos).
+    let html = `<button class="filter-btn hoverable" data-realfilter="all">All Photos <span class="chip-count">${realFiles.length}</span></button>`;
     occasions.forEach(o => {
-      html += `<button class="filter-btn hoverable" data-realfilter="occ:${o.replace(/"/g,'')}">${o}</button>`;
+      const n = realFiles.filter(f => f.occasion === o).length;
+      html += `<button class="filter-btn hoverable" data-realfilter="occ:${o.replace(/"/g,'')}">${o} <span class="chip-count">${n}</span></button>`;
     });
-    html += `<button class="filter-btn hoverable" data-realfilter="favorites">Favorites</button>`;
+    html += `<button class="filter-btn hoverable" data-realfilter="favorites">Favorites <span class="chip-count" id="favChipCount">0</span></button>`;
     filtersEl.innerHTML = html;
+    updateFavChipCount();
 
     filtersEl.querySelectorAll('.filter-btn').forEach((btn, i) => {
       if(i === 0) btn.classList.add('active');
@@ -1242,6 +1353,7 @@
     // they're signed into anything, as long as the folder allows it.
     const viewUrl = `https://drive.google.com/file/d/${f.id}/view`;
     lbShareBtn.href = `https://wa.me/?text=${encodeURIComponent('Look at this photo from the wedding! ' + viewUrl)}`;
+    lbShareBtn.dataset.viewUrl = viewUrl;
     const isFav = getFavs().includes(f.id);
     lbFavBtn.classList.toggle('active', isFav);
 
@@ -1265,6 +1377,19 @@
   document.getElementById('lbClose').addEventListener('click', closeLightbox);
   document.getElementById('lbNext').addEventListener('click', lbNext);
   document.getElementById('lbPrev').addEventListener('click', lbPrev);
+  // On phones, open the device's own share sheet (WhatsApp,
+  // Instagram, Messages, AirDrop...) instead of forcing WhatsApp.
+  // Desktop browsers without share support keep the WhatsApp link.
+  lbShareBtn.addEventListener('click', (e) => {
+    if(!navigator.share) return;
+    e.preventDefault();
+    navigator.share({
+      title: 'A photo from our wedding',
+      text: 'Look at this photo from the wedding!',
+      url: lbShareBtn.dataset.viewUrl
+    }).catch(() => {});
+  });
+
   lbFavBtn.addEventListener('click', () => {
     const f = realFiles[lbIndex];
     if(!f) return;
@@ -1610,5 +1735,172 @@
   });
 </script>
 
+<div class="sel-bar" id="selBar" role="region" aria-label="Album selection">
+  <div class="sel-text">
+    <div class="sel-count" id="selCount">0 photos selected</div>
+    <div class="sel-status" id="selStatus">Tap the heart on any photo to add it to your album picks</div>
+  </div>
+  <button class="sel-btn" id="selReviewBtn" type="button">Review</button>
+  <button class="sel-btn primary" id="selSendBtn" type="button">Send to studio</button>
+</div>
+<div class="sel-modal" id="selModal" role="dialog" aria-modal="true" aria-labelledby="selTitle">
+  <div class="sel-sheet">
+    <h3 id="selTitle">Send your album picks</h3>
+    <p id="selIntro"></p>
+    <div class="sel-breakdown" id="selBreakdown"></div>
+    <label for="selNote">Anything we should know? (optional)</label>
+    <textarea id="selNote" placeholder="For example: please include the one with grandma, or make the first dance photo a full page"></textarea>
+    <div class="sel-actions">
+      <button class="sel-btn" id="selCancelBtn" type="button">Keep choosing</button>
+      <button class="sel-btn primary" id="selConfirmBtn" type="button">Send picks</button>
+    </div>
+    <div class="sel-msg" id="selMsg" aria-live="polite"></div>
+  </div>
+</div>
+<script>
+  // ─────────────────────────────────────────────────────────
+  // Album selection — clients heart the photos they want in their
+  // album, review them, and send the list to the studio. It lands in
+  // the AlbumSelections tab of the Clients sheet and the studio gets
+  // an email. If sending fails, WhatsApp is offered as a fallback so
+  // a client is never stuck.
+  // ─────────────────────────────────────────────────────────
+  const STUDIO_WHATSAPP = '919949706000';
+  const sentKey = 'cs_album_sent_' + (directFolderId || 'demo');
+
+  function selectedFiles(){
+    const favs = getFavs();
+    return realFiles.filter(f => favs.includes(f.id));
+  }
+  function selectionSignature(files){ return files.map(f => f.id).sort().join('|'); }
+  function readSent(){ try{ return JSON.parse(localStorage.getItem(sentKey) || 'null'); } catch(e){ return null; } }
+  function plural(n, word){ return n + ' ' + word + (n === 1 ? '' : 's'); }
+
+  function updateSelectionBar(){
+    const bar = document.getElementById('selBar');
+    if(!bar || !directFolderId || !realFiles.length) return;
+    const files = selectedFiles();
+    const sent = readSent();
+    const show = files.length > 0 || !!sent;
+    bar.classList.toggle('show', show);
+    document.body.classList.toggle('sel-bar-visible', show);
+    document.getElementById('selCount').textContent = plural(files.length, 'photo') + ' selected';
+
+    const status = document.getElementById('selStatus');
+    const sendBtn = document.getElementById('selSendBtn');
+    status.classList.remove('changed');
+    if(sent && sent.signature === selectionSignature(files)){
+      const when = new Date(sent.at).toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+      status.textContent = 'Sent to the studio on ' + when + '. You can still make changes.';
+      sendBtn.textContent = 'Sent';
+      sendBtn.disabled = true;
+    } else if(sent){
+      status.textContent = 'You changed your picks since sending. Send again to update them.';
+      status.classList.add('changed');
+      sendBtn.textContent = 'Send update';
+      sendBtn.disabled = files.length === 0;
+    } else {
+      status.textContent = 'Heart the photos you want in your album, then send them to us.';
+      sendBtn.textContent = 'Send to studio';
+      sendBtn.disabled = files.length === 0;
+    }
+  }
+
+  function showFavoritesFilter(){
+    const btn = document.querySelector('#realFilters [data-realfilter="favorites"]');
+    if(btn) btn.click();
+    const grid = document.getElementById('realGalleryGrid');
+    if(grid) grid.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function openSelectionModal(){
+    const files = selectedFiles();
+    if(!files.length) return;
+    const counts = {};
+    files.forEach(f => { const o = (f.occasion && f.occasion !== 'General') ? f.occasion : 'Photos'; counts[o] = (counts[o] || 0) + 1; });
+    document.getElementById('selIntro').textContent =
+      'You picked ' + plural(files.length, 'photo') + '. We\'ll use these to design your album.';
+    document.getElementById('selBreakdown').innerHTML =
+      Object.keys(counts).map(o => '<span>' + o.replace(/</g,'&lt;') + ': ' + counts[o] + '</span>').join('');
+    document.getElementById('selMsg').textContent = '';
+    document.getElementById('selMsg').className = 'sel-msg';
+    const confirmBtn = document.getElementById('selConfirmBtn');
+    confirmBtn.disabled = false; confirmBtn.textContent = 'Send picks';
+    document.getElementById('selModal').classList.add('open');
+    lockPageScroll();
+    setTimeout(() => document.getElementById('selNote').focus(), 50);
+  }
+  function closeSelectionModal(){
+    document.getElementById('selModal').classList.remove('open');
+    unlockPageScroll();
+  }
+
+  function whatsappFallbackUrl(files, note){
+    const lines = ['Hi! Here are our album picks (' + plural(files.length, 'photo') + '):', ''];
+    files.forEach(f => lines.push(f.name || f.id));
+    if(note) lines.push('', 'Note: ' + note);
+    return 'https://wa.me/' + STUDIO_WHATSAPP + '?text=' + encodeURIComponent(lines.join('\n'));
+  }
+
+  async function sendSelection(){
+    const files = selectedFiles();
+    const note = document.getElementById('selNote').value.trim();
+    const confirmBtn = document.getElementById('selConfirmBtn');
+    const msg = document.getElementById('selMsg');
+    confirmBtn.disabled = true; confirmBtn.textContent = 'Sending…';
+    msg.className = 'sel-msg'; msg.textContent = '';
+    try{
+      const res = await fetch(PASSCODE_LOOKUP_URL, {
+        method:'POST',
+        // text/plain keeps this a "simple" request, which Apps Script
+        // accepts without a CORS preflight it can't answer.
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action:'submitSelection', folderId: directFolderId, note,
+          files: files.map(f => ({ id:f.id, name:f.name, occasion:f.occasion }))
+        })
+      });
+      const data = await res.json();
+      if(!data.ok) throw new Error(data.error || 'failed');
+      localStorage.setItem(sentKey, JSON.stringify({ at: data.submittedAt || new Date().toISOString(), signature: selectionSignature(files), count: files.length }));
+      confirmBtn.textContent = 'Sent';
+      msg.textContent = data.updated
+        ? 'Your updated picks reached us. Thank you!'
+        : 'Your ' + plural(files.length, 'pick') + ' reached us. Thank you!';
+      updateSelectionBar();
+      setTimeout(closeSelectionModal, 1800);
+    } catch(err){
+      console.error('Album selection failed:', err);
+      confirmBtn.disabled = false; confirmBtn.textContent = 'Try again';
+      msg.className = 'sel-msg error';
+      msg.innerHTML = 'We couldn\'t send your picks just now. Try again, or <a href="' +
+        whatsappFallbackUrl(files, note) + '" target="_blank" rel="noopener">send them on WhatsApp instead</a>.';
+    }
+  }
+
+  document.getElementById('selReviewBtn').addEventListener('click', showFavoritesFilter);
+  document.getElementById('selSendBtn').addEventListener('click', openSelectionModal);
+  document.getElementById('selCancelBtn').addEventListener('click', closeSelectionModal);
+  document.getElementById('selConfirmBtn').addEventListener('click', sendSelection);
+  document.getElementById('selModal').addEventListener('click', (e) => { if(e.target.id === 'selModal') closeSelectionModal(); });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && document.getElementById('selModal').classList.contains('open')) closeSelectionModal();
+  });
+</script>
+<button class="back-to-top" id="backToTop" type="button" aria-label="Back to top">
+  <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+<script>
+  (function(){
+    const btn = document.getElementById('backToTop');
+    if(!btn) return;
+    const onScroll = () => btn.classList.toggle('show', window.scrollY > 900);
+    window.addEventListener('scroll', onScroll, { passive:true });
+    btn.addEventListener('click', () => {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top:0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  })();
+</script>
 </body>
 </html>
