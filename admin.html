@@ -383,8 +383,6 @@
   }
   .occ-equip-list li svg{ width:14px; height:14px; stroke:var(--gold); fill:none; stroke-width:1.6; flex-shrink:0; }
   .occ-no-equip{ font-family:var(--mono); font-size:12px; color:#8C8A80; font-style:italic; }
-  .addons-summary{ margin-top:8px; padding-top:22px; text-align:left; }
-  .addons-label{ font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
   .occasion-head{ display:flex; align-items:center; gap:8px; padding:14px 16px; transition:background 0.2s ease; }
   .occasion-head:hover{ background:rgba(36,31,38,0.04); }
   .occasion-head-main{ display:flex; align-items:center; gap:12px; flex:1; cursor:pointer; min-width:0; }
@@ -427,25 +425,6 @@
   }
   .equip-stepper button:hover{ border-color:var(--gold); color:var(--gold); }
   .equip-stepper span{ font-family:var(--display); font-size:17px; min-width:16px; color:var(--ink); font-weight:600; }
-
-  .addon-row{
-    display:flex; justify-content:space-between; align-items:center; gap:12px;
-    padding:12px 0; border-bottom:1px solid var(--line);
-  }
-  .addon-row:last-child{ border-bottom:none; }
-  .addon-row .label{ font-size:14px; display:flex; align-items:center; gap:10px; }
-  .addon-row .price{ font-family:var(--mono); font-size:12px; color:var(--ink-soft); white-space:nowrap; }
-  .addon-row input[type=checkbox]{ width:16px; height:16px; accent-color:var(--gold); }
-  .addon-row .qty{
-    display:flex; align-items:center; gap:8px; margin-left:auto;
-  }
-  .addon-row .qty button{
-    width:24px; height:24px; border:1px solid rgba(36,31,38,0.4); background:var(--white);
-    color:var(--ink); cursor:pointer; font-family:var(--mono); font-weight:600;
-    transition:all 0.15s ease;
-  }
-  .addon-row .qty button:hover{ border-color:var(--gold); color:var(--gold); }
-  .addon-row .qty span{ font-family:var(--mono); font-size:13px; min-width:16px; text-align:center; color:var(--ink); font-weight:600; }
 
   /* --- quote preview --- */
   .quote-doc{ position:sticky; top:24px; }
@@ -793,9 +772,6 @@ window.registerCSFonts = function(doc){
         <input type="text" id="customEquipInput" placeholder="Add a custom equipment type (e.g. Photobooth)...">
         <button id="addEquipBtn">Add</button>
       </div>
-
-      <div class="section-label">Add-ons</div>
-      <div id="addons"></div>
     </div>
 
     <!-- RIGHT: live quote — three real pages, matching the brochure's structure -->
@@ -849,7 +825,6 @@ window.registerCSFonts = function(doc){
         <div class="closing-heading">Let's Bring This to Life</div>
         <div class="quote-note">This outlines the scope of coverage for your day. A formal quote with pricing follows once the details are confirmed.</div>
         <div class="quote-terms">All deliverables must be collected within one month of the delivery notification. Creative Studios accepts no responsibility for data retained beyond this period.</div>
-        <div class="addons-summary" id="addonsSummary"></div>
         <div class="quote-contact">
           <span><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>polamreddysiva9@gmail.com</span>
           <span><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7 12.8 12.8 0 00.7 2.8 2 2 0 01-.5 2.1L8 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.5 12.8 12.8 0 002.8.7 2 2 0 011.7 2z"/></svg>+91 99497 06000</span>
@@ -1411,24 +1386,12 @@ window.registerCSFonts = function(doc){
     return qty === 1 ? (eq.one || eq.name) : eq.name;
   }
 
-  const addons = [
-    { id:'extrahour', name:'Extra hour of coverage', price:5000, hasQty:true },
-    { id:'secondphotog', name:'Additional second photographer', price:15000, hasQty:false },
-    { id:'video', name:'Videography / highlight film', price:25000, hasQty:false },
-    { id:'drone', name:'Drone coverage', price:8000, hasQty:false },
-    { id:'album', name:'Hand-bound heirloom album', price:12000, hasQty:false },
-    { id:'prints', name:'Fine-art print set (10 prints)', price:6000, hasQty:false },
-    { id:'rush', name:'Rush delivery (7 days)', price:10000, hasQty:false },
-    { id:'extendhost', name:'Extended gallery hosting (+12mo)', price:4000, hasQty:false },
-  ];
-
-  let state = { occasionsSelected:{}, occasionEquip:{}, addonQty:{} };
+  let state = { occasionsSelected:{}, occasionEquip:{} };
   occasions.forEach(o => {
     state.occasionsSelected[o.id] = false;
     state.occasionEquip[o.id] = {};
     equipment.forEach(e => state.occasionEquip[o.id][e.id] = 0);
   });
-  addons.forEach(a => state.addonQty[a.id] = 0);
   // Venue per occasion — Haldi at home, Wedding at a hotel, Reception
   // at a banquet hall are commonly three different places, so a
   // single event-wide venue field was misleading. Left blank, an
@@ -1577,40 +1540,6 @@ window.registerCSFonts = function(doc){
     if(e.key === 'Enter') document.getElementById('addEquipBtn').click();
   });
 
-  function renderAddons(){
-    const el = document.getElementById('addons');
-    el.innerHTML = addons.map(a => `
-      <div class="addon-row">
-        <label class="label">
-          <input type="checkbox" data-id="${a.id}" ${state.addonQty[a.id] > 0 ? 'checked' : ''}>
-          ${a.name}
-        </label>
-        ${a.hasQty ? `<div class="qty">
-          <button data-id="${a.id}" data-dir="-1">−</button>
-          <span id="qty-${a.id}">${state.addonQty[a.id]}</span>
-          <button data-id="${a.id}" data-dir="1">+</button>
-        </div>` : ''}
-      </div>
-    `).join('');
-
-    el.querySelectorAll('input[type=checkbox]').forEach(cb=>{
-      cb.addEventListener('change', ()=>{
-        const id = cb.dataset.id;
-        const addon = addons.find(a=>a.id===id);
-        state.addonQty[id] = cb.checked ? (addon.hasQty ? Math.max(1,state.addonQty[id]) : 1) : 0;
-        renderAddons(); update();
-      });
-    });
-    el.querySelectorAll('.qty button').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const id = btn.dataset.id;
-        const dir = parseInt(btn.dataset.dir);
-        state.addonQty[id] = Math.max(0, state.addonQty[id] + dir);
-        renderAddons(); update();
-      });
-    });
-  }
-
   function fmtDate(str){
     if(!str) return '—';
     const d = new Date(str + 'T00:00:00');
@@ -1682,20 +1611,6 @@ window.registerCSFonts = function(doc){
     `).join('');
 
     document.getElementById('totalAmt').textContent = `${occasionCount} Occasion${occasionCount !== 1 ? 's' : ''}`;
-
-    // Additional Services now lives on page 3 (closing), matching
-    // where it actually appears in the PDF — it previously sat
-    // beneath the occasions list on page 2, which isn't where the
-    // real PDF puts it.
-    let addonList = [];
-    addons.forEach(a=>{
-      const qty = state.addonQty[a.id];
-      if(qty > 0) addonList.push(a.name + (qty > 1 ? ` ×${qty}` : ''));
-    });
-    document.getElementById('addonsSummary').innerHTML = addonList.length ? `
-      <div class="addons-label">Additional Services</div>
-      <ul class="occ-equip-list">${addonList.map(a => `<li><span>${a}</span></li>`).join('')}</ul>
-    ` : '';
   }
 
   ['clientName','occasion','venue','eventDate','clientPhone'].forEach(id=>{
@@ -1830,46 +1745,20 @@ window.registerCSFonts = function(doc){
       }
     }
 
-    // Two-tone wordmark — "CREATIVE" in cream, "STUDIOS" in gold —
-    // matching the on-screen preview exactly. jsPDF can't colour
-    // part of a single text() call, so this is drawn as two calls
-    // measured against each other to stay correctly centred as one
-    // unit regardless of how wide either word renders.
     doc.setFont('Fraunces', 'normal');
     doc.setFontSize(13);
-    const wordmarkGap = 3;
-    const creativeW = doc.getTextWidth('CREATIVE');
-    const studiosW = doc.getTextWidth('STUDIOS');
-    const wordmarkTotalW = creativeW + wordmarkGap + studiosW;
-    const wordmarkStartX = centerX - (wordmarkTotalW / 2);
     doc.setTextColor(...CREAM);
-    doc.text('CREATIVE', wordmarkStartX, 76 + yShift, { align:'left' });
-    doc.setTextColor(...GOLD);
-    doc.text('STUDIOS', wordmarkStartX + creativeW + wordmarkGap, 76 + yShift, { align:'left' });
+    doc.text('CREATIVE STUDIOS', centerX, 76 + yShift, { align:'center' });
 
-    // Tagline row — "— PHOTO & FILM —" flanked by short rules,
-    // matching the on-screen preview. Previously missing from the
-    // PDF entirely.
-    doc.setFont('Fraunces', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...GOLD);
-    const taglineText = 'PHOTO  &  FILM';
-    const taglineW = doc.getTextWidth(taglineText);
-    doc.text(taglineText, centerX, 84 + yShift, { align:'center' });
-    doc.setDrawColor(...GOLD);
-    doc.setLineWidth(0.3);
-    doc.line(centerX - (taglineW / 2) - 20, 83 + yShift, centerX - (taglineW / 2) - 6, 83 + yShift);
-    doc.line(centerX + (taglineW / 2) + 6, 83 + yShift, centerX + (taglineW / 2) + 20, 83 + yShift);
-
-    // Short gold rule beneath the wordmark/tagline block
+    // Short gold rule beneath the wordmark
     doc.setDrawColor(...GOLD);
     doc.setLineWidth(0.4);
-    doc.line(centerX - 15, 96 + yShift, centerX + 15, 96 + yShift);
+    doc.line(centerX - 15, 90 + yShift, centerX + 15, 90 + yShift);
 
     doc.setFont('Fraunces', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(...GOLD);
-    doc.text('COVERAGE SCOPE', centerX, 122 + yShift, { align:'center' });
+    doc.text('PREPARED FOR', centerX, 122 + yShift, { align:'center' });
 
     // The couple's name — the centrepiece of the page
     doc.setFont('Fraunces', 'italic');
@@ -1878,65 +1767,37 @@ window.registerCSFonts = function(doc){
     const nameLines = doc.splitTextToSize(clientName, pageW - 70);
     doc.text(nameLines, centerX, 140 + yShift, { align:'center' });
 
-    // The closing quote, matching the on-screen preview's cover copy
+    // Event details, positioned to account for a wrapped name
     const nameBottom = 140 + yShift + ((nameLines.length - 1) * 14);
-    let detY = nameBottom + 22;
-    doc.setFont('Fraunces', 'italic');
-    doc.setFontSize(11.5);
-    doc.setTextColor(...GOLD_LIGHT);
-    const quoteLines = doc.splitTextToSize('"Every gallery is a little piece of your story. We just get to preserve it."', pageW - 90);
-    doc.text(quoteLines, centerX, detY, { align:'center' });
-    detY += (quoteLines.length * 6) + 16;
-
-    // Horizontal divider rule, matching the on-screen preview —
-    // previously missing from the PDF entirely.
-    doc.setDrawColor(...MUTED);
-    doc.setLineWidth(0.2);
-    doc.line(centerX - 45, detY, centerX + 45, detY);
-    detY += 14;
-
-    // Event Type / Venue / Date, each its own labeled row — matches
-    // the on-screen preview's format exactly.
+    let detY = nameBottom + 30;
     doc.setFont('Fraunces', 'normal');
-    doc.setFontSize(11);
-    doc.setTextColor(...MUTED);
-    doc.text('EVENT TYPE:', centerX - 2, detY, { align:'right' });
-    doc.setTextColor(...CREAM);
-    doc.text(eventType, centerX + 2, detY, { align:'left' });
+    doc.setFontSize(12);
+    doc.setTextColor(...GOLD_LIGHT);
+    doc.text(`${eventType.toUpperCase()}  ·  ${date.toUpperCase()}`, centerX, detY, { align:'center' });
     detY += 9;
-    doc.setTextColor(...MUTED);
-    doc.text('VENUE:', centerX - 2, detY, { align:'right' });
-    doc.setTextColor(...CREAM);
-    const venueLines = doc.splitTextToSize(venue, pageW - 100);
-    doc.text(venueLines, centerX + 2, detY, { align:'left' });
-    detY += venueLines.length * 7;
-    doc.setTextColor(...MUTED);
-    doc.text('DATE:', centerX - 2, detY, { align:'right' });
-    doc.setTextColor(...CREAM);
-    doc.text(date, centerX + 2, detY, { align:'left' });
-    detY += 9;
+    const venueLines = doc.splitTextToSize(venue.toUpperCase(), pageW - 80);
+    doc.text(venueLines, centerX, detY, { align:'center' });
 
     // Only shown when at least one occasion genuinely has its own,
     // different venue — most weddings are one location, and this
     // would just be clutter in that far more common case.
     if(hasMultipleVenues){
-      detY += 10;
+      detY += (venueLines.length * 6) + 10;
       doc.setFont('Fraunces', 'italic');
       doc.setFontSize(9.5);
       doc.setTextColor(...MUTED);
-      const noteLines = doc.splitTextToSize('Some occasions take place at their own venue — see the breakdown that follows', pageW - 90);
+      const noteLines = doc.splitTextToSize('Some occasions take place at their own venue — see the itinerary that follows', pageW - 90);
       doc.text(noteLines, centerX, detY, { align:'center' });
       detY += noteLines.length * 6;
+    } else {
+      detY += venueLines.length * 6;
     }
 
-    // Footer, matching the on-screen preview's "Coverage Scope — [Month Year]"
-    detY += 20;
-    doc.setFont('Fraunces', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...MUTED);
-    const now = new Date();
-    const monthYear = now.toLocaleDateString('en-US', { month:'long', year:'numeric' });
-    doc.text(`Coverage Scope — ${monthYear}`, centerX, detY, { align:'center' });
+    // Closing rule near the base of the frame
+    const closingRuleY = detY + 24;
+    doc.setDrawColor(...GOLD);
+    doc.setLineWidth(0.4);
+    doc.line(centerX - 15, closingRuleY, centerX + 15, closingRuleY);
 
     // ===== PAGE 2 — Coverage Breakdown (timeline) =====
     // Presents the occasions as a journey through the celebration:
@@ -1976,15 +1837,9 @@ window.registerCSFonts = function(doc){
             const label = short ? (qty === 1 ? short.one : short.many) : eqLabel(eq, qty);
             return `${qty} ${label}`;
           });
-        // Falls back to the main venue if this occasion doesn't have
-        // its own — Haldi at home, Wedding at a hotel, and Reception
-        // at a banquet hall are commonly three different places, so
-        // a single event-wide venue would have been misleading.
-        const occVenue = (state.occasionVenue[o.id] || '').trim() || venue;
         rows.push({
           id: o.id,
           name: o.name,
-          venue: occVenue,
           coverage: parts.length ? parts : ['Coverage included'],
         });
       }
@@ -1994,16 +1849,11 @@ window.registerCSFonts = function(doc){
     doc.setFont('Fraunces', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(...GOLD);
-    doc.text("WHAT'S COVERED", colL, 26);
-    doc.setFont('Jost', 'normal');
-    doc.setFontSize(28);
+    doc.text('YOUR CELEBRATION', colL, 26);
+    doc.setFont('Fraunces', 'italic');
+    doc.setFontSize(30);
     doc.setTextColor(...CREAM);
-    doc.text('Coverage Breakdown', colL, 38);
-
-    // Divider rule beneath the heading, matching the on-screen preview
-    doc.setDrawColor(...MUTED);
-    doc.setLineWidth(0.2);
-    doc.line(colL, 46, contentR, 46);
+    doc.text('The Journey', colL, 38);
 
     // Rows have variable height (one line per equipment item, plus
     // one line for the venue), which creates a problem for a
@@ -2017,11 +1867,10 @@ window.registerCSFonts = function(doc){
     const trackTop = 60;
     const trackBottom = 244;
     const EQ_LINE_H = 7.5;           // equipment lines are now 13pt
-    const VENUE_LINE_H = 7;          // the venue line beneath the name
     const NAME_OFFSET = 12;          // first line sits below the name
     const ROW_PAD = 14;              // breathing room below the tallest row
 
-    const rowHeights = rows.map(r => NAME_OFFSET + VENUE_LINE_H + (r.coverage.length * EQ_LINE_H));
+    const rowHeights = rows.map(r => NAME_OFFSET + (r.coverage.length * EQ_LINE_H));
     const tallestRow = Math.max(...rowHeights, 0);
     const minStep = tallestRow + ROW_PAD;
 
@@ -2075,59 +1924,43 @@ window.registerCSFonts = function(doc){
         .filter(pl => pl.page === p);
       if(!onPage.length) continue;
 
-      // No connecting line between occasions — matches the on-screen
-      // preview, which uses standalone diamond markers rather than a
-      // vertical timeline joining them.
+      // Connecting line spanning this page's markers
+      if(onPage.length > 1){
+        doc.setDrawColor(...GOLD);
+        doc.setLineWidth(0.3);
+        doc.line(lineX, onPage[0].y, lineX, onPage[onPage.length - 1].y);
+      }
 
       onPage.forEach(({ y, row, h }) => {
-        // Diamond marker — a small square rotated 45°, matching the
-        // preview's .occ-marker exactly. jsPDF has no direct
-        // "rotated rect" primitive, so it's drawn as a 4-point
-        // polygon instead.
-        const dSize = 1.8;
-        doc.setFillColor(...GOLD);
-        doc.triangle(lineX - dSize, y, lineX, y - dSize, lineX + dSize, y, 'F');
-        doc.triangle(lineX - dSize, y, lineX, y + dSize, lineX + dSize, y, 'F');
+        const isWedding = row.id === 'wedding';
 
-        // Occasion name — same treatment for every occasion, matching
-        // the preview (no special emphasis for "Wedding" specifically)
+        // Marker — larger for the wedding, since it anchors the day
+        doc.setFillColor(...GOLD);
+        doc.circle(lineX, y, isWedding ? 2.6 : 1.7, 'F');
+
+        // Occasion name
         doc.setTextColor(...CREAM);
-        doc.setFont('Fraunces', 'normal');
-        doc.setFontSize(18);
+        if(isWedding){
+          doc.setFont('Fraunces', 'italic');
+          doc.setFontSize(21);
+        } else {
+          doc.setFont('Fraunces', 'normal');
+          doc.setFontSize(18);
+        }
         doc.text(row.name, textX, y + 1.5);
 
-        // Venue — small caps, gold, distinct from the equipment
-        // list below it so it reads as a location marker rather than
-        // another coverage detail.
-        doc.setFont('Fraunces', 'normal');
-        doc.setFontSize(9.5);
-        doc.setTextColor(...GOLD);
-        doc.text(row.venue.toUpperCase(), textX, y + NAME_OFFSET - 3);
-
-        // Equipment stacked one per line beneath the venue, rather
+        // Equipment stacked one per line beneath the name, rather
         // than run together on a single long line.
         doc.setFont('Fraunces', 'normal');
         doc.setFontSize(13);
         doc.setTextColor(...GOLD_LIGHT);
         row.coverage.forEach((line, i) => {
-          doc.text(line, textX, y + NAME_OFFSET + VENUE_LINE_H + (i * EQ_LINE_H));
+          doc.text(line, textX, y + NAME_OFFSET + (i * EQ_LINE_H));
         });
 
         if(p === totalPages - 1){
-          lastContentEndY = y + NAME_OFFSET + VENUE_LINE_H + (row.coverage.length * EQ_LINE_H);
+          lastContentEndY = y + NAME_OFFSET + (row.coverage.length * EQ_LINE_H);
         }
-
-        // Divider beneath this occasion, matching each .occ-block's
-        // own border-bottom in the preview. Positioned using the
-        // row's own content height as a floor — with only one
-        // occasion, `step` is 0 (no next marker to space toward),
-        // which would otherwise draw the line right through the
-        // text instead of beneath it.
-        const rowContentH = NAME_OFFSET + VENUE_LINE_H + (row.coverage.length * EQ_LINE_H);
-        const dividerY = y + Math.max(step / 2, rowContentH + 6);
-        doc.setDrawColor(...MUTED);
-        doc.setLineWidth(0.15);
-        doc.line(colL, dividerY, contentR, dividerY);
       });
     }
 
@@ -2136,18 +1969,11 @@ window.registerCSFonts = function(doc){
     // value. Capped so it never sits so low it looks disconnected
     // from a very full page, and never higher than the old fixed
     // position so a heavy scope doesn't get pushed off the page.
-    const footerY = Math.min(260, Math.max(lastContentEndY + 20, trackTop + 40));
-    doc.setDrawColor(...MUTED);
-    doc.setLineWidth(0.2);
-    doc.line(colL, footerY - 10, contentR, footerY - 10);
+    const footerY = Math.min(268, Math.max(lastContentEndY + 20, trackTop + 40));
     doc.setFont('Fraunces', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...MUTED);
-    doc.text('SCOPE SUMMARY', colL, footerY);
-    doc.setFont('Fraunces', 'italic');
-    doc.setFontSize(18);
+    doc.setFontSize(12);
     doc.setTextColor(...GOLD_LIGHT);
-    doc.text(`${occasionCount} Occasion${occasionCount !== 1 ? 's' : ''}`, colL, footerY + 9);
+    doc.text(`${occasionCount} OCCASION${occasionCount !== 1 ? 'S' : ''}  ·  CREATIVE STUDIOS`, colL, footerY);
 
     // ===== PAGE 3 — Closing / Contact =====
     doc.addPage();
@@ -2180,44 +2006,16 @@ window.registerCSFonts = function(doc){
     const termsLines = doc.splitTextToSize('All deliverables must be collected within one month of the delivery notification. Creative Studios accepts no responsibility for data retained beyond this period.', 140);
     doc.text(termsLines, marginL, termsY);
 
-    // Additional Services — selected add-ons were previously shown
-    // in the on-screen preview and WhatsApp message, but never
-    // actually appeared anywhere in the downloadable PDF itself.
-    // Only drawn when at least one add-on is selected, so this
-    // doesn't add empty space to the far more common case of none.
     let afterTermsY = termsY + (termsLines.length * 6) + 12;
-    const addonList = [];
-    addons.forEach(a => {
-      const qty = state.addonQty[a.id];
-      if(qty > 0) addonList.push(a.name + (qty > 1 ? ` ×${qty}` : ''));
-    });
 
-    // If an unusually long name plus a full addon list would run the
-    // contact block off the bottom of the page, continue on a fresh
-    // page instead — checked against the worst realistic case (a
-    // 3-line name and all 8 add-ons), which genuinely does overflow
-    // without this.
-    const estimatedRemaining = 10 + (addonList.length * 7.5) + 6 + 4 + 44;
+    // If an unusually long name pushes the contact block off the
+    // bottom of the page, continue on a fresh page instead — checked
+    // against the worst realistic case (a 3-line wrapped name).
+    const estimatedRemaining = 6 + 4 + 44;
     if(afterTermsY + estimatedRemaining > pageH - 15){
       doc.addPage();
       darkPage();
       afterTermsY = 30;
-    }
-
-    if(addonList.length){
-      doc.setFont('Fraunces', 'normal');
-      doc.setFontSize(11);
-      doc.setTextColor(...GOLD);
-      doc.text('ADDITIONAL SERVICES', marginL, afterTermsY);
-      afterTermsY += 10;
-      doc.setFont('Fraunces', 'normal');
-      doc.setFontSize(12);
-      doc.setTextColor(...GOLD_LIGHT);
-      addonList.forEach(line => {
-        doc.text(line, marginL, afterTermsY);
-        afterTermsY += 7.5;
-      });
-      afterTermsY += 6;
     }
 
     doc.setDrawColor(...GOLD);
@@ -2293,13 +2091,6 @@ window.registerCSFonts = function(doc){
       }
     });
 
-    addons.forEach(a => {
-      const qty = state.addonQty[a.id];
-      if (qty > 0) {
-        lines.push(`+ ${a.name}${qty > 1 ? ` ×${qty}` : ''}`);
-      }
-    });
-
     lines.push(``);
     lines.push(`This outlines the scope of coverage for your day. A formal quote with pricing follows once the details are confirmed.`);
     lines.push(``);
@@ -2311,7 +2102,6 @@ window.registerCSFonts = function(doc){
   });
 
   renderOccasions();
-  renderAddons();
   update();
 
 
