@@ -460,6 +460,7 @@
   .sel-actions .sel-btn:disabled{ opacity:0.6; cursor:default; }
   .sel-msg{ margin-top:14px; font-size:0.9rem; }
   .sel-msg.error{ color:#9c3b3b; }
+  .sel-reason{ display:block; margin-top:6px; font-size:0.78rem; opacity:0.75; }
 </style>
 </head>
 <body>
@@ -1860,8 +1861,16 @@
           files: files.map(f => ({ id:f.id, name:f.name, occasion:f.occasion }))
         })
       });
-      const data = await res.json();
-      if(!data.ok) throw new Error(data.error || 'failed');
+      const raw = await res.text();
+      let data;
+      try{ data = JSON.parse(raw); }
+      catch(e){ throw new Error('The studio server sent an unexpected response (it may need re-authorising).'); }
+      if(!data.ok) throw new Error(({
+        'Unknown action': 'The studio server is running an older version.',
+        'unknown_gallery': 'This gallery isn\'t linked in the studio\'s client list.',
+        'rate_limited': 'Too many attempts just now. Please wait a minute.',
+        'missing_data': 'No photos were included.'
+      })[data.error] || (data.error || 'Unknown error'));
       localStorage.setItem(sentKey, JSON.stringify({ at: data.submittedAt || new Date().toISOString(), signature: selectionSignature(files), count: files.length }));
       confirmBtn.textContent = 'Sent';
       msg.textContent = data.updated
@@ -1874,7 +1883,8 @@
       confirmBtn.disabled = false; confirmBtn.textContent = 'Try again';
       msg.className = 'sel-msg error';
       msg.innerHTML = 'We couldn\'t send your picks just now. Try again, or <a href="' +
-        whatsappFallbackUrl(files, note) + '" target="_blank" rel="noopener">send them on WhatsApp instead</a>.';
+        whatsappFallbackUrl(files, note) + '" target="_blank" rel="noopener">send them on WhatsApp instead</a>.' +
+        '<span class="sel-reason">Reason: ' + String(err.message || err).replace(/</g,'&lt;') + '</span>';
     }
   }
 
